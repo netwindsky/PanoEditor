@@ -9,8 +9,18 @@
 
     <!-- 上传进度条 -->
     <div v-if="vm.uploading.value" class="upload-progress">
-      <el-progress :percentage="vm.uploadProgress.value" :stroke-width="4" :show-text="true" />
+      <el-progress 
+        :percentage="vm.uploadProgress.value" 
+        :stroke-width="4" 
+        :show-text="true"
+        status="success"
+      />
       <span class="upload-label">上传中 {{ vm.uploadProgress.value }}%</span>
+    </div>
+    
+    <!-- 上传错误提示 -->
+    <div v-if="vm.uploadError.value" class="upload-error">
+      <el-alert :title="vm.uploadError.value" type="error" :closable="false" />
     </div>
 
     <div class="list-content">
@@ -70,7 +80,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
+import { ref } from 'vue'
 import { Plus } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import type { SceneViewModel } from '@/viewmodels/SceneViewModel'
@@ -99,7 +109,7 @@ function handleCommand(command: string, sceneId: string) {
   }
 }
 
-function handleFileChange(event: Event) {
+async function handleFileChange(event: Event) {
   const target = event.target as HTMLInputElement
   const file = target.files?.[0]
   if (!file) return
@@ -110,10 +120,22 @@ function handleFileChange(event: Event) {
     return
   }
 
-  if (props.projectId) {
-    vm.uploadPanorama(props.projectId, file)
+  if (!props.projectId) {
+    ElMessage.error('未选择项目')
+    target.value = ''
+    return
   }
-  target.value = ''
+
+  try {
+    console.log('[SceneList] Starting upload for file:', file.name)
+    await vm.uploadPanorama(props.projectId, file)
+    ElMessage.success('上传成功')
+  } catch (error: any) {
+    console.error('[SceneList] Upload failed:', error)
+    ElMessage.error(vm.uploadError.value || '上传失败')
+  } finally {
+    target.value = ''
+  }
 }
 </script>
 
@@ -220,13 +242,19 @@ function handleFileChange(event: Event) {
 .upload-progress {
   padding: 8px 12px;
   border-bottom: 1px solid var(--border-color);
+  background: var(--bg-secondary);
 }
 
 .upload-label {
   display: block;
   text-align: center;
   font-size: 11px;
-  color: var(--text-muted);
+  color: var(--text-secondary);
   margin-top: 4px;
+}
+
+.upload-error {
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border-color);
 }
 </style>

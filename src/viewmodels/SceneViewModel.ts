@@ -16,12 +16,15 @@ export class SceneViewModel {
   currentScene = ref<Scene | null>(null)
   uploading = ref(false)
   uploadProgress = ref(0)
+  uploadError = ref<string>('')
   tilingStatusMap = reactive(new Map<string, TilingStatus>())
   private pollingTimers = new Map<string, ReturnType<typeof setInterval>>()
 
   // === 计算属性 ===
   hasScenes = computed(() => this.scenes.value.length > 0)
   currentSceneConfig = computed(() => this.currentScene.value?.imageConfig ?? null)
+  isUploading = computed(() => this.uploading.value)
+  currentUploadProgress = computed(() => this.uploadProgress.value)
 
   constructor(private sceneService: SceneService) {}
 
@@ -42,21 +45,33 @@ export class SceneViewModel {
 
   // === 场景创建 ===
   async uploadPanorama(projectId: string, file: File): Promise<void> {
+    console.log('[SceneViewModel] Starting upload...')
     this.uploading.value = true
     this.uploadProgress.value = 0
+    this.uploadError.value = ''
 
     try {
       const { scene } = await this.sceneService.uploadPanorama(
         projectId,
         file,
         (progress) => {
+          console.log('[SceneViewModel] Upload progress:', progress)
           this.uploadProgress.value = progress
         }
       )
 
+      console.log('[SceneViewModel] Upload complete, scene:', scene.id)
       this.scenes.value.push(scene)
       this.startTilingPolling(scene.id)
+      
+      // 保持进度条显示一段时间让用户看到 100%
+      await new Promise(resolve => setTimeout(resolve, 800))
+    } catch (error: any) {
+      console.error('[SceneViewModel] Upload failed:', error)
+      this.uploadError.value = error.message || '上传失败'
+      throw error
     } finally {
+      console.log('[SceneViewModel] Resetting upload state')
       this.uploading.value = false
       this.uploadProgress.value = 0
     }
@@ -77,21 +92,24 @@ export class SceneViewModel {
 
   // === 切片进度轮询 ===
   private startTilingPolling(sceneId: string): void {
+    console.log('[SceneViewModel] Starting tiling polling for:', sceneId)
     this.tilingStatusMap.set(sceneId, { status: 'PENDING', progress: 0 })
 
     const timer = setInterval(async () => {
       try {
         const progress = await this.sceneService.fetchTilingProgress(sceneId)
+        console.log('[SceneViewModel] Tiling progress:', progress.status, progress.percentage)
         this.tilingStatusMap.set(sceneId, {
           status: progress.status,
           progress: progress.percentage,
         })
 
         if (progress.status === 'COMPLETED' || progress.status === 'FAILED') {
+          console.log('[SceneViewModel] Tiling finished:', progress.status)
           this.stopTilingPolling(sceneId)
         }
-      } catch {
-        // 轮询失败不中断
+      } catch (error) {
+        console.error('[SceneViewModel] Tiling poll error:', error)
       }
     }, 3000)
 
