@@ -1,0 +1,28 @@
+:root {
+  --bg-primary: #0f1117;
+  --bg-secondary: #1a1d27;
+  --bg-tertiary: #242836;
+  --bg-hover: #2a2e3d;
+  --bg-active: #333849;
+  --border-color: #2e3348;
+  --border-light: #3a3f54;
+  --text-primary: #e4e6ef;
+  --text-secondary: #9ca0b0;
+  --text-muted: #6b7085;
+  --accent: #3b82f6;
+  --accent-hover: #2563eb;
+  --accent-light: rgba(59, 130, 246, 0.15);
+  --success: #22c55e;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+  --danger-hover: #dc2626;
+  --panel-left-width: 280px;
+  --panel-right-width: 320px;
+  --topnav-height: 48px;
+  --statusbar-height: 28px;
+  --toolbar-height: 40px;
+  --timeline-height: 60px;
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+}

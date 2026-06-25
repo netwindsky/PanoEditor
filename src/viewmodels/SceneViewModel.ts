@@ -1,0 +1,114 @@
+import { ref, reactive, computed } from 'vue'
+import type { Scene, SceneService, TileProgress } from '@/models'
+
+export interface TilingStatus {
+  status: string
+  progress: number
+}
+
+/**
+ * 场景 ViewModel
+ * 负责场景管理的所有业务逻辑和状态
+ */
+export class SceneViewModel {
+  // === 状态 ===
+  scenes = ref<Scene[]>([])
+  currentScene = ref<Scene | null>(null)
+  uploading = ref(false)
+  uploadProgress = ref(0)
+  tilingStatusMap = reactive(new Map<string, TilingStatus>())
+  private pollingTimers = new Map<string, ReturnType<typeof setInterval>>()
+
+  // === 计算属性 ===
+  hasScenes = computed(() => this.scenes.value.length > 0)
+  currentSceneConfig = computed(() => this.currentScene.value?.imageConfig ?? null)
+
+  constructor(private sceneService: SceneService) {}
+
+  // === 场景加载 ===
+  async loadScenes(projectId: string): Promise<void> {
+    this.scenes.value = await this.sceneService.fetchScenes(projectId)
+    if (!this.currentScene.value && this.hasScenes.value) {
+      this.currentScene.value = this.scenes.value[0]
+    }
+  }
+
+  selectScene(sceneId: string): void {
+    const scene = this.scenes.value.find((s) => s.id === sceneId)
+    if (scene) {
+      this.currentScene.value = scene
+    }
+  }
+
+  // === 场景创建 ===
+  async uploadPanorama(projectId: string, file: File): Promise<void> {
+    this.uploading.value = true
+    this.uploadProgress.value = 0
+
+    try {
+      const { scene } = await this.sceneService.uploadPanorama(
+        projectId,
+        file,
+        (progress) => {
+          this.uploadProgress.value = progress
+        }
+      )
+
+      this.scenes.value.push(scene)
+      this.startTilingPolling(scene.id)
+    } finally {
+      this.uploading.value = false
+      this.uploadProgress.value = 0
+    }
+  }
+
+  // === 场景删除 ===
+  async deleteScene(sceneId: string): Promise<void> {
+    this.stopTilingPolling(sceneId)
+    this.tilingStatusMap.delete(sceneId)
+    await this.sceneService.deleteScene(sceneId)
+
+    this.scenes.value = this.scenes.value.filter((s) => s.id !== sceneId)
+
+    if (this.currentScene.value?.id === sceneId) {
+      this.currentScene.value = this.scenes.value[0] || null
+    }
+  }
+
+  // === 切片进度轮询 ===
+  private startTilingPolling(sceneId: string): void {
+    this.tilingStatusMap.set(sceneId, { status: 'PENDING', progress: 0 })
+
+    const timer = setInterval(async () => {
+      try {
+        const progress = await this.sceneService.fetchTilingProgress(sceneId)
+        this.tilingStatusMap.set(sceneId, {
+          status: progress.status,
+          progress: progress.percentage,
+        })
+
+        if (progress.status === 'COMPLETED' || progress.status === 'FAILED') {
+          this.stopTilingPolling(sceneId)
+        }
+      } catch {
+        // 轮询失败不中断
+      }
+    }, 3000)
+
+    this.pollingTimers.set(sceneId, timer)
+  }
+
+  private stopTilingPolling(sceneId: string): void {
+    const timer = this.pollingTimers.get(sceneId)
+    if (timer) {
+      clearInterval(timer)
+      this.pollingTimers.delete(sceneId)
+    }
+  }
+
+  // === 清理 ===
+  dispose(): void {
+    this.pollingTimers.forEach((timer) => clearInterval(timer))
+    this.pollingTimers.clear()
+  }
+}
