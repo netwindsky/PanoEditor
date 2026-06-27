@@ -26,6 +26,37 @@ export class SceneViewModel {
   isUploading = computed(() => this.uploading.value)
   currentUploadProgress = computed(() => this.uploadProgress.value)
 
+  // 当前场景的切片状态，归一化为 PanoEngineViewer 期望的 PROCESSING / READY / FAILED。
+  // 优先采用实时轮询(tilingStatusMap)，否则回退到持久化的 Scene.status。
+  currentTilingStatus = computed<string>(() => {
+    const scene = this.currentScene.value
+    if (!scene) return ''
+    const polling = this.tilingStatusMap.get(scene.id)
+    return polling ? SceneViewModel.normalizeTilingStatus(polling.status) : scene.status
+  })
+
+  // 当前场景的切片进度(0-100)。轮询优先，已就绪场景返回 100。
+  currentTilingProgress = computed<number>(() => {
+    const scene = this.currentScene.value
+    if (!scene) return 0
+    const polling = this.tilingStatusMap.get(scene.id)
+    if (polling && polling.progress != null) return polling.progress
+    if (scene.status === 'READY') return 100
+    return 0
+  })
+
+  // 切片状态归一化：后端轮询用 COMPLETED/PENDING，组件只认 READY/PROCESSING/FAILED
+  private static normalizeTilingStatus(raw: string): string {
+    const map: Record<string, string> = {
+      COMPLETED: 'READY',
+      PENDING: 'PROCESSING',
+      PROCESSING: 'PROCESSING',
+      FAILED: 'FAILED',
+      READY: 'READY',
+    }
+    return map[raw] ?? raw
+  }
+
   constructor(private sceneService: SceneService) {}
 
   // === 场景加载 ===
@@ -62,7 +93,7 @@ export class SceneViewModel {
 
       console.log('[SceneViewModel] Upload complete, scene:', scene.id)
       this.scenes.value.push(scene)
-      this.startTilingPolling(scene.id)
+      this.startTilingPolling(scene.id, projectId)
       
       // 保持进度条显示一段时间让用户看到 100%
       await new Promise(resolve => setTimeout(resolve, 800))
@@ -91,7 +122,7 @@ export class SceneViewModel {
   }
 
   // === 切片进度轮询 ===
-  private startTilingPolling(sceneId: string): void {
+  private startTilingPolling(sceneId: string, projectId: string): void {
     console.log('[SceneViewModel] Starting tiling polling for:', sceneId)
     this.tilingStatusMap.set(sceneId, { status: 'PENDING', progress: 0 })
 
@@ -107,6 +138,11 @@ export class SceneViewModel {
         if (progress.status === 'COMPLETED' || progress.status === 'FAILED') {
           console.log('[SceneViewModel] Tiling finished:', progress.status)
           this.stopTilingPolling(sceneId)
+
+          // 切片完成后必须刷新场景：创建时 imageConfig 为空，切片完成后端才写入瓦片配置与 READY 状态
+          if (progress.status === 'COMPLETED') {
+            await this.refreshScene(projectId, sceneId)
+          }
         }
       } catch (error) {
         console.error('[SceneViewModel] Tiling poll error:', error)
@@ -114,6 +150,32 @@ export class SceneViewModel {
     }, 3000)
 
     this.pollingTimers.set(sceneId, timer)
+  }
+
+  /**
+   * 重新拉取单个场景，刷新其持久化状态(READY)与最新 imageConfig。
+   * 同时更新 scenes 列表条目；若是当前场景，重新指向新对象以触发 PanoEngineViewer 加载。
+   */
+  private async refreshScene(projectId: string, sceneId: string): Promise<void> {
+    try {
+      const updated = await this.sceneService.fetchScene(projectId, sceneId)
+      if (!updated) return
+
+      const idx = this.scenes.value.findIndex((s) => s.id === sceneId)
+      if (idx !== -1) {
+        this.scenes.value = [
+          ...this.scenes.value.slice(0, idx),
+          updated,
+          ...this.scenes.value.slice(idx + 1),
+        ]
+      }
+
+      if (this.currentScene.value?.id === sceneId) {
+        this.currentScene.value = updated
+      }
+    } catch (error) {
+      console.error('[SceneViewModel] Refresh scene after tiling failed:', error)
+    }
   }
 
   private stopTilingPolling(sceneId: string): void {

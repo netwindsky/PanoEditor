@@ -103,6 +103,30 @@
         </div>
       </div>
 
+      <!-- 信息点内容 -->
+      <div v-if="form.type === 'info'" class="prop-section">
+        <div class="section-title">信息卡片</div>
+        <div class="prop-row">
+          <label>标题</label>
+          <el-input v-model="infoContent.title" size="small" placeholder="信息点标题" @change="handleUpdate" />
+        </div>
+        <div class="prop-row">
+          <label>描述</label>
+          <el-input
+            v-model="infoContent.description"
+            type="textarea"
+            :rows="3"
+            size="small"
+            placeholder="详细描述内容"
+            @change="handleUpdate"
+          />
+        </div>
+        <div class="prop-row">
+          <label>图片URL</label>
+          <el-input v-model="infoContent.imageUrl" size="small" placeholder="可选的图片地址" @change="handleUpdate" />
+        </div>
+      </div>
+
       <!-- 链接 -->
       <div v-if="form.type === 'scene'" class="prop-section">
         <div class="section-title">跳转设置</div>
@@ -172,6 +196,12 @@ const sceneStore = useSceneStore()
 const editorStore = useEditorStore()
 const { removeHotspot } = useEditor()
 
+interface InfoContent {
+  title: string
+  description: string
+  imageUrl: string
+}
+
 const form = reactive({
   name: '',
   type: 'info' as HotspotType,
@@ -192,6 +222,13 @@ const form = reactive({
   events: '',
   onclick: '',
   followZoom: false,
+  content: '',
+})
+
+const infoContent = reactive<InfoContent>({
+  title: '',
+  description: '',
+  imageUrl: '',
 })
 
 // 是否显示媒体区域
@@ -222,6 +259,25 @@ watch(
       form.events = hotspot.events || ''
       form.onclick = hotspot.onclick || ''
       form.followZoom = hotspot.followZoom ?? false
+      form.content = hotspot.content || ''
+
+      // 解析 content JSON 到 infoContent
+      if (hotspot.content) {
+        try {
+          const parsed = JSON.parse(hotspot.content)
+          infoContent.title = parsed.title || ''
+          infoContent.description = parsed.description || ''
+          infoContent.imageUrl = parsed.imageUrl || ''
+        } catch {
+          infoContent.title = hotspot.content
+          infoContent.description = ''
+          infoContent.imageUrl = ''
+        }
+      } else {
+        infoContent.title = ''
+        infoContent.description = ''
+        infoContent.imageUrl = ''
+      }
     }
   },
   { immediate: true },
@@ -229,6 +285,17 @@ watch(
 
 async function handleUpdate() {
   if (!hotspotStore.selectedHotspot) return
+
+  // 将 infoContent 序列化为 JSON 字符串
+  let contentJson = ''
+  if (infoContent.title || infoContent.description || infoContent.imageUrl) {
+    contentJson = JSON.stringify({
+      title: infoContent.title,
+      description: infoContent.description,
+      imageUrl: infoContent.imageUrl,
+    })
+  }
+
   await hotspotStore.updateHotspot(hotspotStore.selectedHotspot.id, {
     name: form.name,
     type: form.type,
@@ -249,6 +316,7 @@ async function handleUpdate() {
     events: form.events || undefined,
     onclick: form.onclick || undefined,
     followZoom: form.followZoom,
+    content: contentJson || undefined,
   })
   editorStore.markDirty()
 }
@@ -300,7 +368,7 @@ function handleDelete() {
 .no-selection {
   padding: 20px;
   text-align: center;
-  color: var(--text-muted);
+  color: var(--text-secondary);
   font-size: 12px;
 }
 </style>

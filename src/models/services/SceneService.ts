@@ -16,6 +16,10 @@ export class SceneService {
     return this.sceneRepo.fetchScenes(projectId)
   }
 
+  async fetchScene(projectId: string, sceneId: string): Promise<Scene> {
+    return this.sceneRepo.fetchScene(projectId, sceneId)
+  }
+
   async createScene(projectId: string, name: string, previewUrl: string): Promise<Scene> {
     return this.sceneRepo.createScene(projectId, { name, previewUrl })
   }

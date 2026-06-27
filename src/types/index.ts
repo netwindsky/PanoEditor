@@ -118,6 +118,7 @@ export interface Hotspot {
   tooltip?: string
   events?: string
   onclick?: string
+  content?: string
   followZoom?: boolean
   visible?: boolean
   sortOrder?: number
@@ -146,6 +147,7 @@ export interface CreateHotspotParams {
   tooltip?: string
   events?: string
   onclick?: string
+  content?: string
   followZoom?: boolean
   visible?: boolean
   sortOrder?: number
@@ -172,6 +174,7 @@ export interface UpdateHotspotParams {
   tooltip?: string
   events?: string
   onclick?: string
+  content?: string
   followZoom?: boolean
   visible?: boolean
   sortOrder?: number

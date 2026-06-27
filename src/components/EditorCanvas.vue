@@ -13,6 +13,8 @@
         <PanoEngineViewer
           ref="panoViewerRef"
           :scene-config="vm.sceneViewModel.currentSceneConfig.value"
+          :tiling-status="vm.sceneViewModel.currentTilingStatus.value"
+          :tiling-progress="vm.sceneViewModel.currentTilingProgress.value"
           :hotspots="vm.hotspotViewModel.hotspots.value"
           class="pano-preview-wrap"
           @engine-ready="onEngineReady"
@@ -67,7 +69,7 @@ const hotspotTypeLabel = computed(() =>
 // 指针事件处理
 function handlePointerDown(e: PointerEvent) {
   if (vm.activeTool.value === 'hotspot' && engine) {
-    const coords = engine.getSphericalCoords(e.clientX, e.clientY)
+    const coords = engine.getCoordsFromPoint(e.clientX, e.clientY)
     vm.addHotspot({
       name: '新热点',
       type: vm.hotspotType.value,
@@ -75,10 +77,10 @@ function handlePointerDown(e: PointerEvent) {
       atv: coords.atv,
     })
   } else if (vm.activeTool.value === 'select' && engine) {
-    const hotspot = engine.getHotspotAt(e.clientX, e.clientY)
-    if (hotspot) {
-      vm.hotspotViewModel.selectHotspot(hotspot.id)
-      vm.hotspotViewModel.startDrag(hotspot.id)
+    const hotspotId = engine.getHitHotspot(e.clientX, e.clientY)
+    if (hotspotId) {
+      vm.hotspotViewModel.selectHotspot(hotspotId)
+      vm.hotspotViewModel.startDrag(hotspotId)
     }
   }
 }
@@ -144,6 +146,11 @@ onBeforeUnmount(() => {
   justify-content: center;
   height: 100%;
   color: var(--text-muted);
+}
+
+.canvas-content {
+  width: 100%;
+  height: 100%;
 }
 
 .pano-preview-wrap {
