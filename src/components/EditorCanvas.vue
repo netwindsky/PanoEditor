@@ -5,6 +5,8 @@
       @pointerdown="handlePointerDown"
       @pointermove="handlePointerMove"
       @pointerup="handlePointerUp"
+      @pointercancel="handlePointerCancel"
+      @pointerleave="handlePointerCancel"
     >
       <div v-if="!vm.sceneViewModel.currentScene.value" class="canvas-empty">
         <p>请选择一个场景开始编辑</p>
@@ -31,11 +33,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onBeforeUnmount } from 'vue'
+import { ref, computed, onBeforeUnmount } from 'vue'
 import PanoEngineViewer from '@/components/PanoEngineViewer.vue'
 import type { EditorViewModel } from '@/viewmodels/EditorViewModel'
 import type { PanoEngineAdapter } from '@/utils/PanoEngineAdapter'
 import type { HotspotToolType } from '@/types'
+import { buildHotspotParams } from '@/utils/hotspotFactory'
 
 const props = defineProps<{
   vm: EditorViewModel
@@ -70,26 +73,30 @@ const hotspotTypeLabel = computed(() =>
 function handlePointerDown(e: PointerEvent) {
   if (vm.activeTool.value === 'hotspot' && engine) {
     const coords = engine.getCoordsFromPoint(e.clientX, e.clientY)
-    vm.addHotspot({
-      name: '新热点',
-      type: vm.hotspotType.value,
-      ath: coords.ath,
-      atv: coords.atv,
-    })
+    vm.addHotspot(buildHotspotParams(vm.hotspotType.value, coords.ath, coords.atv))
   } else if (vm.activeTool.value === 'select' && engine) {
     const hotspotId = engine.getHitHotspot(e.clientX, e.clientY)
     if (hotspotId) {
       vm.hotspotViewModel.selectHotspot(hotspotId)
+      vm.setRightPanelSection('hotspot')
       vm.hotspotViewModel.startDrag(hotspotId)
     }
   }
 }
 
+// 构建新热点参数：复用 @/utils/hotspotFactory.buildHotspotParams，
+// quad/image/model 会自动补齐引擎所需的 points/url 默认值，避免创建即报错。
+
 function handlePointerMove(e: PointerEvent) {
   if (vm.hotspotViewModel.isDragging.value) {
+    const id = vm.hotspotViewModel.draggingHotspotId.value
     vm.hotspotViewModel.updateDrag(e.movementX, e.movementY)
-    if (engine) {
-      engine.syncHotspots(vm.hotspotViewModel.hotspots.value)
+    // 增量移动单个热点，避免全量销毁/重建所有热点（拖拽期间每帧触发会导致严重卡顿）
+    if (engine && id) {
+      const sensitivity = 0.1
+      const deltaAth = e.movementX * sensitivity
+      const deltaAtv = -e.movementY * sensitivity
+      engine.moveHotspot(id, deltaAth, deltaAtv)
     }
   }
 }
@@ -100,25 +107,35 @@ function handlePointerUp() {
   }
 }
 
+// 健壮性：指针取消（pointercancel）或移出窗口（pointerleave）时强制结束拖拽，
+// 避免全景旋转被永久锁死（forceEndDrag 只解锁不提交后端）。
+function handlePointerCancel() {
+  if (vm.hotspotViewModel.isDragging.value) {
+    vm.hotspotViewModel.forceEndDrag()
+  }
+}
+
 function onEngineReady(adapter: PanoEngineAdapter) {
   engine = adapter
+  // 注入相机锁定器：拖拽热点时锁定全景旋转，结束时解锁
+  vm.hotspotViewModel.setCameraLock({
+    lock: () => engine?.disableControls(),
+    unlock: () => engine?.enableControls(),
+  })
+  // 引擎首次就绪时做一次全量同步，把已有热点绘制到场景
   if (vm.hotspotViewModel.hotspots.value.length > 0) {
     engine.syncHotspots(vm.hotspotViewModel.hotspots.value)
   }
 }
 
-// 监听热点变化，同步到引擎
-watch(
-  () => vm.hotspotViewModel.hotspots.value,
-  (newHotspots) => {
-    if (engine && newHotspots) {
-      engine.syncHotspots(newHotspots)
-    }
-  },
-  { deep: true }
-)
+// 注意：热点增删的引擎同步统一由 PanoEngineViewer 内部的 watch 负责，
+// 此处不再重复 watch + syncHotspots，避免每次热点变化触发两次全量重建。
 
 onBeforeUnmount(() => {
+  // 卸载时若仍在拖拽，强制解锁，避免遗留锁定状态
+  if (vm.hotspotViewModel.isDragging.value) {
+    vm.hotspotViewModel.forceEndDrag()
+  }
   if (engine) {
     engine.dispose()
     engine = null

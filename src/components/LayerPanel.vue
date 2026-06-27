@@ -2,13 +2,13 @@
   <div class="layer-panel">
     <div class="panel-header">
       <span class="panel-title">热点图层</span>
-      <span class="panel-count">{{ hotspotStore.hotspots.length }}</span>
+      <span class="panel-count">{{ hotspots.length }}</span>
     </div>
     <div class="layer-list">
       <div
-        v-for="hotspot in hotspotStore.hotspots"
+        v-for="hotspot in hotspots"
         :key="hotspot.id"
-        :class="['layer-item', { active: hotspotStore.selectedHotspot?.id === hotspot.id }]"
+        :class="['layer-item', { active: selectedHotspotId === hotspot.id }]"
         @click="handleSelect(hotspot.id)"
       >
         <span class="layer-icon" :title="getHotspotTypeLabel(hotspot.type)">{{ getHotspotIcon(hotspot.type) }}</span>
@@ -16,7 +16,7 @@
         <span class="layer-style-badge" :title="hotspot.style">{{ getStyleShortLabel(hotspot.style) }}</span>
         <el-button text size="small" class="layer-delete" @click.stop="handleDelete(hotspot.id)">×</el-button>
       </div>
-      <div v-if="hotspotStore.hotspots.length === 0" class="layer-empty">
+      <div v-if="hotspots.length === 0" class="layer-empty">
         当前场景暂无热点
       </div>
     </div>
@@ -24,14 +24,13 @@
 </template>
 
 <script setup lang="ts">
-import { useHotspotStore } from '@/stores/hotspot'
-import { useEditor } from '@/composables/useEditor'
-import { useEditorStore } from '@/stores/editor'
-import type { HotspotType } from '@/types'
+import { inject, computed } from 'vue'
+import type { EditorViewModel } from '@/viewmodels/EditorViewModel'
 
-const hotspotStore = useHotspotStore()
-const editorStore = useEditorStore()
-const { removeHotspot } = useEditor()
+const vm = inject<EditorViewModel>('editorViewModel')!
+
+const hotspots = computed(() => vm.hotspotViewModel.hotspots.value)
+const selectedHotspotId = computed(() => vm.hotspotViewModel.selectedHotspot.value?.id ?? null)
 
 // 热点类型图标映射
 const typeIcons: Record<string, string> = {
@@ -87,12 +86,12 @@ function getStyleShortLabel(style?: string): string {
 }
 
 function handleSelect(hotspotId: string) {
-  hotspotStore.selectHotspot(hotspotId)
-  editorStore.setRightPanelSection('hotspot')
+  vm.hotspotViewModel.selectHotspot(hotspotId)
+  vm.setRightPanelSection('hotspot')
 }
 
 function handleDelete(hotspotId: string) {
-  removeHotspot(hotspotId)
+  vm.removeHotspot(hotspotId)
 }
 </script>
 

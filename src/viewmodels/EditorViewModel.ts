@@ -1,6 +1,6 @@
 import { ref, computed } from 'vue'
 import type { EditorTool, HotspotToolType, LeftPanelTab, RightPanelSection } from '@/types'
-import type { CreateHotspotParams } from '@/models'
+import type { CreateHotspotParams, UpdateHotspotParams } from '@/types'
 import { SceneViewModel } from './SceneViewModel'
 import { HotspotViewModel } from './HotspotViewModel'
 import { AssetViewModel } from './AssetViewModel'
@@ -121,15 +121,32 @@ export class EditorViewModel {
   // === 热点操作 ===
   async addHotspot(params: CreateHotspotParams): Promise<void> {
     if (!this.sceneViewModel.currentScene.value) return
-    await this.hotspotViewModel.createHotspot(
+    const hotspot = await this.hotspotViewModel.createHotspot(
       this.sceneViewModel.currentScene.value.id,
       params
     )
+    // 新建后立即选中并切到属性面板，方便直接编辑样式
+    this.hotspotViewModel.selectHotspot(hotspot.id)
+    this.setRightPanelSection('hotspot')
+    // 退出“添加”模式，回到选择/编辑状态，
+    // 避免再次点击场景时又创建一个新热点（用户希望添加后直接编辑属性）
+    this.setActiveTool('select')
     this.markDirty()
   }
 
   async removeHotspot(hotspotId: string): Promise<void> {
     await this.hotspotViewModel.deleteHotspot(hotspotId)
+    this.markDirty()
+  }
+
+  /** 一键清空当前场景的所有热点 */
+  async clearAllHotspots(): Promise<void> {
+    await this.hotspotViewModel.clearHotspots()
+    this.markDirty()
+  }
+
+  async updateHotspot(hotspotId: string, params: UpdateHotspotParams): Promise<void> {
+    await this.hotspotViewModel.updateHotspot(hotspotId, params)
     this.markDirty()
   }
 

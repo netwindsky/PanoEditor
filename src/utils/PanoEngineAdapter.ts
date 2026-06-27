@@ -15,10 +15,13 @@ import type { Hotspot } from '@/types'
 
 export class PanoEngineAdapter {
   private engine: PanoEngine
+  // 性能埋点：跨实例累计 syncHotspots 调用次数（全量重建次数），用于发现高频重建
+  private static syncCallCount = 0
 
   constructor(container: HTMLElement) {
     // autoLoad:false —— 跳过引擎内置 XML demo，改用后端场景数据
     this.engine = new PanoEngine(container, { autoLoad: false })
+    console.log('[PERF][adapter] new PanoEngine instance created')
   }
 
   /**
@@ -26,6 +29,7 @@ export class PanoEngineAdapter {
    * @param config 后端生成的场景配置（JSON 对象或 SceneData 数组）
    */
   public loadSceneConfig(config: SceneData | SceneData[] | Record<string, any>): void {
+    const __t0 = performance.now()
     let sceneData: SceneData
 
     if (Array.isArray(config)) {
@@ -38,8 +42,14 @@ export class PanoEngineAdapter {
 
     // 后端返回的瓦片 url 已是 /uploads/... 完整路径，关闭库默认的 '/src/assets/' 前缀
     this.engine.setBaseUrl('')
-    // 通过库公共 API 注入场景数据，复用引擎原生加载流程
-    void this.engine.loadScenes([sceneData])
+    // 通过库公共 API 注入场景数据，复用引擎原生加载流程。
+    // manageHotspots:false —— 编辑器的热点与场景配置分离，由 syncHotspots 独立增量管理，
+    // 引擎不得用场景内嵌的（空）热点数组覆盖编辑器已注入的热点（否则会在瓦片加载完成后清空热点）。
+    void this.engine.loadScenes([sceneData], { manageHotspots: false })
+    console.log(`[PERF][adapter] loadSceneConfig done in ${(performance.now() - __t0).toFixed(1)}ms`, {
+      hotspots: sceneData.hotspots?.length ?? 0,
+      levels: sceneData.image?.levels?.length ?? 0,
+    })
   }
 
   /**
@@ -87,9 +97,34 @@ export class PanoEngineAdapter {
    * 将后端 Hotspot 数据转换为 PanoViewV2 标准库的 Hotspot 格式
    */
   private toPanoHotspot(hotspot: Hotspot): PanoHotspot {
+    const resolvedStyle = hotspot.style || 'pulsing-dot'
+    // pulsing-dot 等“0 宽容器 + 子元素”预设：.hotspot 基类是 display:flex，
+    // 容器宽 0 会把内部圆点子元素挤压成 4px 宽的“竖白条”。
+    // 引擎 applyStyle 中 data.width 优先于预设宽度，故在调用层给这类 DOM 点
+    // 样式的容器补一个固定 px 尺寸即可避免压扁。注意必须带 px 单位，纯数字字符串 CSS 无效。
+    // 仅对 DOM 点样式生效；image/quad/model 等 mesh 热点的 width 用于 3D 几何，保持原样不加 px。
+    const STYLES_NEEDING_FIXED_SIZE = ['pulsing-dot', 'glow-orb', 'info-icon', 'navi-point']
+    const needsFixedSize = STYLES_NEEDING_FIXED_SIZE.includes(resolvedStyle)
+    const DEFAULT_DOT_SIZE = '18px'
+
+    const resolvedWidth = needsFixedSize
+      ? hotspot.width
+        ? `${hotspot.width}px`
+        : DEFAULT_DOT_SIZE
+      : hotspot.width
+        ? String(hotspot.width)
+        : undefined
+    const resolvedHeight = needsFixedSize
+      ? hotspot.height
+        ? `${hotspot.height}px`
+        : DEFAULT_DOT_SIZE
+      : hotspot.height
+        ? String(hotspot.height)
+        : undefined
+
     return {
       name: hotspot.id,
-      style: hotspot.style || 'pulsing-dot',
+      style: resolvedStyle,
       ath: String(hotspot.ath),
       atv: String(hotspot.atv),
       linkedscene: hotspot.linkedSceneId || '',
@@ -99,8 +134,8 @@ export class PanoEngineAdapter {
       on: hotspot.onclick || '',
       type: hotspot.type,
       url: hotspot.url || '',
-      width: hotspot.width ? String(hotspot.width) : undefined,
-      height: hotspot.height ? String(hotspot.height) : undefined,
+      width: resolvedWidth,
+      height: resolvedHeight,
       scale: hotspot.scale ? String(hotspot.scale) : undefined,
       rotate: hotspot.rotate ? String(hotspot.rotate) : undefined,
       blendmode: hotspot.blendmode || '',
@@ -117,10 +152,16 @@ export class PanoEngineAdapter {
    * 同步后端热点列表到 3D 场景
    */
   public syncHotspots(hotspots: Hotspot[]): void {
+    const __t0 = performance.now()
+    PanoEngineAdapter.syncCallCount++
     this.engine.hotspotsManager.clearHotspots()
     const panoHotspots = hotspots.map((h) => this.toPanoHotspot(h))
     this.engine.hotspotsManager.createHotspots(panoHotspots)
     this.engine.hotspotsManager.fadeIn(500)
+    console.log(
+      `[PERF][adapter] syncHotspots #${PanoEngineAdapter.syncCallCount} (full rebuild) ` +
+        `count=${hotspots.length} in ${(performance.now() - __t0).toFixed(1)}ms`,
+    )
   }
 
   /**
