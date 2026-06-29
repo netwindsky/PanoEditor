@@ -15,11 +15,8 @@
       <div v-if="hotspots.length === 0" class="list-empty">当前场景暂无热点</div>
     </div>
 
-    <!-- 添加按钮 -->
-    <div class="add-buttons">
-      <el-button type="primary" size="small" @click="handleAdd('image')">Add Image</el-button>
-      <el-button size="small" @click="handleAdd('quad')">Add Quad</el-button>
-      <el-button size="small" @click="handleAdd('model')">Add Model</el-button>
+    <!-- 一键清空 -->
+    <div class="clear-row">
       <el-button
         type="danger"
         size="small"
@@ -34,98 +31,131 @@
 
     <!-- 属性表单 -->
     <template v-if="selectedHotspot">
-      <div class="props-title">Properties</div>
-      <div class="prop-row">
-        <label>Name</label>
-        <el-input v-model="form.name" size="small" />
+      <!-- 基本信息 -->
+      <div class="prop-card">
+        <div class="card-title">基本信息</div>
+        <div class="prop-field">
+          <label>名称</label>
+          <el-input v-model="form.name" size="small" />
+        </div>
+        <div class="prop-field">
+          <label>类型</label>
+          <el-input v-model="form.type" size="small" disabled />
+        </div>
+        <div class="prop-field">
+          <label>ATH</label>
+          <el-input-number v-model="form.ath" size="small" :step="1" :precision="2" controls-position="right" />
+        </div>
+        <div class="prop-field">
+          <label>ATV</label>
+          <el-input-number v-model="form.atv" size="small" :step="1" :precision="2" controls-position="right" />
+        </div>
       </div>
-      <div class="prop-row">
-        <label>Type</label>
-        <el-select v-model="form.type" size="small">
-          <el-option label="信息点" value="info" />
-          <el-option label="场景跳转" value="scene" />
-          <el-option label="图片 (Image)" value="image" />
-          <el-option label="矩形 (Quad)" value="quad" />
-          <el-option label="3D模型 (Model)" value="model" />
-          <el-option label="视频 (Video)" value="video" />
-        </el-select>
+
+      <!-- 外观样式 -->
+      <div class="prop-card">
+        <div class="card-title">外观样式</div>
+        <template v-if="form.type === 'info'">
+          <div class="prop-field">
+            <label>样式</label>
+            <el-select v-model="form.style" size="small">
+              <el-option label="脉冲点" value="pulsing-dot" />
+              <el-option label="悬浮箭头" value="floating-arrow" />
+              <el-option label="波纹标记" value="ripple-marker" />
+              <el-option label="旋转菱形" value="rotating-diamond" />
+              <el-option label="瞄准镜" value="target-crosshair" />
+              <el-option label="发光球" value="glow-orb" />
+              <el-option label="信息图标" value="info-icon" />
+              <el-option label="毛玻璃面板" value="glass-text" />
+              <el-option label="双环旋转" value="double-ring" />
+              <el-option label="地图大头针" value="map-pin" />
+              <el-option label="导航指引" value="navi-point" />
+              <el-option label="视频播放" value="video-play" />
+              <el-option label="警告标识" value="warning-sign" />
+              <el-option label="自定义图片" value="custom-image" />
+              <el-option label="自定义视频" value="custom-video" />
+              <el-option label="网页嵌入" value="custom-web" />
+            </el-select>
+          </div>
+        </template>
+        <div v-if="showUrl" class="prop-field">
+          <label>URL</label>
+          <el-input v-model="form.url" size="small" placeholder="资源URL" />
+        </div>
+        <template v-if="form.type === 'image'">
+          <div class="prop-field">
+            <label>贴图</label>
+            <div class="image-actions">
+              <el-button size="small" @click="showAssetDialog = true">资源库</el-button>
+            </div>
+          </div>
+        </template>
+        <div class="prop-field">
+          <label>宽度</label>
+          <el-input-number v-model="form.width" size="small" :min="0" :step="1" controls-position="right" />
+        </div>
+        <div class="prop-field">
+          <label>高度</label>
+          <el-input-number v-model="form.height" size="small" :min="0" :step="1" controls-position="right" />
+        </div>
+        <div class="prop-field">
+          <label>缩放</label>
+          <el-input-number v-model="form.scale" size="small" :min="0.001" :step="0.01" :precision="3" controls-position="right" />
+        </div>
+        <div class="prop-field">
+          <label>旋转</label>
+          <el-input-number v-model="form.rotate" size="small" :step="1" :precision="1" controls-position="right" />
+        </div>
       </div>
-      <div class="prop-row">
-        <label>Style</label>
-        <el-select v-model="form.style" size="small">
-          <el-option label="脉冲点" value="pulsing-dot" />
-          <el-option label="悬浮箭头" value="floating-arrow" />
-          <el-option label="波纹标记" value="ripple-marker" />
-          <el-option label="旋转菱形" value="rotating-diamond" />
-          <el-option label="瞄准镜" value="target-crosshair" />
-          <el-option label="发光球" value="glow-orb" />
-          <el-option label="信息图标" value="info-icon" />
-          <el-option label="毛玻璃面板" value="glass-text" />
-          <el-option label="双环旋转" value="double-ring" />
-          <el-option label="地图大头针" value="map-pin" />
-          <el-option label="导航指引" value="navi-point" />
-          <el-option label="视频播放" value="video-play" />
-          <el-option label="警告标识" value="warning-sign" />
-          <el-option label="自定义图片" value="custom-image" />
-          <el-option label="自定义视频" value="custom-video" />
-          <el-option label="网页嵌入" value="custom-web" />
-        </el-select>
-      </div>
-      <div class="prop-row">
-        <label>Blend Mode</label>
-        <el-select v-model="form.blendmode" size="small" clearable>
-          <el-option label="正常 (Normal)" value="" />
-          <el-option label="叠加 (Add)" value="add" />
-          <el-option label="屏幕 (Screen)" value="screen" />
-          <el-option label="正片叠底 (Multiply)" value="multiply" />
-        </el-select>
-      </div>
-      <div class="prop-row">
-        <label>ATH (H)</label>
-        <el-input-number v-model="form.ath" size="small" :step="1" :precision="2" controls-position="right" />
-      </div>
-      <div class="prop-row">
-        <label>ATV (V)</label>
-        <el-input-number v-model="form.atv" size="small" :step="1" :precision="2" controls-position="right" />
-      </div>
-      <div v-if="showUrl" class="prop-row">
-        <label>URL</label>
-        <el-input v-model="form.url" size="small" placeholder="资源URL" />
-      </div>
-      <div class="prop-row">
-        <label>Scale</label>
-        <el-input-number v-model="form.scale" size="small" :min="0.001" :step="0.01" :precision="3" controls-position="right" />
-      </div>
-      <div class="prop-row">
-        <label>Rotation</label>
-        <el-input-number v-model="form.rotate" size="small" :step="1" :precision="1" controls-position="right" />
-      </div>
-      <div class="prop-row align-top">
-        <label>Event(On)</label>
-        <el-input v-model="form.events" type="textarea" :rows="3" size="small" :placeholder="eventPlaceholder" />
-      </div>
-      <div v-if="form.type === 'scene'" class="prop-row">
-        <label>LinkedScene</label>
-        <el-select v-model="form.linkedSceneId" size="small" placeholder="选择场景" clearable>
-          <el-option v-for="scene in scenes" :key="scene.id" :label="scene.name" :value="scene.id" />
-        </el-select>
-      </div>
+
+      <!-- 内容设置 -->
       <template v-if="form.type === 'info'">
-        <div class="prop-row">
-          <label>标题</label>
-          <el-input v-model="infoContent.title" size="small" placeholder="信息点标题" />
-        </div>
-        <div class="prop-row align-top">
-          <label>描述</label>
-          <el-input v-model="infoContent.description" type="textarea" :rows="2" size="small" placeholder="详细描述" />
-        </div>
-        <div class="prop-row">
-          <label>图片URL</label>
-          <el-input v-model="infoContent.imageUrl" size="small" placeholder="可选图片地址" />
+        <div class="prop-card">
+          <div class="card-title">内容设置</div>
+          <div class="prop-field">
+            <label>标题</label>
+            <el-input v-model="infoContent.title" size="small" placeholder="信息点标题" />
+          </div>
+          <div class="prop-field align-top">
+            <label>描述</label>
+            <el-input v-model="infoContent.description" type="textarea" :rows="2" size="small" placeholder="详细描述" />
+          </div>
+          <div class="prop-field">
+            <label>图片URL</label>
+            <el-input v-model="infoContent.imageUrl" size="small" placeholder="可选图片地址" />
+          </div>
         </div>
       </template>
+
+      <!-- 交互设置 -->
+      <div class="prop-card">
+        <div class="card-title">交互设置</div>
+        <div class="prop-field">
+          <label>动作</label>
+          <el-select v-model="form.action" size="small" placeholder="选择动作">
+            <el-option label="无动作" value="none" />
+            <el-option label="跳转场景" value="scene" />
+            <el-option label="打开链接" value="link" />
+            <el-option label="执行脚本" value="script" />
+          </el-select>
+        </div>
+        <div v-if="form.action === 'scene'" class="prop-field">
+          <label>目标场景</label>
+          <el-select v-model="form.linkedSceneId" size="small" placeholder="选择场景" clearable>
+            <el-option v-for="scene in scenes" :key="scene.id" :label="scene.name" :value="scene.id" />
+          </el-select>
+        </div>
+        <div v-if="form.action === 'link'" class="prop-field">
+          <label>链接地址</label>
+          <el-input v-model="form.url" size="small" placeholder="https://..." />
+        </div>
+        <div v-if="form.action === 'script'" class="prop-field align-top">
+          <label>脚本代码</label>
+          <el-input v-model="form.onclick" type="textarea" :rows="3" size="small" placeholder="javascript:..." />
+        </div>
+      </div>
+
       <div class="action-buttons">
-        <el-button type="primary" size="small" :loading="applying" @click="handleApply">Apply</el-button>
         <el-button type="danger" size="small" @click="handleDelete">Delete</el-button>
       </div>
       <div class="export-row">
@@ -134,6 +164,13 @@
       <div class="coord-readout">ATH: {{ form.ath.toFixed(2) }}, ATV: {{ form.atv.toFixed(2) }}</div>
     </template>
     <div v-else class="no-selection">请从上方列表选择或添加一个热点</div>
+
+    <!-- 资源库弹窗 -->
+    <el-dialog v-model="showAssetDialog" title="选择资源" width="600px" :close-on-click-modal="true" destroy-on-close>
+      <div class="asset-dialog-content">
+        <p>资源库内容</p>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
@@ -150,17 +187,17 @@ const hotspots = computed(() => vm.hotspotViewModel.hotspots.value)
 const selectedHotspot = computed(() => vm.hotspotViewModel.selectedHotspot.value)
 const scenes = computed(() => vm.sceneViewModel.scenes.value)
 
-const applying = ref(false)
 const clearing = ref(false)
+const showAssetDialog = ref(false)
 const eventPlaceholder = '{"click":"func()"}'
 
 const typeLabels: Record<string, string> = {
   info: '信息点',
   scene: '场景跳转',
-  image: 'Image',
-  quad: 'Quad',
-  model: 'Model',
-  video: 'Video',
+  image: '图片热点',
+  quad: '矩形热点',
+  model: '3D模型热点',
+  video: '视频热点',
 }
 
 interface InfoContent {
@@ -190,7 +227,17 @@ const form = reactive({
   onclick: '',
   followZoom: false,
   content: '',
+  action: 'none' as HotspotAction,
 })
+
+type HotspotAction = 'none' | 'scene' | 'link' | 'script'
+
+const actionLabels: Record<HotspotAction, string> = {
+  none: '无动作',
+  scene: '跳转场景',
+  link: '打开链接',
+  script: '执行脚本',
+}
 
 const infoContent = reactive<InfoContent>({
   title: '',
@@ -200,7 +247,14 @@ const infoContent = reactive<InfoContent>({
 
 const showUrl = computed(() => ['image', 'quad', 'model', 'video'].includes(form.type))
 
-// 选中热点变化 -> 同步到本地草稿（不自动提交，等待 Apply）
+// 根据热点数据推断动作类型
+function inferAction(hotspot: Hotspot): HotspotAction {
+  if (hotspot.linkedSceneId) return 'scene'
+  if (hotspot.url && !['image', 'quad', 'model', 'video'].includes(hotspot.type)) return 'link'
+  if (hotspot.onclick) return 'script'
+  if (hotspot.type === 'scene') return 'scene'
+  return 'none'
+}
 watch(
   () => selectedHotspot.value,
   (hotspot) => {
@@ -225,6 +279,7 @@ watch(
     form.onclick = hotspot.onclick || ''
     form.followZoom = hotspot.followZoom ?? false
     form.content = hotspot.content || ''
+    form.action = inferAction(hotspot)
 
     if (hotspot.content) {
       try {
@@ -256,45 +311,108 @@ async function handleAdd(type: HotspotToolType) {
   await vm.addHotspot(buildHotspotParams(type, 0, 0))
 }
 
-// 显式提交：点 Apply 才写回后端
-async function handleApply() {
-  if (!selectedHotspot.value) return
-  applying.value = true
-  try {
-    let contentJson = ''
-    if (infoContent.title || infoContent.description || infoContent.imageUrl) {
-      contentJson = JSON.stringify({
-        title: infoContent.title,
-        description: infoContent.description,
-        imageUrl: infoContent.imageUrl,
-      })
-    }
-    await vm.updateHotspot(selectedHotspot.value.id, {
-      name: form.name,
-      type: form.type,
-      tooltip: form.tooltip,
-      style: form.style,
-      ath: form.ath,
-      atv: form.atv,
-      url: form.url || undefined,
-      width: form.width,
-      height: form.height,
-      scale: form.scale,
-      rotate: form.rotate,
-      blendmode: form.blendmode || undefined,
-      linkedSceneId: form.linkedSceneId || undefined,
-      bgcolor: form.bgcolor || undefined,
-      tolerance: form.tolerance,
-      feather: form.feather,
-      events: form.events || undefined,
-      onclick: form.onclick || undefined,
-      followZoom: form.followZoom,
-      content: contentJson || undefined,
-    })
-  } finally {
-    applying.value = false
-  }
+// 自动保存（debounce）
+let autoSaveTimer: ReturnType<typeof setTimeout> | null = null
+function scheduleAutoSave() {
+  if (autoSaveTimer) clearTimeout(autoSaveTimer)
+  autoSaveTimer = setTimeout(() => {
+    if (!selectedHotspot.value) return
+    if (vm.hotspotViewModel.isDragging.value) return
+    doSave()
+  }, 500)
 }
+
+function doSave() {
+  if (!selectedHotspot.value) return
+  let contentJson = ''
+  if (infoContent.title || infoContent.description || infoContent.imageUrl) {
+    contentJson = JSON.stringify({
+      title: infoContent.title,
+      description: infoContent.description,
+      imageUrl: infoContent.imageUrl,
+    })
+  }
+
+  // 根据动作类型清理不相关字段
+  const updates: Record<string, unknown> = {
+    name: form.name,
+    type: form.type,
+    tooltip: form.tooltip,
+    style: form.style,
+    ath: form.ath,
+    atv: form.atv,
+    width: form.width,
+    height: form.height,
+    scale: form.scale,
+    rotate: form.rotate,
+    blendmode: form.blendmode || undefined,
+    bgcolor: form.bgcolor || undefined,
+    tolerance: form.tolerance,
+    feather: form.feather,
+    events: form.events || undefined,
+    followZoom: form.followZoom,
+    content: contentJson || undefined,
+  }
+
+  if (form.action === 'scene') {
+    updates.linkedSceneId = form.linkedSceneId || undefined
+    updates.url = undefined
+    updates.onclick = undefined
+  } else if (form.action === 'link') {
+    updates.url = form.url || undefined
+    updates.linkedSceneId = undefined
+    updates.onclick = undefined
+  } else if (form.action === 'script') {
+    updates.onclick = form.onclick || undefined
+    updates.linkedSceneId = undefined
+    updates.url = undefined
+  } else {
+    updates.linkedSceneId = undefined
+    updates.url = undefined
+    updates.onclick = undefined
+  }
+
+  // 媒体类型热点的 url 不受动作影响
+  if (['image', 'quad', 'model', 'video'].includes(form.type)) {
+    updates.url = form.url || undefined
+  }
+
+  vm.updateHotspot(selectedHotspot.value.id, updates)
+}
+
+// 监听表单变化自动保存
+watch(
+  () => ({
+    name: form.name,
+    type: form.type,
+    tooltip: form.tooltip,
+    style: form.style,
+    ath: form.ath,
+    atv: form.atv,
+    url: form.url,
+    width: form.width,
+    height: form.height,
+    scale: form.scale,
+    rotate: form.rotate,
+    blendmode: form.blendmode,
+    linkedSceneId: form.linkedSceneId,
+    bgcolor: form.bgcolor,
+    tolerance: form.tolerance,
+    feather: form.feather,
+    events: form.events,
+    onclick: form.onclick,
+    followZoom: form.followZoom,
+    action: form.action,
+  }),
+  () => scheduleAutoSave(),
+  { deep: true },
+)
+
+watch(
+  () => ({ title: infoContent.title, description: infoContent.description, imageUrl: infoContent.imageUrl }),
+  () => scheduleAutoSave(),
+  { deep: true },
+)
 
 function handleDelete() {
   if (!selectedHotspot.value) return
@@ -487,5 +605,61 @@ function handleExportXml() {
   text-align: center;
   color: var(--text-secondary);
   font-size: 12px;
+}
+
+/* 一键清空 */
+.clear-row {
+  display: flex;
+  justify-content: center;
+}
+
+/* 属性分组卡片 */
+.prop-card {
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  padding: 10px;
+  background: var(--bg-primary, #1e1e1e);
+}
+
+.card-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 8px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.prop-field {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.prop-field.align-top {
+  align-items: flex-start;
+}
+
+.prop-field label {
+  font-size: 12px;
+  color: var(--text-secondary);
+  min-width: 64px;
+  flex-shrink: 0;
+  text-align: right;
+}
+
+.prop-field .el-input,
+.prop-field .el-select,
+.prop-field .el-input-number {
+  flex: 1;
+}
+
+.image-actions {
+  flex: 1;
+}
+
+.asset-dialog-content {
+  padding: 12px;
 }
 </style>

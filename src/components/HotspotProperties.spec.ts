@@ -22,7 +22,7 @@ function createMockViewModel(overrides: Partial<MockViewModel> = {}) {
       atv: -19.49,
       style: 'pulsing-dot',
     },
-    {
+      {
       id: 'h2',
       sceneId: 's1',
       name: '测试热点2',
@@ -30,6 +30,15 @@ function createMockViewModel(overrides: Partial<MockViewModel> = {}) {
       ath: 45,
       atv: 10,
       url: 'https://example.com/image.jpg',
+    },
+    {
+      id: 'h3',
+      sceneId: 's1',
+      name: '测试热点3',
+      type: 'scene',
+      ath: 30,
+      atv: 15,
+      linkedSceneId: 's2',
     },
   ])
 
@@ -167,7 +176,7 @@ describe('HotspotProperties UI 重构', () => {
     it('应渲染所有热点项', () => {
       const wrapper = mountComponent(vm)
       const items = wrapper.findAll('.list-item')
-      expect(items.length).toBe(2)
+      expect(items.length).toBe(3)
     })
 
     it('应显示热点名称和类型', () => {
@@ -389,46 +398,129 @@ describe('HotspotProperties UI 重构', () => {
     })
   })
 
-  describe('12. 资源库弹窗', () => {
-    it('应显示"资源库"按钮', () => {
-      const imageMock = createMockViewModel()
-      imageMock.selectedHotspot.value = imageMock.hotspots.value.find(h => h.type === 'image') || null
+  describe('13. 交互设置 - 动作选择', () => {
+    it('交互设置区域应有动作选择下拉框', () => {
+      const wrapper = mountComponent(vm)
+      const interactionCard = wrapper.findAll('.prop-card').find(card => {
+        const title = card.find('.card-title')
+        return title.exists() && title.text().includes('交互设置')
+      })
+      expect(interactionCard).toBeDefined()
 
-      const wrapper = mountComponent(imageMock.vm)
-      const buttons = wrapper.findAll('button')
-      const assetBtn = buttons.find(b => b.text().includes('资源库'))
-      expect(assetBtn).toBeDefined()
+      const fields = interactionCard!.findAll('.prop-field')
+      const actionField = fields.find(f => {
+        const label = f.find('label')
+        return label.exists() && label.text() === '动作'
+      })
+      expect(actionField).toBeDefined()
     })
 
-    it('点击资源库按钮应打开弹窗', async () => {
-      const imageMock = createMockViewModel()
-      imageMock.selectedHotspot.value = imageMock.hotspots.value.find(h => h.type === 'image') || null
+    it('默认应显示"无动作"选项', () => {
+      const wrapper = mountComponent(vm)
+      const interactionCard = wrapper.findAll('.prop-card').find(card => {
+        const title = card.find('.card-title')
+        return title.exists() && title.text().includes('交互设置')
+      })
+      const actionSelect = interactionCard!.find('.el-select')
+      expect(actionSelect.exists()).toBe(true)
+    })
 
-      const wrapper = mountComponent(imageMock.vm)
+    it('选择"跳转场景"动作时应显示场景选择器', async () => {
+      const wrapper = mountComponent(vm)
+      const interactionCard = wrapper.findAll('.prop-card').find(card => {
+        const title = card.find('.card-title')
+        return title.exists() && title.text().includes('交互设置')
+      })
+      const actionSelect = interactionCard!.find('.el-select')
+
+      // 设置为 scene
+      await actionSelect.setValue('scene')
       await nextTick()
 
-      // 弹窗初始应关闭
-      expect(wrapper.find('.el-dialog').exists()).toBe(false)
-
-      // 点击资源库按钮
-      const buttons = wrapper.findAll('button')
-      const assetBtn = buttons.find(b => b.text().includes('资源库'))
-      if (assetBtn) {
-        await assetBtn.trigger('click')
-        await nextTick()
-
-        // 弹窗应打开
-        expect(wrapper.find('.el-dialog').exists()).toBe(true)
-        expect(wrapper.find('.el-dialog__header').text()).toContain('选择资源')
-      }
+      // 验证场景选择器出现
+      const fields = interactionCard!.findAll('.prop-field')
+      const sceneField = fields.find(f => {
+        const label = f.find('label')
+        return label.exists() && label.text() === '目标场景'
+      })
+      expect(sceneField).toBeDefined()
     })
 
-    it('弹窗中不应显示"收起资源库"按钮', async () => {
-      const imageMock = createMockViewModel()
-      imageMock.selectedHotspot.value = imageMock.hotspots.value.find(h => h.type === 'image') || null
+    it('选择"打开链接"动作时应显示链接输入框', async () => {
+      const wrapper = mountComponent(vm)
+      const interactionCard = wrapper.findAll('.prop-card').find(card => {
+        const title = card.find('.card-title')
+        return title.exists() && title.text().includes('交互设置')
+      })
+      const actionSelect = interactionCard!.find('.el-select')
 
-      const wrapper = mountComponent(imageMock.vm)
-      expect(wrapper.text()).not.toContain('收起资源库')
+      await actionSelect.setValue('link')
+      await nextTick()
+
+      const fields = interactionCard!.findAll('.prop-field')
+      const urlField = fields.find(f => {
+        const label = f.find('label')
+        return label.exists() && label.text() === '链接地址'
+      })
+      expect(urlField).toBeDefined()
+    })
+
+    it('选择"执行脚本"动作时应显示脚本输入框', async () => {
+      const wrapper = mountComponent(vm)
+      const interactionCard = wrapper.findAll('.prop-card').find(card => {
+        const title = card.find('.card-title')
+        return title.exists() && title.text().includes('交互设置')
+      })
+      const actionSelect = interactionCard!.find('.el-select')
+
+      await actionSelect.setValue('script')
+      await nextTick()
+
+      const fields = interactionCard!.findAll('.prop-field')
+      const scriptField = fields.find(f => {
+        const label = f.find('label')
+        return label.exists() && label.text() === '脚本代码'
+      })
+      expect(scriptField).toBeDefined()
+    })
+
+    it('场景类型热点应自动推断动作类型为 scene', async () => {
+      const sceneMock = createMockViewModel()
+      const sceneHotspot = sceneMock.hotspots.value.find(h => h.type === 'scene')
+      if (sceneHotspot) {
+        sceneMock.selectedHotspot.value = sceneHotspot
+      }
+
+      const wrapper = mountComponent(sceneMock.vm)
+      await nextTick()
+
+      // 验证场景选择器默认显示
+      const interactionCard = wrapper.findAll('.prop-card').find(card => {
+        const title = card.find('.card-title')
+        return title.exists() && title.text().includes('交互设置')
+      })
+      const fields = interactionCard!.findAll('.prop-field')
+      const sceneField = fields.find(f => {
+        const label = f.find('label')
+        return label.exists() && label.text() === '目标场景'
+      })
+      expect(sceneField).toBeDefined()
+    })
+
+    it('修改动作类型后应自动保存', async () => {
+      const wrapper = mountComponent(vm)
+      vm.updateHotspot.mockClear()
+
+      const interactionCard = wrapper.findAll('.prop-card').find(card => {
+        const title = card.find('.card-title')
+        return title.exists() && title.text().includes('交互设置')
+      })
+      const actionSelect = interactionCard!.find('.el-select')
+
+      await actionSelect.setValue('link')
+      await new Promise(r => setTimeout(r, 600))
+
+      expect(vm.updateHotspot).toHaveBeenCalled()
     })
   })
 })
