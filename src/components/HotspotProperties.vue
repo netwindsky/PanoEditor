@@ -52,6 +52,61 @@
         </div>
       </div>
 
+      <!-- 尺寸变换 -->
+      <div class="prop-card">
+        <div class="card-title">尺寸变换</div>
+        <div class="prop-field">
+          <label>宽度</label>
+          <el-input-number v-model="form.width" size="small" :min="0" :step="1" controls-position="right" />
+        </div>
+        <div class="prop-field">
+          <label>高度</label>
+          <el-input-number v-model="form.height" size="small" :min="0" :step="1" controls-position="right" />
+        </div>
+        <div class="prop-field">
+          <label>缩放</label>
+          <el-input-number v-model="form.scale" size="small" :min="0.001" :step="0.01" :precision="3" controls-position="right" />
+        </div>
+        <div class="prop-field">
+          <label>旋转</label>
+          <el-input-number v-model="form.rotate" size="small" :step="1" :precision="1" controls-position="right" />
+        </div>
+      </div>
+
+      <!-- 顶点坐标（仅 quad 类型） -->
+      <template v-if="form.type === 'quad'">
+        <div class="prop-card">
+          <div class="card-title">顶点坐标</div>
+          <div
+            v-for="(label, idx) in quadPointLabels"
+            :key="idx"
+            class="prop-field quad-point-row"
+          >
+            <label>{{ label }}</label>
+            <div class="quad-inputs">
+              <el-input-number
+                :model-value="quadPoints[idx]?.ath"
+                size="small"
+                :step="0.01"
+                :precision="2"
+                controls-position="right"
+                placeholder="ATH"
+                @update:model-value="(v: number) => updateQuadPoint(idx, 'ath', v)"
+              />
+              <el-input-number
+                :model-value="quadPoints[idx]?.atv"
+                size="small"
+                :step="0.01"
+                :precision="2"
+                controls-position="right"
+                placeholder="ATV"
+                @update:model-value="(v: number) => updateQuadPoint(idx, 'atv', v)"
+              />
+            </div>
+          </div>
+        </div>
+      </template>
+
       <!-- 外观样式 -->
       <div class="prop-card">
         <div class="card-title">外观样式</div>
@@ -104,22 +159,6 @@
             </div>
           </div>
         </template>
-        <div class="prop-field">
-          <label>宽度</label>
-          <el-input-number v-model="form.width" size="small" :min="0" :step="1" controls-position="right" />
-        </div>
-        <div class="prop-field">
-          <label>高度</label>
-          <el-input-number v-model="form.height" size="small" :min="0" :step="1" controls-position="right" />
-        </div>
-        <div class="prop-field">
-          <label>缩放</label>
-          <el-input-number v-model="form.scale" size="small" :min="0.001" :step="0.01" :precision="3" controls-position="right" />
-        </div>
-        <div class="prop-field">
-          <label>旋转</label>
-          <el-input-number v-model="form.rotate" size="small" :step="1" :precision="1" controls-position="right" />
-        </div>
       </div>
 
       <!-- 内容设置 -->
@@ -212,6 +251,7 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import type { EditorViewModel } from '@/viewmodels/EditorViewModel'
 import type { HotspotType, HotspotToolType, Resource } from '@/types'
 import { buildHotspotParams, buildHotspotXml } from '@/utils/hotspotFactory'
+import { parsePoints, serializePoints, type QuadPoint } from '@/utils/quadPoints'
 
 const vm = inject<EditorViewModel>('editorViewModel')!
 
@@ -320,7 +360,27 @@ const form = reactive({
   followZoom: false,
   content: '',
   action: 'none' as HotspotAction,
+  points: '',
 })
+
+const quadPoints = computed<QuadPoint[]>({
+  get() {
+    return parsePoints(form.points)
+  },
+  set(pts: QuadPoint[]) {
+    form.points = serializePoints(pts)
+  },
+})
+
+const quadPointLabels = ['左上', '右上', '右下', '左下']
+
+function updateQuadPoint(index: number, field: 'ath' | 'atv', value: number) {
+  const pts = quadPoints.value
+  if (pts.length === 4) {
+    pts[index][field] = value
+    quadPoints.value = [...pts]
+  }
+}
 
 type HotspotAction = 'none' | 'scene' | 'link' | 'script'
 
@@ -379,6 +439,7 @@ watch(
     form.followZoom = hotspot.followZoom ?? false
     form.content = hotspot.content || ''
     form.action = isSameHotspotRefresh ? previousAction : inferAction(hotspot)
+    form.points = hotspot.points || ''
 
     if (hotspot.content) {
       try {
@@ -451,6 +512,7 @@ function doSave() {
     events: form.events || undefined,
     followZoom: form.followZoom,
     content: contentJson || undefined,
+    points: form.points || undefined,
   }
 
   if (form.action === 'scene') {
@@ -502,6 +564,7 @@ watch(
     onclick: form.onclick,
     followZoom: form.followZoom,
     action: form.action,
+    points: form.points,
   }),
   () => scheduleAutoSave(),
   { deep: true },
@@ -633,6 +696,16 @@ function handleExportXml() {
   justify-content: center;
   gap: 8px;
   flex-wrap: wrap;
+}
+
+.quad-point-row .quad-inputs {
+  flex: 1;
+  display: flex;
+  gap: 6px;
+}
+
+.quad-point-row .quad-inputs .el-input-number {
+  flex: 1;
 }
 
 /* 属性区标题 */

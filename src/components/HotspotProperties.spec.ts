@@ -891,3 +891,100 @@ describe('HotspotProperties UI 重构', () => {
     })
   })
 })
+
+describe('15. 四边形标注 - 顶点坐标', () => {
+  function createQuadMock() {
+    const mock = createMockViewModel()
+    const quadHotspot: Hotspot = {
+      id: 'hq1',
+      sceneId: 's1',
+      name: '四边形标注1',
+      type: 'quad',
+      ath: 0,
+      atv: 0,
+      points: '-0.72 -11.02 7.23 -12.24 7.55 7.62 -0.86 6.59',
+      url: 'https://example.com/quad.jpg',
+    }
+    mock.hotspots.value.push(quadHotspot)
+    mock.selectedHotspot.value = quadHotspot
+    return mock
+  }
+
+  it('quad 类型应显示"顶点坐标"分组', () => {
+    const { vm } = createQuadMock()
+    const wrapper = mountComponent(vm)
+    const titles = wrapper.findAll('.card-title')
+    const vertexTitle = titles.find(t => t.text().includes('顶点坐标'))
+    expect(vertexTitle).toBeDefined()
+  })
+
+  it('应渲染四个顶点输入行（左上/右上/右下/左下）', () => {
+    const { vm } = createQuadMock()
+    const wrapper = mountComponent(vm)
+    const vertexCard = wrapper.findAll('.prop-card').find(card => {
+      const title = card.find('.card-title')
+      return title.exists() && title.text().includes('顶点坐标')
+    })
+    expect(vertexCard).toBeDefined()
+
+    const rows = vertexCard!.findAll('.quad-point-row')
+    expect(rows.length).toBe(4)
+
+    const labels = rows.map(r => r.find('label').text())
+    expect(labels).toEqual(['左上', '右上', '右下', '左下'])
+  })
+
+  it('应正确解析并显示 points 字符串为坐标输入框', () => {
+    const { vm } = createQuadMock()
+    const wrapper = mountComponent(vm)
+    const vertexCard = wrapper.findAll('.prop-card').find(card => {
+      const title = card.find('.card-title')
+      return title.exists() && title.text().includes('顶点坐标')
+    })
+    const rows = vertexCard!.findAll('.quad-point-row')
+
+    // 左上: -0.72, -11.02
+    const leftTopInputs = rows[0].findAll('.el-input-number')
+    expect(leftTopInputs[0].attributes('value')).toBe('-0.72')
+    expect(leftTopInputs[1].attributes('value')).toBe('-11.02')
+
+    // 右上: 7.23, -12.24
+    const rightTopInputs = rows[1].findAll('.el-input-number')
+    expect(rightTopInputs[0].attributes('value')).toBe('7.23')
+    expect(rightTopInputs[1].attributes('value')).toBe('-12.24')
+  })
+
+  it('修改坐标后应自动保存 points 字段', async () => {
+    const { vm } = createQuadMock()
+    const wrapper = mountComponent(vm)
+    vm.updateHotspot.mockClear()
+
+    const vertexCard = wrapper.findAll('.prop-card').find(card => {
+      const title = card.find('.card-title')
+      return title.exists() && title.text().includes('顶点坐标')
+    })
+    const rows = vertexCard!.findAll('.quad-point-row')
+
+    // 直接修改 input 值并触发 input 事件
+    const athInputEl = rows[0].findAll('.el-input-number')[0].element as HTMLInputElement
+    athInputEl.value = '1.00'
+    await rows[0].findAll('.el-input-number')[0].trigger('input')
+
+    // 等待 debounce 自动保存触发
+    await new Promise(r => setTimeout(r, 600))
+    await nextTick()
+
+    expect(vm.updateHotspot).toHaveBeenCalled()
+    const callArgs = vm.updateHotspot.mock.calls[0]
+    expect(callArgs[0]).toBe('hq1')
+    expect(callArgs[1].points).toContain('1')
+  })
+
+  it('非 quad 类型不应显示顶点坐标分组', () => {
+    const { vm } = createMockViewModel()
+    const wrapper = mountComponent(vm)
+    const titles = wrapper.findAll('.card-title')
+    const vertexTitle = titles.find(t => t.text().includes('顶点坐标'))
+    expect(vertexTitle).toBeUndefined()
+  })
+})
