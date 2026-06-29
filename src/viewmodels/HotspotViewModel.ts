@@ -98,19 +98,32 @@ export class HotspotViewModel {
   updateDrag(deltaX: number, deltaY: number): void {
     if (!this.draggingHotspotId.value) return
 
-    const hotspot = this.hotspots.value.find(
-      (h) => h.id === this.draggingHotspotId.value
-    )
+    const hotspot = this.getDraggingHotspot()
     if (!hotspot) return
 
     // 像素差转换为球坐标差
     const sensitivity = 0.1
-    hotspot.ath += deltaX * sensitivity
-    hotspot.atv -= deltaY * sensitivity
+    this.setHotspotCoords(hotspot, hotspot.ath + deltaX * sensitivity, hotspot.atv - deltaY * sensitivity)
+  }
 
-    // 限制范围
-    hotspot.ath = ((hotspot.ath + 180) % 360) - 180
-    hotspot.atv = Math.max(-90, Math.min(90, hotspot.atv))
+  updateDragToCoords(ath: number, atv: number): void {
+    if (!this.draggingHotspotId.value) return
+
+    const hotspot = this.getDraggingHotspot()
+    if (!hotspot) return
+
+    this.setHotspotCoords(hotspot, ath, atv)
+  }
+
+  private getDraggingHotspot(): Hotspot | undefined {
+    return this.hotspots.value.find(
+      (h) => h.id === this.draggingHotspotId.value
+    )
+  }
+
+  private setHotspotCoords(hotspot: Hotspot, ath: number, atv: number): void {
+    hotspot.ath = ((ath + 180) % 360) - 180
+    hotspot.atv = Math.max(-90, Math.min(90, atv))
   }
 
   endDrag(): void {

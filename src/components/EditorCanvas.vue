@@ -88,16 +88,13 @@ function handlePointerDown(e: PointerEvent) {
 // quad/image/model 会自动补齐引擎所需的 points/url 默认值，避免创建即报错。
 
 function handlePointerMove(e: PointerEvent) {
-  if (vm.hotspotViewModel.isDragging.value) {
+  if (vm.hotspotViewModel.isDragging.value && engine) {
     const id = vm.hotspotViewModel.draggingHotspotId.value
-    vm.hotspotViewModel.updateDrag(e.movementX, e.movementY)
-    // 增量移动单个热点，避免全量销毁/重建所有热点（拖拽期间每帧触发会导致严重卡顿）
-    if (engine && id) {
-      const sensitivity = 0.1
-      const deltaAth = e.movementX * sensitivity
-      const deltaAtv = -e.movementY * sensitivity
-      engine.moveHotspot(id, deltaAth, deltaAtv)
-    }
+    if (!id) return
+
+    const coords = engine.getCoordsFromPoint(e.clientX, e.clientY)
+    vm.hotspotViewModel.updateDragToCoords(coords.ath, coords.atv)
+    engine.moveHotspotTo(id, coords.ath, coords.atv)
   }
 }
 

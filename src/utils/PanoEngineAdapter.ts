@@ -209,6 +209,13 @@ export class PanoEngineAdapter {
   }
 
   /**
+   * 将热点移动到绝对球坐标
+   */
+  public moveHotspotTo(hotspotId: string, ath: number, atv: number): void {
+    this.engine.hotspotsManager.updateHotspotPosition(hotspotId, ath, atv)
+  }
+
+  /**
    * 通过 3D 射线或 DOM 查找点击位置命中的热点
    * @returns 命中的热点 ID（name），未命中返回 null
    */
