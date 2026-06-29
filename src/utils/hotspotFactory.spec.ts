@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest'
 import {
   buildHotspotParams,
   buildHotspotXml,
+  DEFAULT_IMAGE_HOTSPOT_URL,
   PLACEHOLDER_QUAD_URL,
 } from './hotspotFactory'
 import type { Hotspot } from '@/types'
@@ -19,10 +20,14 @@ describe('buildHotspotParams', () => {
     expect(p.style).toBe('pulsing-dot')
   })
 
-  it('image 类型带非空 url（满足引擎 !data.url 校验）', () => {
+  it('image 类型默认使用 custom-image 样式并给出可见尺寸，与 info 点标注区分开', () => {
     const p = buildHotspotParams('image', 0, 0)
     expect(p.type).toBe('image')
-    expect(p.url).toBeTruthy()
+    expect(p.style).toBe('custom-image')
+    expect(p.url).toBe(DEFAULT_IMAGE_HOTSPOT_URL)
+    expect(p.width).toBeGreaterThan(0)
+    expect(p.height).toBeGreaterThan(0)
+    expect(p.points).toBeUndefined()
   })
 
   it('quad 类型同时带 points 与 url，避免 "missing points or url"', () => {

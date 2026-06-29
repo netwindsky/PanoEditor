@@ -97,7 +97,7 @@ export class PanoEngineAdapter {
    * 将后端 Hotspot 数据转换为 PanoViewV2 标准库的 Hotspot 格式
    */
   private toPanoHotspot(hotspot: Hotspot): PanoHotspot {
-    const resolvedStyle = hotspot.style || 'pulsing-dot'
+    const resolvedStyle = hotspot.style || (hotspot.type === 'image' ? 'custom-image' : 'pulsing-dot')
     // pulsing-dot 等“0 宽容器 + 子元素”预设：.hotspot 基类是 display:flex，
     // 容器宽 0 会把内部圆点子元素挤压成 4px 宽的“竖白条”。
     // 引擎 applyStyle 中 data.width 优先于预设宽度，故在调用层给这类 DOM 点

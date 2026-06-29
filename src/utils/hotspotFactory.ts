@@ -9,6 +9,8 @@ import type { CreateHotspotParams, Hotspot, HotspotToolType } from '@/types'
 export const PLACEHOLDER_QUAD_URL =
   'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=='
 
+export const DEFAULT_IMAGE_HOTSPOT_URL = '/assets/images/image.jpg'
+
 /** 各类型热点的默认名称 */
 const DEFAULT_NAMES: Record<HotspotToolType, string> = {
   info: '信息点',
@@ -48,8 +50,14 @@ export function buildHotspotParams(
     return { ...base, points, url: PLACEHOLDER_QUAD_URL, bgcolor: '#3b82f6' }
   }
 
-  if (type === 'image' || type === 'model') {
-    // image/model 需要非空 url 才能被引擎渲染
+  if (type === 'image') {
+    // image 是 DOM 图片热点：必须显式使用 custom-image，并提供可见尺寸，
+    // 否则 adapter 会把无 style 的热点兜底成 pulsing-dot，表现得像信息点。
+    return { ...base, style: 'custom-image', url: DEFAULT_IMAGE_HOTSPOT_URL, width: 120, height: 80 }
+  }
+
+  if (type === 'model') {
+    // model 需要非空 url 才能被引擎渲染
     return { ...base, url: PLACEHOLDER_QUAD_URL }
   }
 
