@@ -3,7 +3,11 @@ node_modules/
 
 # 构建输出
 dist/
+publish/
 *.local
+
+# Vite 缓存
+.vite/
 
 # 编辑器
 .vscode/*
