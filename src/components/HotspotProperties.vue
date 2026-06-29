@@ -86,7 +86,21 @@
           <div class="prop-field">
             <label>贴图</label>
             <div class="image-actions">
-              <el-button size="small" @click="showAssetDialog = true">资源库</el-button>
+              <el-button size="small" @click="triggerFilePicker">上传</el-button>
+              <el-button size="small" @click="openAssetDialog">资源库</el-button>
+              <input
+                ref="fileInputRef"
+                type="file"
+                accept="image/*"
+                class="image-file-input"
+                @change="handleFileSelected"
+              />
+            </div>
+          </div>
+          <div v-if="form.url" class="prop-field image-preview-row">
+            <label>预览</label>
+            <div class="image-preview">
+              <img :src="form.url" :alt="form.name || '预览'" />
             </div>
           </div>
         </template>
@@ -168,7 +182,25 @@
     <!-- 资源库弹窗 -->
     <el-dialog v-model="showAssetDialog" title="选择资源" width="600px" :close-on-click-modal="true" destroy-on-close>
       <div class="asset-dialog-content">
-        <p>资源库内容</p>
+        <div v-if="assetList.length === 0" class="asset-empty">暂无资源，请先上传</div>
+        <ul v-else class="asset-list">
+          <li
+            v-for="resource in assetList"
+            :key="resource.id"
+            class="asset-item"
+            @click="selectAsset(resource)"
+          >
+            <img
+              class="asset-thumb"
+              :src="resource.thumbUrl || resource.url"
+              :alt="resource.name"
+            />
+            <div class="asset-meta">
+              <div class="asset-name">{{ resource.name }}</div>
+              <div class="asset-sub">{{ resource.type }} · {{ formatSize(resource.sizeBytes) }}</div>
+            </div>
+          </li>
+        </ul>
       </div>
     </el-dialog>
   </div>
@@ -178,7 +210,7 @@
 import { inject, reactive, ref, computed, watch } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import type { EditorViewModel } from '@/viewmodels/EditorViewModel'
-import type { HotspotType, HotspotToolType } from '@/types'
+import type { HotspotType, HotspotToolType, Resource } from '@/types'
 import { buildHotspotParams, buildHotspotXml } from '@/utils/hotspotFactory'
 
 const vm = inject<EditorViewModel>('editorViewModel')!
@@ -190,6 +222,66 @@ const scenes = computed(() => vm.sceneViewModel.scenes.value)
 const clearing = ref(false)
 const showAssetDialog = ref(false)
 const eventPlaceholder = '{"click":"func()"}'
+
+// 资源库 / 上传相关状态
+const fileInputRef = ref<HTMLInputElement | null>(null)
+const assetList = computed(() => vm.assetViewModel.resources.value)
+const currentProjectId = computed(() => vm.currentProject.value?.id || '')
+
+function triggerFilePicker() {
+  fileInputRef.value?.click()
+}
+
+async function handleFileSelected(event: Event) {
+  const input = event.target as HTMLInputElement
+  const file = input.files?.[0]
+  // 重置 input.value 以便重复选择同名文件
+  input.value = ''
+  if (!file) return
+  const projectId = currentProjectId.value
+  if (!projectId) {
+    ElMessage.error('项目信息缺失，无法上传')
+    return
+  }
+  // 上传前快照当前 resources 长度，上传后取最后一项作为新资源
+  const before = assetList.value.length
+  try {
+    await vm.uploadResource(projectId, file, 'image')
+    if (assetList.value.length > before) {
+      const newResource = assetList.value[assetList.value.length - 1]
+      form.url = newResource.url
+    }
+    ElMessage.success('上传成功')
+  } catch (err) {
+    ElMessage.error('上传失败，请重试')
+  }
+}
+
+function openAssetDialog() {
+  showAssetDialog.value = true
+  const projectId = currentProjectId.value
+  if (projectId) {
+    // 加载当前项目的图片资源
+    void vm.assetViewModel.loadResources(projectId, 'image')
+  }
+}
+
+function selectAsset(resource: Resource) {
+  form.url = resource.url
+  showAssetDialog.value = false
+}
+
+function formatSize(bytes: number): string {
+  if (!bytes || bytes <= 0) return '0 B'
+  const units = ['B', 'KB', 'MB', 'GB']
+  let value = bytes
+  let i = 0
+  while (value >= 1024 && i < units.length - 1) {
+    value /= 1024
+    i++
+  }
+  return `${value.toFixed(value >= 10 || i === 0 ? 0 : 1)} ${units[i]}`
+}
 
 const typeLabels: Record<string, string> = {
   info: '信息点',
@@ -657,9 +749,98 @@ function handleExportXml() {
 
 .image-actions {
   flex: 1;
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.image-file-input {
+  display: none;
+}
+
+.image-preview-row {
+  align-items: flex-start;
+}
+
+.image-preview {
+  flex: 1;
+  border: 1px solid var(--border-color, #3a3a3a);
+  border-radius: 4px;
+  padding: 6px;
+  background: var(--bg-primary, #1e1e1e);
+  min-height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.image-preview img {
+  max-width: 100%;
+  max-height: 160px;
+  object-fit: contain;
+  display: block;
 }
 
 .asset-dialog-content {
   padding: 12px;
+}
+
+.asset-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 8px;
+}
+
+.asset-item {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--border-color, #3a3a3a);
+  border-radius: 4px;
+  background: var(--bg-primary, #1e1e1e);
+  cursor: pointer;
+  overflow: hidden;
+  transition: border-color 0.15s, transform 0.15s;
+}
+
+.asset-item:hover {
+  border-color: var(--accent, #409eff);
+  transform: translateY(-1px);
+}
+
+.asset-thumb {
+  width: 100%;
+  height: 90px;
+  object-fit: cover;
+  background: #000;
+  display: block;
+}
+
+.asset-meta {
+  padding: 6px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.asset-name {
+  font-size: 12px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.asset-sub {
+  font-size: 11px;
+  color: var(--text-secondary, #999);
+}
+
+.asset-empty {
+  padding: 20px;
+  text-align: center;
+  color: var(--text-secondary, #999);
+  font-size: 13px;
 }
 </style>

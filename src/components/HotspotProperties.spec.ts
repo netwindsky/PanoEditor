@@ -48,7 +48,30 @@ function createMockViewModel(overrides: Partial<MockViewModel> = {}) {
     { id: 's2', projectId: 'p1', name: '场景2', previewUrl: '', thumbUrl: '', imageConfig: '', status: '', initialView: { hfov: 120, pitch: 0, yaw: 0 }, order: 1, createdAt: '', updatedAt: '' },
   ])
 
-  const resources = ref<Resource[]>([])
+  const resources = ref<Resource[]>([
+    {
+      id: 'r1',
+      projectId: 'p1',
+      name: 'sample-1.png',
+      type: 'image',
+      mimeType: 'image/png',
+      sizeBytes: 1024,
+      url: 'https://example.com/sample-1.png',
+      thumbUrl: 'https://example.com/sample-1.png',
+      createdAt: '',
+    },
+    {
+      id: 'r2',
+      projectId: 'p1',
+      name: 'sample-2.jpg',
+      type: 'image',
+      mimeType: 'image/jpeg',
+      sizeBytes: 2048,
+      url: 'https://example.com/sample-2.jpg',
+      thumbUrl: 'https://example.com/sample-2.jpg',
+      createdAt: '',
+    },
+  ])
 
   const vm = {
     hotspotViewModel: {
@@ -70,14 +93,55 @@ function createMockViewModel(overrides: Partial<MockViewModel> = {}) {
     },
     assetViewModel: {
       resources,
-      loadResources: vi.fn(),
-      uploadResource: vi.fn(),
+      loadResources: vi.fn(async (projectId: string, type?: string) => {
+        // 默认 mock 行为：保留现有 resources，测试可在外部覆盖
+        return resources.value
+      }),
+      uploadResource: vi.fn(async (projectId: string, file: File, type: string) => {
+        // 默认 mock 行为：基于文件信息生成一个新资源并 push 到 resources
+        const newResource: Resource = {
+          id: `r-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+          projectId,
+          name: file.name,
+          type,
+          mimeType: file.type || 'image/png',
+          sizeBytes: file.size,
+          url: `https://example.com/uploads/${encodeURIComponent(file.name)}`,
+          thumbUrl: `https://example.com/uploads/${encodeURIComponent(file.name)}`,
+          createdAt: new Date().toISOString(),
+        }
+        resources.value.push(newResource)
+      }),
     },
     currentProject: ref({ id: 'p1', name: '测试项目', description: '', coverUrl: '', sceneCount: 1, createdAt: '', updatedAt: '' }),
     addHotspot: vi.fn(),
     removeHotspot: vi.fn(),
     clearAllHotspots: vi.fn(),
-    updateHotspot: vi.fn(),
+    updateHotspot: vi.fn(async (hotspotId: string, params: Record<string, unknown>) => {
+      // 默认 mock 行为：模拟真实 HotspotViewModel.updateHotspot —— 用 params 合并更新 hotspots 列表中的条目，并刷新 selectedHotspot
+      const index = hotspots.value.findIndex((h) => h.id === hotspotId)
+      if (index !== -1) {
+        hotspots.value[index] = { ...hotspots.value[index], ...params } as Hotspot
+        if (selectedHotspot.value?.id === hotspotId) {
+          selectedHotspot.value = hotspots.value[index]
+        }
+      }
+    }),
+    uploadResource: vi.fn(async (projectId: string, file: File, type: 'panorama' | 'image' | 'video' | 'audio') => {
+      // 默认 mock 行为：委托给 assetViewModel.uploadResource
+      const newResource: Resource = {
+        id: `r-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+        projectId,
+        name: file.name,
+        type,
+        mimeType: file.type || 'image/png',
+        sizeBytes: file.size,
+        url: `https://example.com/uploads/${encodeURIComponent(file.name)}`,
+        thumbUrl: `https://example.com/uploads/${encodeURIComponent(file.name)}`,
+        createdAt: new Date().toISOString(),
+      }
+      resources.value.push(newResource)
+    }),
     ...overrides,
   }
 
@@ -521,6 +585,276 @@ describe('HotspotProperties UI 重构', () => {
       await new Promise(r => setTimeout(r, 600))
 
       expect(vm.updateHotspot).toHaveBeenCalled()
+    })
+  })
+
+  describe('14. 图片热点 - 资源管理（上传/预览/资源库）', () => {
+    // 选取当前 mock 中 image 类型的热点（默认 mock 里 h2 是 image 类型）
+    function selectImageHotspot(mock: ReturnType<typeof createMockViewModel>) {
+      const imageHotspot = mock.hotspots.value.find(h => h.type === 'image')
+      if (imageHotspot) {
+        mock.selectedHotspot.value = imageHotspot
+      }
+      return imageHotspot
+    }
+
+    // 找到"贴图" prop-field
+    function findTextureField(wrapper: ReturnType<typeof mountComponent>) {
+      return wrapper.findAll('.prop-field').find(f => {
+        const label = f.find('label')
+        return label.exists() && label.text() === '贴图'
+      })
+    }
+
+    describe('14.1 图片类型操作按钮', () => {
+      it('image 类型应显示"上传"和"资源库"按钮', async () => {
+        const imageMock = createMockViewModel()
+        selectImageHotspot(imageMock)
+        const wrapper = mountComponent(imageMock.vm)
+        await nextTick()
+
+        const textureField = findTextureField(wrapper)
+        expect(textureField).toBeDefined()
+
+        const buttons = textureField!.findAll('button')
+        const labels = buttons.map(b => b.text())
+        expect(labels).toContain('上传')
+        expect(labels).toContain('资源库')
+      })
+
+      it('非 image 类型不应显示"贴图"字段', () => {
+        const wrapper = mountComponent(vm) // 默认 info 类型
+        const textureField = findTextureField(wrapper)
+        expect(textureField).toBeUndefined()
+      })
+    })
+
+    describe('14.2 URL 图片预览', () => {
+      it('URL 有值时应显示图片预览', async () => {
+        const imageMock = createMockViewModel()
+        const imageHotspot = selectImageHotspot(imageMock)
+        expect(imageHotspot?.url).toBe('https://example.com/image.jpg')
+        const wrapper = mountComponent(imageMock.vm)
+        await nextTick()
+
+        const preview = wrapper.find('.image-preview')
+        expect(preview.exists()).toBe(true)
+        const img = preview.find('img')
+        expect(img.exists()).toBe(true)
+        expect(img.attributes('src')).toBe('https://example.com/image.jpg')
+      })
+
+      it('URL 为空时应隐藏图片预览', async () => {
+        const imageMock = createMockViewModel()
+        const imageHotspot = selectImageHotspot(imageMock)
+        if (imageHotspot) imageHotspot.url = ''
+        const wrapper = mountComponent(imageMock.vm)
+        await nextTick()
+
+        const preview = wrapper.find('.image-preview')
+        expect(preview.exists()).toBe(false)
+      })
+    })
+
+    describe('14.3 上传图片', () => {
+      it('image 类型应渲染隐藏的文件输入框', async () => {
+        const imageMock = createMockViewModel()
+        selectImageHotspot(imageMock)
+        const wrapper = mountComponent(imageMock.vm)
+        await nextTick()
+
+        const fileInput = wrapper.find('input[type="file"]')
+        expect(fileInput.exists()).toBe(true)
+      })
+
+      it('点击上传按钮应触发文件输入框的 click', async () => {
+        const imageMock = createMockViewModel()
+        selectImageHotspot(imageMock)
+        const wrapper = mountComponent(imageMock.vm)
+        await nextTick()
+
+        const fileInput = wrapper.find('input[type="file"]').element as HTMLInputElement
+        const clickSpy = vi.spyOn(fileInput, 'click')
+
+        const textureField = findTextureField(wrapper)
+        const uploadBtn = textureField!.findAll('button').find(b => b.text() === '上传')
+        expect(uploadBtn).toBeDefined()
+        await uploadBtn!.trigger('click')
+
+        expect(clickSpy).toHaveBeenCalled()
+      })
+
+      it('选择文件后应调用 uploadResource', async () => {
+        const imageMock = createMockViewModel()
+        selectImageHotspot(imageMock)
+        imageMock.vm.uploadResource.mockClear()
+
+        const wrapper = mountComponent(imageMock.vm)
+        await nextTick()
+
+        const file = new File(['test-image-bytes'], 'uploaded.png', { type: 'image/png' })
+        const fileInput = wrapper.find('input[type="file"]')
+        Object.defineProperty(fileInput.element, 'files', {
+          value: [file],
+          configurable: true,
+        })
+        await fileInput.trigger('change')
+        await flushPromises()
+
+        expect(imageMock.vm.uploadResource).toHaveBeenCalledTimes(1)
+        const callArgs = imageMock.vm.uploadResource.mock.calls[0]
+        // projectId, file, type
+        expect(callArgs[0]).toBe('p1')
+        expect(callArgs[1]).toBe(file)
+        expect(callArgs[2]).toBe('image')
+      })
+
+      it('上传成功后应将 URL 设置为新资源的 URL', async () => {
+        const imageMock = createMockViewModel()
+        const imageHotspot = selectImageHotspot(imageMock)
+        const hotspotId = imageHotspot?.id
+        if (imageHotspot) imageHotspot.url = ''
+
+        // 显式覆盖 mock：上传一个固定 URL 的资源
+        imageMock.vm.uploadResource.mockImplementationOnce(async () => {
+          const newResource: Resource = {
+            id: 'r-uploaded',
+            projectId: 'p1',
+            name: 'uploaded.png',
+            type: 'image',
+            mimeType: 'image/png',
+            sizeBytes: 12,
+            url: 'https://example.com/uploads/uploaded.png',
+            thumbUrl: 'https://example.com/uploads/uploaded.png',
+            createdAt: '',
+          }
+          imageMock.resources.value.push(newResource)
+        })
+
+        const wrapper = mountComponent(imageMock.vm)
+        await nextTick()
+
+        const file = new File(['x'], 'uploaded.png', { type: 'image/png' })
+        const fileInput = wrapper.find('input[type="file"]')
+        Object.defineProperty(fileInput.element, 'files', {
+          value: [file],
+          configurable: true,
+        })
+        await fileInput.trigger('change')
+        await flushPromises()
+        // 等待 debounce 自动保存触发
+        await new Promise(r => setTimeout(r, 600))
+        await nextTick()
+
+        // 重新从 hotspots 数组里按 id 查找（mock updateHotspot 会创建新对象）
+        const updated = imageMock.hotspots.value.find(h => h.id === hotspotId)
+        expect(updated?.url).toBe('https://example.com/uploads/uploaded.png')
+      })
+
+      it('上传完成后应清空文件输入框的 value 以便重复上传同名文件', async () => {
+        const imageMock = createMockViewModel()
+        selectImageHotspot(imageMock)
+        const wrapper = mountComponent(imageMock.vm)
+        await nextTick()
+
+        const file = new File(['y'], 'dup.png', { type: 'image/png' })
+        const fileInput = wrapper.find('input[type="file"]')
+        Object.defineProperty(fileInput.element, 'files', {
+          value: [file],
+          configurable: true,
+        })
+        await fileInput.trigger('change')
+        await flushPromises()
+
+        expect((fileInput.element as HTMLInputElement).value).toBe('')
+      })
+    })
+
+    describe('14.4 资源库弹窗', () => {
+      it('点击资源库按钮应打开资源选择对话框', async () => {
+        const imageMock = createMockViewModel()
+        selectImageHotspot(imageMock)
+        const wrapper = mountComponent(imageMock.vm)
+        await nextTick()
+
+        // 初始：对话框不应渲染（modelValue=false 时 el-dialog 模板用 v-if 隐藏）
+        expect(wrapper.find('.el-dialog').exists()).toBe(false)
+
+        const textureField = findTextureField(wrapper)
+        const libraryBtn = textureField!.findAll('button').find(b => b.text() === '资源库')
+        expect(libraryBtn).toBeDefined()
+        await libraryBtn!.trigger('click')
+        await nextTick()
+
+        const dialog = wrapper.find('.el-dialog')
+        expect(dialog.exists()).toBe(true)
+        expect(dialog.text()).toContain('选择资源')
+      })
+
+      it('打开资源库时应调用 loadResources 加载资源列表', async () => {
+        const imageMock = createMockViewModel()
+        selectImageHotspot(imageMock)
+        imageMock.vm.assetViewModel.loadResources.mockClear()
+        const wrapper = mountComponent(imageMock.vm)
+        await nextTick()
+
+        const textureField = findTextureField(wrapper)
+        const libraryBtn = textureField!.findAll('button').find(b => b.text() === '资源库')
+        await libraryBtn!.trigger('click')
+        await nextTick()
+
+        expect(imageMock.vm.assetViewModel.loadResources).toHaveBeenCalled()
+        const args = imageMock.vm.assetViewModel.loadResources.mock.calls[0]
+        expect(args[0]).toBe('p1') // projectId
+      })
+
+      it('对话框打开后应列出当前 resources 列表', async () => {
+        const imageMock = createMockViewModel()
+        selectImageHotspot(imageMock)
+        const wrapper = mountComponent(imageMock.vm)
+        await nextTick()
+
+        const textureField = findTextureField(wrapper)
+        const libraryBtn = textureField!.findAll('button').find(b => b.text() === '资源库')
+        await libraryBtn!.trigger('click')
+        await nextTick()
+
+        const dialogBody = wrapper.find('.el-dialog__body')
+        expect(dialogBody.exists()).toBe(true)
+        // 默认 mock resources 中有 sample-1.png 和 sample-2.jpg
+        expect(dialogBody.text()).toContain('sample-1.png')
+        expect(dialogBody.text()).toContain('sample-2.jpg')
+      })
+
+      it('点击资源项应设置 URL 并关闭对话框', async () => {
+        const imageMock = createMockViewModel()
+        const imageHotspot = selectImageHotspot(imageMock)
+        const hotspotId = imageHotspot?.id
+        if (imageHotspot) imageHotspot.url = ''
+        const wrapper = mountComponent(imageMock.vm)
+        await nextTick()
+
+        const textureField = findTextureField(wrapper)
+        const libraryBtn = textureField!.findAll('button').find(b => b.text() === '资源库')
+        await libraryBtn!.trigger('click')
+        await nextTick()
+
+        // 找到第一个资源项并点击
+        const firstItem = wrapper.find('.asset-item')
+        expect(firstItem.exists()).toBe(true)
+        await firstItem.trigger('click')
+        await nextTick()
+        // 等待 debounce 自动保存触发
+        await new Promise(r => setTimeout(r, 600))
+        await nextTick()
+
+        // 重新从 hotspots 数组里按 id 查找（mock updateHotspot 会创建新对象）
+        const updated = imageMock.hotspots.value.find(h => h.id === hotspotId)
+        // URL 应被设置为第一个资源的 URL
+        expect(updated?.url).toBe('https://example.com/sample-1.png')
+        // 对话框应关闭
+        expect(wrapper.find('.el-dialog').exists()).toBe(false)
+      })
     })
   })
 })
