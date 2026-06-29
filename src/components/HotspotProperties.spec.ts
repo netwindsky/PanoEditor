@@ -571,9 +571,15 @@ describe('HotspotProperties UI 重构', () => {
       expect(sceneField).toBeDefined()
     })
 
-    it('修改动作类型后应自动保存', async () => {
-      const wrapper = mountComponent(vm)
-      vm.updateHotspot.mockClear()
+    it('同一热点自动保存刷新后不应把已选择动作重置为无动作', async () => {
+      const imageMock = createMockViewModel()
+      const imageHotspot = imageMock.hotspots.value.find(h => h.type === 'image')
+      if (imageHotspot) {
+        imageMock.selectedHotspot.value = imageHotspot
+      }
+      const wrapper = mountComponent(imageMock.vm)
+      await nextTick()
+      imageMock.vm.updateHotspot.mockClear()
 
       const interactionCard = wrapper.findAll('.prop-card').find(card => {
         const title = card.find('.card-title')
@@ -583,8 +589,10 @@ describe('HotspotProperties UI 重构', () => {
 
       await actionSelect.setValue('link')
       await new Promise(r => setTimeout(r, 600))
+      await nextTick()
 
-      expect(vm.updateHotspot).toHaveBeenCalled()
+      expect(imageMock.vm.updateHotspot).toHaveBeenCalled()
+      expect((actionSelect.element as HTMLSelectElement).value).toBe('link')
     })
   })
 

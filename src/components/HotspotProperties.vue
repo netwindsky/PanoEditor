@@ -347,10 +347,17 @@ function inferAction(hotspot: Hotspot): HotspotAction {
   if (hotspot.type === 'scene') return 'scene'
   return 'none'
 }
+let loadedHotspotId = ''
 watch(
   () => selectedHotspot.value,
   (hotspot) => {
-    if (!hotspot) return
+    if (!hotspot) {
+      loadedHotspotId = ''
+      return
+    }
+    const isSameHotspotRefresh = loadedHotspotId === hotspot.id
+    const previousAction = form.action
+    loadedHotspotId = hotspot.id
     form.name = hotspot.name
     form.type = hotspot.type || 'info'
     form.tooltip = hotspot.tooltip || ''
@@ -371,7 +378,7 @@ watch(
     form.onclick = hotspot.onclick || ''
     form.followZoom = hotspot.followZoom ?? false
     form.content = hotspot.content || ''
-    form.action = inferAction(hotspot)
+    form.action = isSameHotspotRefresh ? previousAction : inferAction(hotspot)
 
     if (hotspot.content) {
       try {
