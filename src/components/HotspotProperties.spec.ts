@@ -709,6 +709,31 @@ describe('HotspotProperties UI 重构', () => {
         expect(callArgs[2]).toBe('image')
       })
 
+      it('选择文件时应兼容真实 ViewModel 无 currentProject 的情况', async () => {
+        const imageMock = createMockViewModel()
+        selectImageHotspot(imageMock)
+        imageMock.vm.uploadResource.mockClear()
+        const vmWithoutCurrentProject = imageMock.vm as Omit<typeof imageMock.vm, 'currentProject'> & {
+          currentProject?: never
+        }
+        delete vmWithoutCurrentProject.currentProject
+
+        const wrapper = mountComponent(vmWithoutCurrentProject as typeof imageMock.vm)
+        await nextTick()
+
+        const file = new File(['test-image-bytes'], 'uploaded-with-scene-project.png', { type: 'image/png' })
+        const fileInput = wrapper.find('input[type="file"]')
+        Object.defineProperty(fileInput.element, 'files', {
+          value: [file],
+          configurable: true,
+        })
+
+        await expect(fileInput.trigger('change')).resolves.toBeUndefined()
+        await flushPromises()
+
+        expect(imageMock.vm.uploadResource).toHaveBeenCalledWith('p1', file, 'image')
+      })
+
       it('上传成功后应将 URL 设置为新资源的 URL', async () => {
         const imageMock = createMockViewModel()
         const imageHotspot = selectImageHotspot(imageMock)

@@ -226,7 +226,7 @@ const eventPlaceholder = '{"click":"func()"}'
 // 资源库 / 上传相关状态
 const fileInputRef = ref<HTMLInputElement | null>(null)
 const assetList = computed(() => vm.assetViewModel.resources.value)
-const currentProjectId = computed(() => vm.currentProject.value?.id || '')
+const currentProjectId = computed(() => vm.sceneViewModel.currentScene.value?.projectId || '')
 
 function triggerFilePicker() {
   fileInputRef.value?.click()
