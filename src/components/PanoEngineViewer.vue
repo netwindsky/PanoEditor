@@ -35,6 +35,8 @@ const container = ref<HTMLElement>()
 // 这样可以与 props.hotspots 一起用统一 watch 监听，消除"引擎就绪"与"数据就绪"的竞态。
 const engineRef = shallowRef<PanoEngineAdapter | null>(null)
 let isLoading = false  // 防止重复加载
+let pendingSceneConfig: string | null = null
+let lastHotspotsSnapshot = ''
 
 // ===== 性能埋点：统计引擎创建/场景加载次数与耗时 =====
 // 用于定位 1fps 问题：若 loadScene 被反复触发、引擎被多次 new，即为根因。
@@ -64,6 +66,14 @@ watch(
   },
 )
 
+function syncHotspotsIfChanged(engine: PanoEngineAdapter, hotspots: Hotspot[]) {
+  const snapshot = JSON.stringify(hotspots)
+  if (snapshot === lastHotspotsSnapshot) return
+  lastHotspotsSnapshot = snapshot
+  perfMark('syncHotspotsIfChanged -> syncHotspots', { count: hotspots.length })
+  engine.syncHotspots(hotspots)
+}
+
 // 统一监听"引擎实例"与"热点数据"：无论谁后就绪，最后到达的一方都会触发本 watch，
 // 在两者都就绪时同步热点，从根本上消除"引擎就绪/数据就绪"的竞态。
 // immediate:true 保证引擎首次创建后立即同步一次当前热点（含空列表清场）。
@@ -71,45 +81,57 @@ watch(
   [engineRef, () => props.hotspots] as const,
   ([engine, newHotspots]) => {
     if (!engine || !newHotspots) return
-    perfMark('watch[engine,hotspots] -> syncHotspots', { count: newHotspots.length })
-    engine.syncHotspots(newHotspots)
+    syncHotspotsIfChanged(engine, newHotspots)
   },
   { deep: true, immediate: true },
 )
 
 async function loadScene(configJson: string) {
-  if (!container.value || isLoading) return
+  if (!container.value) return
+  if (isLoading) {
+    pendingSceneConfig = configJson
+    return
+  }
   isLoading = true
   perfLoadSceneCount++
   const t0 = performance.now()
   perfMark('loadScene START')
 
-  // 销毁旧引擎
-  if (engineRef.value) {
-    engineRef.value.dispose()
-    engineRef.value = null
-    perfMark('loadScene: old engine disposed')
-  }
-
   // 等待DOM更新完成
   await nextTick()
 
   try {
-    const engine = new PanoEngineAdapter(container.value)
-    perfEngineCreateCount++
-    perfMark('loadScene: new PanoEngineAdapter created')
+    let engine = engineRef.value
+    const isNewEngine = !engine
+    if (!engine) {
+      engine = new PanoEngineAdapter(container.value)
+      perfEngineCreateCount++
+      perfMark('loadScene: new PanoEngineAdapter created')
+    } else {
+      perfMark('loadScene: reuse existing PanoEngineAdapter')
+    }
+
     const config = JSON.parse(configJson)
-    engine.loadSceneConfig(config)
+    await engine.loadSceneConfig(config)
     perfMark('loadScene: loadSceneConfig done', { ms: (performance.now() - t0).toFixed(1) })
-    // 引擎赋值给响应式 ref：触发统一 watch，在"引擎+数据均就绪"时同步热点（含空列表清场）。
-    // 无需再在此手动 syncHotspots——交由统一 watch 处理，消除竞态与重复同步。
-    engineRef.value = engine
+    if (isNewEngine) {
+      engineRef.value = engine
+    } else {
+      syncHotspotsIfChanged(engine, props.hotspots)
+    }
     emit('engine-ready', engine)
     perfMark('loadScene END', { totalMs: (performance.now() - t0).toFixed(1) })
   } catch (e) {
     console.error('Failed to load scene config:', e)
   } finally {
     isLoading = false
+    if (pendingSceneConfig && pendingSceneConfig !== configJson) {
+      const nextConfig = pendingSceneConfig
+      pendingSceneConfig = null
+      void loadScene(nextConfig)
+    } else {
+      pendingSceneConfig = null
+    }
   }
 }
 

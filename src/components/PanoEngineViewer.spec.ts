@@ -8,11 +8,12 @@ const createdEngines: Array<{
   loadSceneConfig: ReturnType<typeof vi.fn>
   dispose: ReturnType<typeof vi.fn>
 }> = []
+let nextLoadScenePromise: Promise<void> | null = null
 
 vi.mock('@/utils/PanoEngineAdapter', () => {
   class PanoEngineAdapterMock {
     syncHotspots = vi.fn()
-    loadSceneConfig = vi.fn()
+    loadSceneConfig = vi.fn(() => nextLoadScenePromise ?? Promise.resolve())
     dispose = vi.fn()
     constructor(_container: HTMLElement) {
       createdEngines.push(this as never)
@@ -44,6 +45,7 @@ function lastSyncIds(engine: { syncHotspots: ReturnType<typeof vi.fn> }): string
 describe('PanoEngineViewer 热点同步竞态', () => {
   beforeEach(() => {
     createdEngines.length = 0
+    nextLoadScenePromise = null
   })
 
   it('数据后到：引擎就绪后再填充 hotspots，引擎应收到最新热点', async () => {
@@ -124,5 +126,82 @@ describe('PanoEngineViewer 热点同步竞态', () => {
     await flushPromises()
 
     expect(lastSyncIds(engine)).toEqual([])
+  })
+
+  it('切换场景配置时应复用同一个引擎实例，不应 dispose 后重建', async () => {
+    const wrapper = mount(PanoEngineViewer, {
+      props: {
+        sceneConfig: VALID_CONFIG,
+        tilingStatus: 'READY',
+        tilingProgress: 100,
+        hotspots: [] as Hotspot[],
+      },
+    })
+    await flushPromises()
+
+    const engine = latestEngine()
+    expect(createdEngines.length).toBe(1)
+
+    const nextConfig = '{"scene":{"name":"s2"},"image":{"type":"CUBE"}}'
+    await wrapper.setProps({ sceneConfig: nextConfig })
+    await flushPromises()
+
+    expect(createdEngines.length).toBe(1)
+    expect(engine.dispose).not.toHaveBeenCalled()
+    expect(engine.loadSceneConfig).toHaveBeenCalledTimes(2)
+    expect(engine.loadSceneConfig).toHaveBeenLastCalledWith(JSON.parse(nextConfig))
+  })
+
+  it('应等待 loadSceneConfig 完成后才发送 engine-ready 并同步热点', async () => {
+    let resolveLoad!: () => void
+    nextLoadScenePromise = new Promise<void>((resolve) => {
+      resolveLoad = resolve
+    })
+    const engineReady = vi.fn()
+
+    mount(PanoEngineViewer, {
+      props: {
+        sceneConfig: VALID_CONFIG,
+        tilingStatus: 'READY',
+        tilingProgress: 100,
+        hotspots: [makeHotspot('awaited')] as Hotspot[],
+      },
+      attrs: {
+        onEngineReady: engineReady,
+      },
+    })
+    await flushPromises()
+
+    const engine = latestEngine()
+    expect(engine.loadSceneConfig).toHaveBeenCalled()
+    expect(engineReady).not.toHaveBeenCalled()
+    expect(engine.syncHotspots).not.toHaveBeenCalled()
+
+    resolveLoad()
+    await flushPromises()
+
+    expect(engineReady).toHaveBeenCalledWith(engine)
+    expect(lastSyncIds(engine)).toEqual(['awaited'])
+  })
+
+  it('相同热点快照重复传入时不应重复全量同步', async () => {
+    const hotspot = makeHotspot('same')
+    const wrapper = mount(PanoEngineViewer, {
+      props: {
+        sceneConfig: VALID_CONFIG,
+        tilingStatus: 'READY',
+        tilingProgress: 100,
+        hotspots: [hotspot] as Hotspot[],
+      },
+    })
+    await flushPromises()
+
+    const engine = latestEngine()
+    const callsAfterInitialSync = engine.syncHotspots.mock.calls.length
+
+    await wrapper.setProps({ hotspots: [{ ...hotspot }] as Hotspot[] })
+    await flushPromises()
+
+    expect(engine.syncHotspots).toHaveBeenCalledTimes(callsAfterInitialSync)
   })
 })

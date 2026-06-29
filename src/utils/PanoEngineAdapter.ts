@@ -28,7 +28,7 @@ export class PanoEngineAdapter {
    * 从后端 JSON 配置加载全景场景。
    * @param config 后端生成的场景配置（JSON 对象或 SceneData 数组）
    */
-  public loadSceneConfig(config: SceneData | SceneData[] | Record<string, any>): void {
+  public async loadSceneConfig(config: SceneData | SceneData[] | Record<string, any>): Promise<void> {
     const __t0 = performance.now()
     let sceneData: SceneData
 
@@ -43,9 +43,9 @@ export class PanoEngineAdapter {
     // 后端返回的瓦片 url 已是 /uploads/... 完整路径，关闭库默认的 '/src/assets/' 前缀
     this.engine.setBaseUrl('')
     // 通过库公共 API 注入场景数据，复用引擎原生加载流程。
-    // manageHotspots:false —— 编辑器的热点与场景配置分离，由 syncHotspots 独立增量管理，
+    // manageHotspots:false —— 编辑器的热点与场景配置分离，由 syncHotspots 独立管理，
     // 引擎不得用场景内嵌的（空）热点数组覆盖编辑器已注入的热点（否则会在瓦片加载完成后清空热点）。
-    void this.engine.loadScenes([sceneData], { manageHotspots: false })
+    await this.engine.loadScenes([sceneData], { manageHotspots: false })
     console.log(`[PERF][adapter] loadSceneConfig done in ${(performance.now() - __t0).toFixed(1)}ms`, {
       hotspots: sceneData.hotspots?.length ?? 0,
       levels: sceneData.image?.levels?.length ?? 0,
