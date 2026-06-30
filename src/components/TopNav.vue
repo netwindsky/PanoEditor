@@ -47,7 +47,14 @@ async function handleSave() {
 }
 
 function handlePreview() {
-  // TODO: 实现预览
+  const projectId = props.vm.sceneViewModel.currentScene.value?.projectId
+  if (!projectId) {
+    console.warn('预览失败：未获取到项目ID')
+    return
+  }
+  // 开发环境查看器在 5001 端口，生产环境使用同域名相对路径
+  const viewerBase = import.meta.env.DEV ? 'http://localhost:5001' : ''
+  window.open(`${viewerBase}/${projectId}`, '_blank')
 }
 
 async function handlePublish() {

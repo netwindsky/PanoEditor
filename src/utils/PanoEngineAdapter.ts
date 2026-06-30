@@ -11,6 +11,7 @@
  */
 import { PanoEngine } from '@panoview'
 import type { SceneData, Hotspot as PanoHotspot } from '@panoview'
+import { perf } from '@/utils/performanceMonitor'
 import type { Hotspot } from '@/types'
 
 export class PanoEngineAdapter {
@@ -20,8 +21,15 @@ export class PanoEngineAdapter {
 
   constructor(container: HTMLElement) {
     // autoLoad:false —— 跳过引擎内置 XML demo，改用后端场景数据
-    this.engine = new PanoEngine(container, { autoLoad: false })
-    console.log('[PERF][adapter] new PanoEngine instance created')
+    // enableStats:false / enablePostProcessing:false —— 编辑器环境不需要性能面板和后期处理
+    const end = perf.stage('adapter-create-panoengine')
+    this.engine = new PanoEngine(container, {
+      autoLoad: false,
+      enableStats: false,
+      enablePostProcessing: false,
+      maxPixelRatio: 2,
+    })
+    end()
   }
 
   /**
@@ -29,7 +37,7 @@ export class PanoEngineAdapter {
    * @param config 后端生成的场景配置（JSON 对象或 SceneData 数组）
    */
   public async loadSceneConfig(config: SceneData | SceneData[] | Record<string, any>): Promise<void> {
-    const __t0 = performance.now()
+    const end = perf.stage('adapter-load-scene-config')
     let sceneData: SceneData
 
     if (Array.isArray(config)) {
@@ -45,11 +53,40 @@ export class PanoEngineAdapter {
     // 通过库公共 API 注入场景数据，复用引擎原生加载流程。
     // manageHotspots:false —— 编辑器的热点与场景配置分离，由 syncHotspots 独立管理，
     // 引擎不得用场景内嵌的（空）热点数组覆盖编辑器已注入的热点（否则会在瓦片加载完成后清空热点）。
-    await this.engine.loadScenes([sceneData], { manageHotspots: false })
-    console.log(`[PERF][adapter] loadSceneConfig done in ${(performance.now() - __t0).toFixed(1)}ms`, {
+    await perf.measureAsync('adapter-engine-load-scenes', () =>
+      this.engine.loadScenes([sceneData], { manageHotspots: false }),
+    )
+    end({
       hotspots: sceneData.hotspots?.length ?? 0,
       levels: sceneData.image?.levels?.length ?? 0,
     })
+  }
+
+  /**
+   * 预加载所有场景到引擎，供后续无缝切换。
+   * @param configs 所有场景的后端 JSON 配置数组
+   */
+  public async preloadScenes(configs: Record<string, any>[]): Promise<void> {
+    const end = perf.stage('adapter-preload-scenes')
+    const sceneDataList = configs.map((c) =>
+      c.scene && c.image ? (c as SceneData) : this.convertToSceneData(c)
+    )
+    this.engine.setBaseUrl('')
+    await perf.measureAsync('adapter-engine-load-scenes', () =>
+      this.engine.loadScenes(sceneDataList, { manageHotspots: false }),
+    )
+    end({ sceneCount: sceneDataList.length })
+  }
+
+  /**
+   * 切换场景（使用引擎原生过渡动画）。
+   * 切换完成后需要调用方重新 syncHotspots 注入新热点。
+   * @param sceneId 场景 ID（对应引擎 sceneList 中 scene.name）
+   */
+  public async switchScene(sceneId: string): Promise<void> {
+    const end = perf.stage('adapter-switch-scene')
+    await this.engine.changeScene(sceneId)
+    end({ sceneId })
   }
 
   /**
@@ -122,16 +159,20 @@ export class PanoEngineAdapter {
         ? String(hotspot.height)
         : undefined
 
+    // 当设置了跳转场景但没有自定义脚本时，自动生成 changescene 命令
+    const linkedscene = hotspot.linkedSceneId || ''
+    const onclick = hotspot.onclick || (linkedscene ? `changescene('${linkedscene}')` : '')
+
     return {
       name: hotspot.id,
       style: resolvedStyle,
       ath: String(hotspot.ath),
       atv: String(hotspot.atv),
-      linkedscene: hotspot.linkedSceneId || '',
+      linkedscene,
       tooltip: hotspot.tooltip || hotspot.name,
-      onclick: hotspot.onclick || '',
+      onclick,
       events: hotspot.events || '',
-      on: hotspot.onclick || '',
+      on: onclick,
       type: hotspot.type,
       url: hotspot.url || '',
       width: resolvedWidth,
@@ -152,16 +193,13 @@ export class PanoEngineAdapter {
    * 同步后端热点列表到 3D 场景
    */
   public syncHotspots(hotspots: Hotspot[]): void {
-    const __t0 = performance.now()
+    const end = perf.stage('adapter-sync-hotspots')
     PanoEngineAdapter.syncCallCount++
     this.engine.hotspotsManager.clearHotspots()
     const panoHotspots = hotspots.map((h) => this.toPanoHotspot(h))
     this.engine.hotspotsManager.createHotspots(panoHotspots)
     this.engine.hotspotsManager.fadeIn(500)
-    console.log(
-      `[PERF][adapter] syncHotspots #${PanoEngineAdapter.syncCallCount} (full rebuild) ` +
-        `count=${hotspots.length} in ${(performance.now() - __t0).toFixed(1)}ms`,
-    )
+    end({ count: hotspots.length, totalCalls: PanoEngineAdapter.syncCallCount })
   }
 
   /**

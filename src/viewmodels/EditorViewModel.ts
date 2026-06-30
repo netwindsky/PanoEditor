@@ -1,6 +1,7 @@
 import { ref, computed } from 'vue'
 import type { EditorTool, HotspotToolType, LeftPanelTab, RightPanelSection } from '@/types'
 import type { CreateHotspotParams, UpdateHotspotParams } from '@/types'
+import { perf } from '@/utils/performanceMonitor'
 import { SceneViewModel } from './SceneViewModel'
 import { HotspotViewModel } from './HotspotViewModel'
 import { AssetViewModel } from './AssetViewModel'
@@ -46,14 +47,26 @@ export class EditorViewModel {
 
   // === 项目加载 ===
   async loadProject(projectId: string): Promise<void> {
-    await this.projectService.loadProject(projectId)
-    await this.sceneViewModel.loadScenes(projectId)
+    const endStage = perf.stage('vm-load-project', { projectId })
+
+    // 优化：项目数据和场景列表无依赖关系，改为并行加载
+    const endParallel = perf.stage('vm-load-parallel')
+    await Promise.all([
+      this.projectService.loadProject(projectId),
+      this.sceneViewModel.loadScenes(projectId),
+    ])
+    endParallel({ sceneCount: this.sceneViewModel.scenes.value.length })
+
     if (this.sceneViewModel.currentScene.value) {
+      const endHotspots = perf.stage('vm-load-hotspots')
       await this.hotspotViewModel.loadHotspots(
         this.sceneViewModel.currentScene.value.id
       )
+      endHotspots({ hotspotCount: this.hotspotViewModel.hotspots.value.length })
     }
+
     this.isDirty.value = false
+    endStage()
   }
 
   // === 场景切换 ===

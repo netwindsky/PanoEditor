@@ -184,6 +184,39 @@ describe('PanoEngineViewer 热点同步竞态', () => {
     expect(lastSyncIds(engine)).toEqual(['awaited'])
   })
 
+  it('加载中切换场景配置时应记住最新配置，首个加载完成后立即加载新场景，避免残留旧图', async () => {
+    let resolveLoad!: () => void
+    nextLoadScenePromise = new Promise<void>((resolve) => {
+      resolveLoad = resolve
+    })
+
+    const wrapper = mount(PanoEngineViewer, {
+      props: {
+        sceneConfig: VALID_CONFIG,
+        tilingStatus: 'READY',
+        tilingProgress: 100,
+        hotspots: [] as Hotspot[],
+      },
+    })
+    await flushPromises()
+
+    const engine = latestEngine()
+    expect(engine.loadSceneConfig).toHaveBeenCalledTimes(1)
+
+    const nextConfig = '{"scene":{"name":"s2"},"image":{"type":"CUBE","levels":[{"cube":{"url":"/uploads/s2/%s.jpg"}}]}}'
+    await wrapper.setProps({ sceneConfig: nextConfig })
+    await flushPromises()
+
+    expect(engine.loadSceneConfig).toHaveBeenCalledTimes(1)
+
+    resolveLoad()
+    await flushPromises()
+    await flushPromises()
+
+    expect(engine.loadSceneConfig).toHaveBeenCalledTimes(2)
+    expect(engine.loadSceneConfig).toHaveBeenLastCalledWith(JSON.parse(nextConfig))
+  })
+
   it('相同热点快照重复传入时不应重复全量同步', async () => {
     const hotspot = makeHotspot('same')
     const wrapper = mount(PanoEngineViewer, {
