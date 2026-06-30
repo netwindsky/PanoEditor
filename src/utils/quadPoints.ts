@@ -1,3 +1,5 @@
+import type { HotspotType } from '@/types'
+
 /** quad 四边形的单个顶点（球坐标，单位：度） */
 export interface QuadPoint {
   ath: number
@@ -34,4 +36,18 @@ export function parsePoints(points: string | undefined | null): QuadPoint[] {
  */
 export function serializePoints(pts: QuadPoint[]): string {
   return pts.flatMap((p) => [p.ath, p.atv]).join(' ')
+}
+
+/**
+ * 是否为"四边形几何"类热点（quad 图片 或 video 视频）。
+ * 两者共用 4 顶点 points 与控制点编辑逻辑，仅渲染器不同。
+ */
+export function isQuadLike(type: HotspotType | string | undefined): boolean {
+  return type === 'quad' || type === 'video'
+}
+
+/** 判断 url 是否指向视频资源（容忍 query 串），用于阻止图片热点误选视频。 */
+export function isVideoUrl(url: string | undefined | null): boolean {
+  if (!url) return false
+  return /\.(mp4|webm|ogg|mov|m4v)(\?.*)?$/i.test(url.trim())
 }

@@ -73,8 +73,8 @@
         </div>
       </div>
 
-      <!-- 顶点坐标（仅 quad 类型） -->
-      <template v-if="form.type === 'quad'">
+      <!-- 顶点坐标（quad / video 共用 4 顶点几何） -->
+      <template v-if="isQuadLike(form.type)">
         <div class="prop-card">
           <div class="card-title">顶点坐标</div>
           <div
@@ -159,7 +159,43 @@
             </div>
           </div>
         </template>
-        <template v-if="form.type === 'quad'">
+        <template v-if="form.type === 'video'">
+          <div class="prop-field">
+            <label>视频</label>
+            <div class="image-actions">
+              <el-button size="small" @click="triggerVideoFilePicker">上传视频</el-button>
+              <el-button
+                size="small"
+                @click="assetFilterType = 'video'; openAssetDialog()"
+              >资源库</el-button>
+              <input
+                ref="videoFileInputRef"
+                type="file"
+                accept="video/*"
+                class="image-file-input"
+                @change="handleVideoFileSelected"
+              />
+            </div>
+          </div>
+          <div class="prop-field">
+            <label>URL</label>
+            <el-input v-model="form.url" size="small" placeholder="视频URL" />
+          </div>
+          <div v-if="form.url" class="prop-field image-preview-row">
+            <label>预览</label>
+            <div class="image-preview">
+              <video
+                :key="form.url"
+                class="video-preview"
+                :src="form.url"
+                controls
+                preload="metadata"
+                playsinline
+              />
+            </div>
+          </div>
+        </template>
+        <template v-if="isQuadLike(form.type)">
           <div class="prop-field">
             <label>混合模式</label>
             <el-select v-model="form.blendmode" size="small" clearable placeholder="默认">
@@ -280,7 +316,7 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import type { EditorViewModel } from '@/viewmodels/EditorViewModel'
 import type { HotspotType, HotspotToolType, Resource } from '@/types'
 import { buildHotspotParams, buildHotspotXml } from '@/utils/hotspotFactory'
-import { parsePoints, serializePoints, type QuadPoint } from '@/utils/quadPoints'
+import { parsePoints, serializePoints, isQuadLike, isVideoUrl, type QuadPoint } from '@/utils/quadPoints'
 
 const vm = inject<EditorViewModel>('editorViewModel')!
 
@@ -290,16 +326,21 @@ const scenes = computed(() => vm.sceneViewModel.scenes.value)
 
 const clearing = ref(false)
 const showAssetDialog = ref(false)
-const assetFilterType = ref<'image' | 'panorama'>('image')
+const assetFilterType = ref<'image' | 'panorama' | 'video'>('image')
 const eventPlaceholder = '{"click":"func()"}'
 
 // 资源库 / 上传相关状态
 const fileInputRef = ref<HTMLInputElement | null>(null)
+const videoFileInputRef = ref<HTMLInputElement | null>(null)
 const assetList = computed(() => vm.assetViewModel.resources.value)
 const currentProjectId = computed(() => vm.sceneViewModel.currentScene.value?.projectId || '')
 
 function triggerFilePicker() {
   fileInputRef.value?.click()
+}
+
+function triggerVideoFilePicker() {
+  videoFileInputRef.value?.click()
 }
 
 async function handleFileSelected(event: Event) {
@@ -308,6 +349,11 @@ async function handleFileSelected(event: Event) {
   // 重置 input.value 以便重复选择同名文件
   input.value = ''
   if (!file) return
+  // 图片/四边形热点：若用户误选视频文件则拦截（不写入 form.url）
+  if (isImageLikeType(form.type) && isVideoUrl(file.name)) {
+    ElMessage.error('图片/四边形热点不支持视频资源，请选择图片')
+    return
+  }
   const projectId = currentProjectId.value
   if (!projectId) {
     ElMessage.error('项目信息缺失，无法上传')
@@ -327,6 +373,29 @@ async function handleFileSelected(event: Event) {
   }
 }
 
+async function handleVideoFileSelected(event: Event) {
+  const input = event.target as HTMLInputElement
+  const file = input.files?.[0]
+  input.value = ''
+  if (!file) return
+  const projectId = currentProjectId.value
+  if (!projectId) {
+    ElMessage.error('项目信息缺失，无法上传')
+    return
+  }
+  const before = assetList.value.length
+  try {
+    await vm.uploadResource(projectId, file, 'video')
+    if (assetList.value.length > before) {
+      const newResource = assetList.value[assetList.value.length - 1]
+      form.url = newResource.url
+    }
+    ElMessage.success('上传成功')
+  } catch (err) {
+    ElMessage.error('上传失败，请重试')
+  }
+}
+
 function openAssetDialog() {
   showAssetDialog.value = true
   const projectId = currentProjectId.value
@@ -336,8 +405,18 @@ function openAssetDialog() {
 }
 
 function selectAsset(resource: Resource) {
+  // 图片/四边形热点拒绝视频资源；视频类型放行
+  if (isImageLikeType(form.type) && isVideoUrl(resource.url)) {
+    ElMessage.error('图片/四边形热点不支持视频资源，请选择图片')
+    return
+  }
   form.url = resource.url
   showAssetDialog.value = false
+}
+
+/** image/quad 是"图片"类热点（共用贴图 UI，但必须非视频） */
+function isImageLikeType(type: HotspotType): boolean {
+  return type === 'image' || type === 'quad'
 }
 
 function formatSize(bytes: number): string {
@@ -901,6 +980,14 @@ function handleExportXml() {
   max-height: 160px;
   object-fit: contain;
   display: block;
+}
+
+.video-preview {
+  max-width: 100%;
+  max-height: 160px;
+  object-fit: contain;
+  display: block;
+  background: #000;
 }
 
 .asset-dialog-content {

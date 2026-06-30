@@ -18,6 +18,9 @@
           :tiling-status="vm.sceneViewModel.currentTilingStatus.value"
           :tiling-progress="vm.sceneViewModel.currentTilingProgress.value"
           :hotspots="vm.hotspotViewModel.hotspots.value"
+          :is-dragging="vm.hotspotViewModel.isDragging.value"
+          :all-scene-configs="allSceneConfigs.value"
+          :scene-id="vm.sceneViewModel.currentScene.value?.id || null"
           class="pano-preview-wrap"
           @engine-ready="onEngineReady"
         />
@@ -39,7 +42,7 @@ import type { EditorViewModel } from '@/viewmodels/EditorViewModel'
 import type { PanoEngineAdapter } from '@/utils/PanoEngineAdapter'
 import type { HotspotToolType } from '@/types'
 import { buildHotspotParams } from '@/utils/hotspotFactory'
-import { parsePoints, serializePoints } from '@/utils/quadPoints'
+import { parsePoints, serializePoints, isQuadLike } from '@/utils/quadPoints'
 
 const props = defineProps<{
   vm: EditorViewModel
@@ -49,6 +52,13 @@ const vm = props.vm
 const panoViewerRef = ref<InstanceType<typeof PanoEngineViewer>>()
 const canvasContainer = ref<HTMLElement>()
 let engine: PanoEngineAdapter | null = null
+
+// 所有已就绪场景的 imageConfig，用于预加载到引擎实现无缝切换
+const allSceneConfigs = computed(() =>
+  vm.sceneViewModel.scenes.value
+    .filter((s) => s.imageConfig)
+    .map((s) => s.imageConfig),
+)
 
 // ===== 矩形热点控制点 =====
 const HANDLE_SIZE = 12
@@ -74,6 +84,7 @@ const hotspotTypeLabels: Record<HotspotToolType, string> = {
   image: '图片热点',
   quad: '矩形热点',
   model: '3D模型热点',
+  video: '视频热点',
 }
 
 const hotspotTypeLabel = computed(() =>
@@ -86,7 +97,7 @@ watch(
   () => vm.hotspotViewModel.selectedHotspot.value,
   (hotspot) => {
     clearQuadHandles()
-    if (hotspot && hotspot.type === 'quad' && hotspot.points) {
+    if (hotspot && isQuadLike(hotspot.type) && hotspot.points) {
       void nextTick(() => createQuadHandles(hotspot))
     }
   }
@@ -200,7 +211,7 @@ function stopUpdateLoop() {
 
 function updateQuadHandles() {
   const hotspot = vm.hotspotViewModel.selectedHotspot.value
-  if (!hotspot || hotspot.type !== 'quad' || !engine) return
+  if (!hotspot || !isQuadLike(hotspot.type) || !engine) return
 
   const pts = parsePoints(hotspot.points)
   if (pts.length !== 4 || quadHandles.value.length !== 4) return
@@ -308,7 +319,7 @@ function handlePointerMove(e: PointerEvent) {
     vm.hotspotViewModel.updateDragToCoords(coords.ath, coords.atv)
 
     const hotspot = vm.hotspotViewModel.hotspots.value.find((h) => h.id === id)
-    if (hotspot && hotspot.type === 'quad') {
+    if (hotspot && isQuadLike(hotspot.type)) {
       // 四边形热点：points 已随 center 同步平移，需要重建 mesh 几何体
       engine.updateHotspotInScene(hotspot)
     } else {

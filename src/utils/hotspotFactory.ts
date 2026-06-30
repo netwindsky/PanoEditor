@@ -18,6 +18,7 @@ const DEFAULT_NAMES: Record<HotspotToolType, string> = {
   image: '图片热点',
   quad: '矩形热点',
   model: '模型热点',
+  video: '视频热点',
 }
 
 /**
@@ -48,6 +49,19 @@ export function buildHotspotParams(
       ath - d, atv + d, // 左下
     ].join(' ')
     return { ...base, points, url: PLACEHOLDER_QUAD_URL, bgcolor: '#3b82f6' }
+  }
+
+  if (type === 'video') {
+    // video 复用 quad 的 4 顶点几何，仅 url 留空（由属性面板补视频 url）
+    // 引擎 createQuadHotspot 在 url 缺失时 warn 并跳过，不崩溃。
+    const d = 5 // 默认半边长（度）
+    const points = [
+      ath - d, atv - d, // 左上
+      ath + d, atv - d, // 右上
+      ath + d, atv + d, // 右下
+      ath - d, atv + d, // 左下
+    ].join(' ')
+    return { ...base, points, url: '' }
   }
 
   if (type === 'image') {

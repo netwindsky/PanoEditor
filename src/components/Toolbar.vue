@@ -66,6 +66,7 @@ import {
   Picture,
   Crop,
   Box,
+  VideoCamera,
   DArrowLeft,
   DArrowRight,
 } from '@element-plus/icons-vue'
@@ -85,6 +86,7 @@ const hotspotTypes: { key: HotspotToolType; icon: Component; label: string }[] =
   { key: 'info', icon: InfoFilled, label: '信息点' },
   { key: 'image', icon: Picture, label: '图片' },
   { key: 'quad', icon: Crop, label: '四边形' },
+  { key: 'video', icon: VideoCamera, label: '视频' },
   { key: 'model', icon: Box, label: '3D模型' },
 ]
 
