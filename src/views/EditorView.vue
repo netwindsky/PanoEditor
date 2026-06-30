@@ -18,6 +18,7 @@
 <script setup lang="ts">
 import { ref, provide, onMounted, onBeforeUnmount, computed, watch } from 'vue'
 import { useRoute } from 'vue-router'
+import { perf } from '@/utils/performanceMonitor'
 import { EditorViewModel } from '@/viewmodels/EditorViewModel'
 import { ProjectRepository } from '@/models/repositories/ProjectRepository'
 import { SceneRepository } from '@/models/repositories/SceneRepository'
@@ -63,11 +64,13 @@ provide('editorViewModel', vm)
 const projectId = computed(() => route.params.projectId as string)
 
 onMounted(async () => {
+  const endMount = perf.stage('editor-view-mount')
   if (projectId.value) {
-    await vm.loadProject(projectId.value)
+    await perf.measureAsync('editor-load-project', () => vm.loadProject(projectId.value))
   } else {
     showProjectModal.value = true
   }
+  endMount({ projectId: projectId.value || 'none' })
 })
 
 watch(projectId, async (newId, oldId) => {

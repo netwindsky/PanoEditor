@@ -24,9 +24,11 @@
 
 <script setup lang="ts">
 import { ref, reactive } from 'vue'
+import { useRouter } from 'vue-router'
 import { useAuth } from '@/composables/useAuth'
 import type { FormInstance, FormRules } from 'element-plus'
 
+const router = useRouter()
 const { login } = useAuth()
 const formRef = ref<FormInstance>()
 const loading = ref(false)
@@ -50,6 +52,7 @@ async function handleLogin() {
   loading.value = true
   try {
     await login(form.email, form.password)
+    router.push('/editor')
   } catch {
     // 错误已在拦截器中处理
   } finally {
