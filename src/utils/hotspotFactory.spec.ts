@@ -66,6 +66,18 @@ describe('buildHotspotParams', () => {
     expect(p.type).toBe('model')
     expect(p.url).toBeTruthy()
   })
+
+  it('video 类型与 quad 一样包含 points 和占位 url，使引擎能创建 mesh 热点', () => {
+    const p = buildHotspotParams('video', 0, 0)
+    expect(p.type).toBe('video')
+    expect(p.url).toBe(PLACEHOLDER_QUAD_URL)
+    expect(p.points).toBeTruthy()
+    const nums = p.points!.trim().split(/\s+/).map(Number)
+    expect(nums).toHaveLength(8)
+    expect(nums.every((n) => !Number.isNaN(n))).toBe(true)
+    // 与 quad 的差异：无 bgcolor
+    expect(p.bgcolor).toBeUndefined()
+  })
 })
 
 describe('buildHotspotXml', () => {

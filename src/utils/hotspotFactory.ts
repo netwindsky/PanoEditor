@@ -52,8 +52,10 @@ export function buildHotspotParams(
   }
 
   if (type === 'video') {
-    // video 复用 quad 的 4 顶点几何，仅 url 留空（由属性面板补视频 url）
-    // 引擎 createQuadHotspot 在 url 缺失时 warn 并跳过，不崩溃。
+    // video 复用 quad 的 4 顶点几何，使用占位 url 让引擎通过守卫并创建 mesh 热点。
+    // 引擎 createQuadHotspot 内部已有 isVideo(data.type === 'video') 分支，
+    // 会创建 VideoHotspot 实例，而非 PlainQuadHotspot。
+    // 用户后续可在属性面板替换为真实视频 url。
     const d = 5 // 默认半边长（度）
     const points = [
       ath - d, atv - d, // 左上
@@ -61,7 +63,7 @@ export function buildHotspotParams(
       ath + d, atv + d, // 右下
       ath - d, atv + d, // 左下
     ].join(' ')
-    return { ...base, points, url: '' }
+    return { ...base, points, url: PLACEHOLDER_QUAD_URL }
   }
 
   if (type === 'image') {
