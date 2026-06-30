@@ -53,6 +53,8 @@ let engine: PanoEngineAdapter | null = null
 // ===== 矩形热点控制点 =====
 const HANDLE_SIZE = 12
 const quadHandles = ref<HTMLElement[]>([])
+const quadLinesSvg = ref<SVGSVGElement | null>(null)
+const quadLines = ref<SVGPathElement[]>([])
 const isDraggingHandle = ref(false)
 const selectedPointIndex = ref<number | null>(null)
 let rafId: number | null = null
@@ -118,20 +120,64 @@ function createQuadHandles(hotspot: { points: string }) {
     handle.style.fontSize = '10px'
     handle.style.fontWeight = 'bold'
     handle.style.color = '#fff'
+    handle.style.transform = 'translate(-50%, -50%)'
+    handle.style.boxShadow = '0 0 6px rgba(0,0,0,0.6)'
+    handle.style.textShadow = '0 1px 2px rgba(0,0,0,0.8)'
     handle.innerHTML = `<span>${i + 1}</span>`
+
+    handle.addEventListener('pointerenter', () => {
+      handle.style.transform = 'translate(-50%, -50%) scale(1.3)'
+      handle.style.boxShadow = '0 0 12px rgba(0,0,0,0.8)'
+    })
+    handle.addEventListener('pointerleave', () => {
+      handle.style.transform = 'translate(-50%, -50%)'
+      handle.style.boxShadow = '0 0 6px rgba(0,0,0,0.6)'
+    })
 
     handle.addEventListener('pointerdown', (e) => onHandlePointerDown(e, i))
     container.appendChild(handle)
     quadHandles.value.push(handle)
   }
 
+  createQuadLines(container)
   startUpdateLoop()
+}
+
+function createQuadLines(container: HTMLElement) {
+  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
+  svg.classList.add('quad-lines-svg')
+  svg.style.position = 'absolute'
+  svg.style.inset = '0'
+  svg.style.width = '100%'
+  svg.style.height = '100%'
+  svg.style.pointerEvents = 'none'
+  svg.style.zIndex = '99'
+  svg.style.overflow = 'visible'
+
+  const lines: SVGPathElement[] = []
+  for (let i = 0; i < 4; i++) {
+    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path')
+    path.setAttribute('stroke', 'rgba(255, 255, 255, 0.55)')
+    path.setAttribute('stroke-width', '1.5')
+    path.setAttribute('stroke-dasharray', '5 4')
+    path.setAttribute('fill', 'none')
+    path.setAttribute('stroke-linecap', 'round')
+    svg.appendChild(path)
+    lines.push(path)
+  }
+
+  container.appendChild(svg)
+  quadLinesSvg.value = svg
+  quadLines.value = lines
 }
 
 function clearQuadHandles() {
   stopUpdateLoop()
   quadHandles.value.forEach((h) => h.remove())
   quadHandles.value = []
+  quadLinesSvg.value?.remove()
+  quadLinesSvg.value = null
+  quadLines.value = []
   isDraggingHandle.value = false
   selectedPointIndex.value = null
 }
@@ -163,6 +209,8 @@ function updateQuadHandles() {
   if (!container) return
   const rect = container.getBoundingClientRect()
 
+  const screenCoords: { x: number; y: number; visible: boolean }[] = []
+
   pts.forEach((p, i) => {
     const handle = quadHandles.value[i]
     const screen = engine!.projectToScreen(p.ath, p.atv)
@@ -174,6 +222,8 @@ function updateQuadHandles() {
       screen.y >= -20 &&
       screen.y <= rect.height + 20
 
+    screenCoords.push({ x: screen.x, y: screen.y, visible: isOnScreen })
+
     if (isOnScreen) {
       handle.style.display = 'flex'
       handle.style.left = `${screen.x}px`
@@ -182,6 +232,26 @@ function updateQuadHandles() {
       handle.style.display = 'none'
     }
   })
+
+  updateQuadLines(screenCoords)
+}
+
+function updateQuadLines(screenCoords: { x: number; y: number; visible: boolean }[]) {
+  const lines = quadLines.value
+  if (lines.length !== 4) return
+
+  for (let i = 0; i < 4; i++) {
+    const start = screenCoords[i]
+    const end = screenCoords[(i + 1) % 4]
+    const line = lines[i]
+
+    if (start.visible && end.visible) {
+      line.setAttribute('d', `M ${start.x} ${start.y} L ${end.x} ${end.y}`)
+      line.style.display = 'block'
+    } else {
+      line.style.display = 'none'
+    }
+  }
 }
 
 function onHandlePointerDown(e: PointerEvent, index: number) {
@@ -350,20 +420,33 @@ onBeforeUnmount(() => {
   z-index: 10;
 }
 
+</style>
+
+<style>
+/* 非 scoped：控制点与虚线是运行时动态创建的，不受 Vue scoped style 约束 */
 .quad-handle {
   transform: translate(-50%, -50%);
   user-select: none;
   transition: transform 0.1s ease, box-shadow 0.15s ease;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
-  box-shadow: 0 0 6px rgba(0, 0, 0, 0.6);
 }
 
 .quad-handle:hover {
   transform: translate(-50%, -50%) scale(1.3);
-  box-shadow: 0 0 12px rgba(0, 0, 0, 0.8);
+  box-shadow: 0 0 12px rgba(0, 0, 0, 0.8) !important;
 }
 
 .quad-handle span {
   pointer-events: none;
+}
+
+.quad-lines-svg path {
+  animation: dashFlow 0.8s linear infinite;
+  filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.5));
+}
+
+@keyframes dashFlow {
+  to {
+    stroke-dashoffset: -9;
+  }
 }
 </style>
