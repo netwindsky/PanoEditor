@@ -18,6 +18,9 @@ export class PanoEngineAdapter {
   private engine: PanoEngine
   // 性能埋点：跨实例累计 syncHotspots 调用次数（全量重建次数），用于发现高频重建
   private static syncCallCount = 0
+  // 拖动模式 flag（同步设置，绕过 Vue 响应式时序问题）。
+  // 拖动期间 syncHotspotsIfChanged 据此跳过全量重建，避免每帧 delete+create 导致闪烁。
+  private _isDragging = false
 
   constructor(container: HTMLElement) {
     // autoLoad:false —— 跳过引擎内置 XML demo，改用后端场景数据
@@ -223,6 +226,46 @@ export class PanoEngineAdapter {
   public updateHotspotInScene(hotspot: Hotspot): void {
     const panoHotspot = this.toPanoHotspot(hotspot)
     this.engine.hotspotsManager.updateHotspotData(hotspot.id, panoHotspot)
+  }
+
+  /**
+   * 轻量级更新 quad/video 热点的 4 顶点几何体。
+   *
+   * 拖动 quad/video 热点时调用本方法而非 updateHotspotInScene，
+   * 避免每帧销毁+重建 video 元素/纹理导致资源暴涨卡顿。
+   * 仅更新现有 mesh 的 BufferGeometry position 属性。
+   */
+  public updateQuadGeometry(hotspotId: string, points: string): void {
+    this.engine.hotspotsManager.updateQuadGeometry(hotspotId, points)
+  }
+
+  /**
+   * 设置/查询拖动模式 flag。
+   * 同步设置，绕过 Vue 响应式 prop 时序问题。
+   * PanoEngineViewer.syncHotspotsIfChanged 据此跳过全量重建。
+   */
+  public setDraggingMode(flag: boolean): void {
+    this._isDragging = flag
+  }
+
+  public isDraggingMode(): boolean {
+    return this._isDragging
+  }
+
+  // ==================== 拖动模式 flag ====================
+  //
+  // 用于 syncHotspotsIfChanged 的同步守卫，绕过 Vue props 响应式时序问题。
+  // 拖动开始时由 EditorCanvas 直接设为 true，结束时设为 false。
+  // 这样 PanoEngineViewer 的 deep watch 触发时，可以同步读取 flag
+  // 避免 pre-flush watcher 在 prop 更新前运行导致误触发 syncHotspots。
+  private _isDragging = false
+
+  setDraggingMode(flag: boolean): void {
+    this._isDragging = flag
+  }
+
+  isDraggingMode(): boolean {
+    return this._isDragging
   }
 
   /**

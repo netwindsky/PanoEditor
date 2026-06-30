@@ -77,6 +77,9 @@ function endTransitionOverlay() {
 const usePreloadMode = computed(() => !!props.allSceneConfigs && props.allSceneConfigs.length > 0)
 
 function syncHotspotsIfChanged(engine: PanoEngineAdapter, hotspots: Hotspot[]) {
+  // 同步检查拖动 flag（绕过 Vue 响应式 prop 时序问题）。
+  // 拖动期间跳过全量重建，避免每帧 delete+create 导致闪烁。
+  if (engine.isDraggingMode()) return
   if (props.isDragging) return
   const snapshot = JSON.stringify(hotspots)
   if (snapshot === lastHotspotsSnapshot) return
