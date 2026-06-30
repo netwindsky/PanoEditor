@@ -306,7 +306,14 @@ function handlePointerMove(e: PointerEvent) {
 
     const coords = engine.getCoordsFromPoint(e.clientX, e.clientY)
     vm.hotspotViewModel.updateDragToCoords(coords.ath, coords.atv)
-    engine.moveHotspotTo(id, coords.ath, coords.atv)
+
+    const hotspot = vm.hotspotViewModel.hotspots.value.find((h) => h.id === id)
+    if (hotspot && hotspot.type === 'quad') {
+      // 四边形热点：points 已随 center 同步平移，需要重建 mesh 几何体
+      engine.updateHotspotInScene(hotspot)
+    } else {
+      engine.moveHotspotTo(id, coords.ath, coords.atv)
+    }
   }
 }
 

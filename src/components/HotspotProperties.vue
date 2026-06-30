@@ -137,7 +137,7 @@
           <label>URL</label>
           <el-input v-model="form.url" size="small" placeholder="资源URL" />
         </div>
-        <template v-if="form.type === 'image'">
+        <template v-if="['image', 'quad'].includes(form.type)">
           <div class="prop-field">
             <label>贴图</label>
             <div class="image-actions">

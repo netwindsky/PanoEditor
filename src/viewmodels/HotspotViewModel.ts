@@ -1,5 +1,6 @@
 import { ref, computed } from 'vue'
 import type { Hotspot, CreateHotspotParams, UpdateHotspotParams, HotspotService } from '@/models'
+import { parsePoints, serializePoints } from '@/utils/quadPoints'
 
 /**
  * 相机锁定器接口
@@ -30,6 +31,10 @@ export class HotspotViewModel {
 
   /** 相机锁定器，默认空实现，由组件层在引擎就绪后注入 */
   private cameraLock: CameraLock = NoopCameraLock
+
+  /** 四边形热点整体拖拽时记录的初始状态 */
+  private quadDragInitialCenter: { ath: number; atv: number } | null = null
+  private quadDragInitialPoints: string | null = null
 
   constructor(private hotspotService: HotspotService) {}
 
@@ -91,6 +96,14 @@ export class HotspotViewModel {
   // === 拖拽逻辑 ===
   startDrag(hotspotId: string): void {
     this.draggingHotspotId.value = hotspotId
+
+    // 四边形热点：记录初始 center 和 points，用于整体拖拽时同步平移
+    const hotspot = this.hotspots.value.find((h) => h.id === hotspotId)
+    if (hotspot && hotspot.type === 'quad' && hotspot.points) {
+      this.quadDragInitialCenter = { ath: hotspot.ath, atv: hotspot.atv }
+      this.quadDragInitialPoints = hotspot.points
+    }
+
     // 拖拽热点时锁定全景旋转，避免热点与背景一起移动导致对不准位置
     this.cameraLock.lock()
   }
@@ -113,6 +126,20 @@ export class HotspotViewModel {
     if (!hotspot) return
 
     this.setHotspotCoords(hotspot, ath, atv)
+
+    // 四边形热点整体拖拽：将 center 的位移 delta 同步应用到 4 个顶点
+    if (hotspot.type === 'quad' && this.quadDragInitialCenter && this.quadDragInitialPoints) {
+      const deltaAth = ath - this.quadDragInitialCenter.ath
+      const deltaAtv = atv - this.quadDragInitialCenter.atv
+      const pts = parsePoints(this.quadDragInitialPoints)
+      if (pts.length === 4) {
+        pts.forEach((p) => {
+          p.ath = this.normalizeAth(p.ath + deltaAth)
+          p.atv = Math.max(-90, Math.min(90, p.atv + deltaAtv))
+        })
+        hotspot.points = serializePoints(pts)
+      }
+    }
   }
 
   private getDraggingHotspot(): Hotspot | undefined {
@@ -122,8 +149,12 @@ export class HotspotViewModel {
   }
 
   private setHotspotCoords(hotspot: Hotspot, ath: number, atv: number): void {
-    hotspot.ath = ((ath + 180) % 360) - 180
+    hotspot.ath = this.normalizeAth(ath)
     hotspot.atv = Math.max(-90, Math.min(90, atv))
+  }
+
+  private normalizeAth(ath: number): number {
+    return ((ath + 180) % 360) - 180
   }
 
   endDrag(): void {
@@ -133,12 +164,19 @@ export class HotspotViewModel {
         (h) => h.id === this.draggingHotspotId.value
       )
       if (hotspot) {
-        this.updateHotspot(hotspot.id, {
+        const params: UpdateHotspotParams = {
           ath: hotspot.ath,
           atv: hotspot.atv,
-        })
+        }
+        // 四边形热点：一并提交更新后的 points
+        if (hotspot.type === 'quad' && hotspot.points) {
+          params.points = hotspot.points
+        }
+        this.updateHotspot(hotspot.id, params)
       }
       this.draggingHotspotId.value = null
+      this.quadDragInitialCenter = null
+      this.quadDragInitialPoints = null
       // 拖拽结束，解锁全景旋转
       this.cameraLock.unlock()
     }
@@ -151,6 +189,8 @@ export class HotspotViewModel {
   forceEndDrag(): void {
     if (this.draggingHotspotId.value) {
       this.draggingHotspotId.value = null
+      this.quadDragInitialCenter = null
+      this.quadDragInitialPoints = null
       this.cameraLock.unlock()
     }
   }
