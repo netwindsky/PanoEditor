@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import type { Scene } from '@/types'
+import type { Scene, UpdateSceneParams } from '@/types'
 import * as sceneApi from '@/api/scene'
 
 /**
@@ -12,11 +12,36 @@ export const useSceneStore = defineStore('scene', () => {
   const currentScene = ref<Scene | null>(null)
   const loading = ref(false)
 
+  /**
+   * 将后端返回的 JSON 字符串 initialView 反序列化为对象；null 保持 null
+   */
+  function normalizeScene(raw: Scene): Scene {
+    if (typeof raw.initialView === 'string') {
+      try {
+        raw.initialView = JSON.parse(raw.initialView)
+      } catch {
+        (raw as any).initialView = null
+      }
+    }
+    return raw
+  }
+
+  /**
+   * 将 initialView 对象序列化为 JSON 字符串（发送后端用）
+   */
+  function serializeParams(params: UpdateSceneParams): Record<string, unknown> {
+    const out: Record<string, unknown> = { ...params }
+    if (params.initialView && typeof params.initialView !== 'string') {
+      out.initialView = JSON.stringify(params.initialView)
+    }
+    return out
+  }
+
   async function fetchScenes(projectId: string) {
     loading.value = true
     try {
       const res = await sceneApi.getScenes(projectId)
-      scenes.value = res.data.data
+      scenes.value = (res.data.data ?? []).map(normalizeScene)
       if (!currentScene.value && scenes.value.length > 0) {
         currentScene.value = scenes.value[0]
       }
@@ -34,13 +59,15 @@ export const useSceneStore = defineStore('scene', () => {
 
   async function createScene(projectId: string, name: string, panoramaUrl: string) {
     const res = await sceneApi.createScene(projectId, { name, previewUrl: panoramaUrl })
-    scenes.value.push(res.data.data)
-    return res.data.data
+    const created = normalizeScene(res.data.data)
+    scenes.value.push(created)
+    return created
   }
 
-  async function updateScene(sceneId: string, params: Record<string, unknown>) {
-    const res = await sceneApi.updateScene(sceneId, params)
-    const updated = res.data.data
+  async function updateScene(sceneId: string, params: UpdateSceneParams) {
+    const serialized = serializeParams(params)
+    const res = await sceneApi.updateScene(sceneId, serialized as any)
+    const updated = normalizeScene(res.data.data)
     const index = scenes.value.findIndex((s) => s.id === sceneId)
     if (index !== -1) {
       scenes.value[index] = updated

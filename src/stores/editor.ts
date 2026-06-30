@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
-import { ref } from 'vue'
+import { ref, shallowRef } from 'vue'
 import type { EditorTool, HotspotToolType, LeftPanelTab, RightPanelSection } from '@/types'
+import type { PanoEngineAdapter } from '@/utils/PanoEngineAdapter'
 
 /**
  * 编辑器 UI Store（兼容层）
@@ -17,6 +18,9 @@ export const useEditorStore = defineStore('editor', () => {
   const isDirty = ref(false)
   const lastSavedAt = ref<string>('')
   const isSaving = ref(false)
+
+  /** 引擎适配器引用，由 EditorCanvas 在引擎就绪时注入 */
+  const engineAdapter = shallowRef<PanoEngineAdapter | null>(null)
 
   function setActiveTool(tool: EditorTool) {
     activeTool.value = tool
@@ -43,6 +47,10 @@ export const useEditorStore = defineStore('editor', () => {
     rightPanelVisible.value = true
   }
 
+  function setEngineAdapter(adapter: PanoEngineAdapter | null) {
+    engineAdapter.value = adapter
+  }
+
   function setZoom(value: number) {
     zoom.value = Math.max(25, Math.min(200, value))
   }
@@ -58,8 +66,8 @@ export const useEditorStore = defineStore('editor', () => {
 
   return {
     activeTool, hotspotType, leftPanelTab, leftPanelVisible, rightPanelVisible,
-    rightPanelSection, zoom, isDirty, lastSavedAt, isSaving,
+    rightPanelSection, zoom, isDirty, lastSavedAt, isSaving, engineAdapter,
     setActiveTool, setHotspotType, setLeftPanelTab, toggleLeftPanel, toggleRightPanel,
-    setRightPanelSection, setZoom, markDirty, markSaved,
+    setRightPanelSection, setEngineAdapter, setZoom, markDirty, markSaved,
   }
 })

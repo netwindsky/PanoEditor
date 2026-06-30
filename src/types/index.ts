@@ -43,6 +43,7 @@ export interface Project {
   description: string
   coverUrl: string
   sceneCount: number
+  settings?: string
   createdAt: string
   updatedAt: string
 }
@@ -55,6 +56,22 @@ export interface CreateProjectParams {
 export interface UpdateProjectParams {
   name?: string
   description?: string
+  settings?: string
+}
+
+/** 全局漫游配置（存入 Project.settings JSON 字符串） */
+export interface TourSettings {
+  autoRotate: boolean
+  autoRotateSpeed: number
+  defaultFov: number
+  minFov: number
+  maxFov: number
+  enableCompass: boolean
+  controlbar: boolean
+  thumbs: boolean
+  tooltips: boolean
+  designStyle: string
+  loadsceneBlend: string
 }
 
 // ============ 场景 ============
@@ -62,20 +79,54 @@ export interface Scene {
   id: string
   projectId: string
   name: string
+  title: string
+  description?: string
   previewUrl: string
   thumbUrl: string
   imageConfig: string
   status: string
-  initialView: InitialView
-  order: number
+  /** 后端返回 JSON 字符串，store 层会反序列化为 InitialView 对象；null 表示尚无数据（回退读取 viewConfig JSON） */
+  initialView: InitialView | null
+  sortOrder: number
+  viewConfig?: string
+  lat?: number
+  lng?: number
+  heading?: number
   createdAt: string
   updatedAt: string
 }
+
+export type LimitViewMode = 'auto' | 'range' | 'off'
+export type FovType = 'MFOV' | 'VFOV' | 'DFOV' | 'HFOV'
 
 export interface InitialView {
   hfov: number
   pitch: number
   yaw: number
+  fovMin?: number
+  fovMax?: number
+  maxPixelZoom?: number
+  limitView?: LimitViewMode
+  fovType?: FovType
+}
+
+/** 场景扩展配置（存入 Scene.viewConfig JSON 字符串） */
+export interface SceneViewConfig {
+  lat?: number
+  lng?: number
+  heading?: number
+  onstart?: string
+  /** 初始视角数据（后端无独立字段，存入 viewConfig JSON） */
+  initialView?: {
+    yaw: number
+    pitch: number
+    hfov: number
+    fovMin?: number
+    fovMax?: number
+    maxPixelZoom?: number
+    limitView?: LimitViewMode
+    fovType?: FovType
+  }
 }
 
 export interface CreateSceneParams {
@@ -86,9 +137,17 @@ export interface CreateSceneParams {
 
 export interface UpdateSceneParams {
   name?: string
+  title?: string
+  description?: string
   previewUrl?: string
-  initialView?: Partial<InitialView>
-  order?: number
+  thumbUrl?: string
+  /** store 层会自动序列化对象为 JSON 字符串发送给后端 */
+  initialView?: Partial<InitialView> | string
+  sortOrder?: number
+  viewConfig?: string
+  lat?: number
+  lng?: number
+  heading?: number
 }
 
 // ============ 热点 ============
@@ -121,6 +180,7 @@ export interface Hotspot {
   content?: string
   followZoom?: boolean
   visible?: boolean
+  shader?: string
   sortOrder?: number
   createdAt?: string
   updatedAt?: string
@@ -150,6 +210,7 @@ export interface CreateHotspotParams {
   content?: string
   followZoom?: boolean
   visible?: boolean
+  shader?: string
   sortOrder?: number
 }
 
@@ -177,6 +238,7 @@ export interface UpdateHotspotParams {
   content?: string
   followZoom?: boolean
   visible?: boolean
+  shader?: string
   sortOrder?: number
 }
 
@@ -295,4 +357,32 @@ export type HotspotToolType = 'info' | 'scene' | 'image' | 'quad' | 'model' | 'v
 
 export type LeftPanelTab = 'scene' | 'asset' | 'layer'
 
-export type RightPanelSection = 'scene' | 'hotspot' | 'audio' | 'postprocessing' | 'asset'
+export type RightPanelSection = 'scene' | 'hotspot' | 'audio' | 'postprocessing' | 'asset' | 'tour' | 'overlay'
+
+/** krpano 覆盖层类型 */
+export type LayerType = 'text' | 'image' | 'button' | 'container'
+
+/** krpano 对齐方式 */
+export type LayerAlign = 'lefttop' | 'top' | 'righttop' | 'left' | 'center' | 'right' | 'leftbottom' | 'bottom' | 'rightbottom'
+
+/** krpano 覆盖层配置（存入 Project.settings JSON 的 layers 数组） */
+export interface OverlayLayer {
+  id: string
+  name: string
+  type: LayerType
+  url?: string
+  html?: string
+  css?: string
+  align?: LayerAlign
+  x?: number
+  y?: number
+  width?: string
+  height?: string
+  scale?: number
+  visible: boolean
+  background?: boolean
+  border?: boolean
+  enabled?: boolean
+  vcenter?: boolean
+  onclick?: string
+}
