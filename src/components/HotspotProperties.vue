@@ -159,6 +159,19 @@
             </div>
           </div>
         </template>
+        <template v-if="form.type === 'quad'">
+          <div class="prop-field">
+            <label>混合模式</label>
+            <el-select v-model="form.blendmode" size="small" clearable placeholder="默认">
+              <el-option label="默认" value="normal" />
+              <el-option label="正片叠底" value="multiply" />
+              <el-option label="滤色" value="screen" />
+              <el-option label="变暗" value="darken" />
+              <el-option label="变亮" value="lighten" />
+              <el-option label="叠加" value="add" />
+            </el-select>
+          </div>
+        </template>
       </div>
 
       <!-- 内容设置 -->
@@ -221,6 +234,22 @@
     <!-- 资源库弹窗 -->
     <el-dialog v-model="showAssetDialog" title="选择资源" width="600px" :close-on-click-modal="true" destroy-on-close>
       <div class="asset-dialog-content">
+        <div class="asset-filter-tabs">
+          <button
+            class="filter-tab"
+            :class="{ active: assetFilterType === 'image' }"
+            @click="assetFilterType = 'image'; openAssetDialog()"
+          >
+            标注资源
+          </button>
+          <button
+            class="filter-tab"
+            :class="{ active: assetFilterType === 'panorama' }"
+            @click="assetFilterType = 'panorama'; openAssetDialog()"
+          >
+            全景图
+          </button>
+        </div>
         <div v-if="assetList.length === 0" class="asset-empty">暂无资源，请先上传</div>
         <ul v-else class="asset-list">
           <li
@@ -261,6 +290,7 @@ const scenes = computed(() => vm.sceneViewModel.scenes.value)
 
 const clearing = ref(false)
 const showAssetDialog = ref(false)
+const assetFilterType = ref<'image' | 'panorama'>('image')
 const eventPlaceholder = '{"click":"func()"}'
 
 // 资源库 / 上传相关状态
@@ -301,8 +331,7 @@ function openAssetDialog() {
   showAssetDialog.value = true
   const projectId = currentProjectId.value
   if (projectId) {
-    // 加载当前项目的图片资源
-    void vm.assetViewModel.loadResources(projectId, 'image')
+    void vm.assetViewModel.loadResources(projectId, assetFilterType.value)
   }
 }
 
@@ -698,14 +727,27 @@ function handleExportXml() {
   flex-wrap: wrap;
 }
 
-.quad-point-row .quad-inputs {
-  flex: 1;
-  display: flex;
+/* 顶点坐标行：使用 Grid 精确控制 3 列（label + ath + atv），防止窄面板溢出 */
+.quad-point-row {
+  display: grid;
+  grid-template-columns: 40px 1fr 1fr;
   gap: 6px;
+  align-items: center;
+}
+
+.quad-point-row label {
+  min-width: auto;
+  text-align: left;
+  font-size: 11px;
+}
+
+.quad-point-row .quad-inputs {
+  display: contents;
 }
 
 .quad-point-row .quad-inputs .el-input-number {
-  flex: 1;
+  min-width: 0;
+  width: auto !important;
 }
 
 /* 属性区标题 */
@@ -863,6 +905,36 @@ function handleExportXml() {
 
 .asset-dialog-content {
   padding: 12px;
+}
+
+.asset-filter-tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 12px;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 8px;
+}
+
+.filter-tab {
+  padding: 4px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.filter-tab:hover {
+  border-color: var(--accent);
+  color: var(--text-primary);
+}
+
+.filter-tab.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
 }
 
 .asset-list {
