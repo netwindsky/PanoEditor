@@ -129,6 +129,7 @@
               <el-option label="警告标识" value="warning-sign" />
               <el-option label="自定义图片" value="custom-image" />
               <el-option label="自定义视频" value="custom-video" />
+              <el-option label="自定义SVG" value="custom-svg" />
               <el-option label="网页嵌入" value="custom-web" />
             </el-select>
           </div>
@@ -208,6 +209,24 @@
             </el-select>
           </div>
         </template>
+        <div class="prop-field">
+          <label>着色器</label>
+          <el-select v-model="form.shader" size="small" clearable placeholder="无" data-testid="shader-select" @change="scheduleAutoSave">
+            <el-option label="无" value="" />
+            <el-option label="灰度" value="grayscale" />
+            <el-option label="反色" value="invert" />
+            <el-option label="棕褐色" value="sepia" />
+            <el-option label="模糊" value="blur" />
+            <el-option label="描边" value="outline" />
+            <el-option label="晕影" value="vignette" />
+            <el-option label="像素化" value="pixelate" />
+            <el-option label="色偏" value="colorshift" />
+            <el-option label="胶片颗粒" value="filmgrain" />
+            <el-option label="扫描线" value="scanline" />
+            <el-option label="色差" value="chromaticaberration" />
+            <el-option label="波纹扭曲" value="wavedistortion" />
+          </el-select>
+        </div>
       </div>
 
       <!-- 内容设置 -->
@@ -254,6 +273,25 @@
         <div v-if="form.action === 'script'" class="prop-field align-top">
           <label>脚本代码</label>
           <el-input v-model="form.onclick" type="textarea" :rows="3" size="small" placeholder="javascript:..." />
+        </div>
+      </div>
+
+      <!-- 事件脚本 (events JSON) -->
+      <div class="prop-card">
+        <div class="card-title">事件脚本 (events)</div>
+        <div class="prop-field align-top" data-testid="events-section">
+          <label>事件 JSON</label>
+          <el-input
+            v-model="form.events"
+            type="textarea"
+            :rows="3"
+            size="small"
+            placeholder='{"click":"func()","hover":"showTip()"}'
+            @change="scheduleAutoSave"
+          />
+        </div>
+        <div v-if="eventsError" class="events-error" data-testid="events-error">
+          {{ eventsError }}
         </div>
       </div>
 
@@ -469,6 +507,7 @@ const form = reactive({
   content: '',
   action: 'none' as HotspotAction,
   points: '',
+  shader: '',
 })
 
 const quadPoints = computed<QuadPoint[]>({
@@ -506,6 +545,17 @@ const infoContent = reactive<InfoContent>({
 })
 
 const showUrl = computed(() => ['image', 'quad', 'model'].includes(form.type))
+
+// events JSON 格式验证
+const eventsError = computed(() => {
+  if (!form.events) return ''
+  try {
+    JSON.parse(form.events)
+    return ''
+  } catch {
+    return 'JSON 格式无效，请检查输入'
+  }
+})
 
 // 根据热点数据推断动作类型
 function inferAction(hotspot: Hotspot): HotspotAction {
@@ -546,6 +596,7 @@ watch(
     form.onclick = hotspot.onclick || ''
     form.followZoom = hotspot.followZoom ?? false
     form.content = hotspot.content || ''
+    form.shader = hotspot.shader || ''
     form.action = isSameHotspotRefresh ? previousAction : inferAction(hotspot)
     form.points = hotspot.points || ''
 
@@ -621,6 +672,7 @@ function doSave() {
     followZoom: form.followZoom,
     content: contentJson || undefined,
     points: form.points || undefined,
+    shader: form.shader || undefined,
   }
 
   if (form.action === 'scene') {

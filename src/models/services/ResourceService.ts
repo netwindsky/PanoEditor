@@ -9,7 +9,13 @@ export class ResourceService {
   constructor(private repository: IResourceRepository) {}
 
   async fetchResources(projectId: string, type?: ResourceType): Promise<Resource[]> {
-    return this.repository.fetchResources(projectId, type)
+    const resources = await this.repository.fetchResources(projectId, type)
+    // 当不指定 type 时，排除全景图资源。
+    // 全景图由 SceneService 管理，上传时存入资源表但不应作为普通资源展示。
+    if (type === undefined) {
+      return resources.filter((r) => r.type !== 'panorama')
+    }
+    return resources
   }
 
   async uploadResource(

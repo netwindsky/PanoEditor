@@ -291,6 +291,16 @@ export class PanoEngineAdapter {
   }
 
   /**
+   * 获取相机当前视角的快照（水平角、垂直角、视场角）。
+   * 用于"初始视角抓取"功能：将当前引擎视角写入场景初始视角字段。
+   */
+  public getCurrentView(): { yaw: number; pitch: number; hfov: number } {
+    const { ath, atv } = this.engine.getCenterCoords()
+    const hfov = this.engine.getCameraFov()
+    return { yaw: ath, pitch: atv, hfov }
+  }
+
+  /**
    * 增量移动热点
    */
   public moveHotspot(hotspotId: string, deltaAth: number, deltaAtv: number): void {

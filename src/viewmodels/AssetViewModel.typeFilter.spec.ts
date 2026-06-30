@@ -29,11 +29,6 @@ describe('AssetViewModel 资源类型筛选', () => {
     expect(service.fetchResources).toHaveBeenCalledWith('p1', 'image')
   })
 
-  it('loadResources 传 panorama 时应加载全景图资源', async () => {
-    await vm.loadResources('p1', 'panorama')
-    expect(service.fetchResources).toHaveBeenCalledWith('p1', 'panorama')
-  })
-
   it('uploadResource 应传递 type 参数给 service', async () => {
     const file = new File([''], 'test.jpg', { type: 'image/jpeg' })
     await vm.uploadResource('p1', file, 'image')

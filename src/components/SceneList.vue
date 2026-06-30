@@ -35,47 +35,55 @@
     </div>
 
     <div class="list-content">
-      <div
-        v-for="scene in vm.scenes.value"
-        :key="scene.id"
-        :class="['scene-item', { active: vm.currentScene.value?.id === scene.id }]"
-        @click="emit('select', scene.id)"
+      <draggable
+        v-model="localScenes"
+        item-key="id"
+        :animation="200"
+        handle=".scene-item"
+        @end="handleDragEnd"
       >
-        <div
-          class="scene-thumb"
-          :style="{ backgroundImage: 'url(' + (scene.thumbUrl || scene.previewUrl) + ')' }"
-        />
-        <div class="scene-info">
-          <span class="scene-name">{{ scene.name }}</span>
-          <span class="scene-meta">
-            <template v-if="getTilingStatus(scene.id)?.status === 'PROCESSING'">
-              <span class="tiling-status processing">
-                切片中 {{ getTilingStatus(scene.id)?.progress }}%
+        <template #item="{ element }">
+          <div
+            :class="['scene-item', { active: vm.currentScene.value?.id === element.id }]"
+            @click="emit('select', element.id)"
+          >
+            <div
+              class="scene-thumb"
+              :style="{ backgroundImage: 'url(' + (element.thumbUrl || element.previewUrl) + ')' }"
+            />
+            <div class="scene-info">
+              <span class="scene-name">{{ element.name }}</span>
+              <span class="scene-meta">
+                <template v-if="getTilingStatus(element.id)?.status === 'PROCESSING'">
+                  <span class="tiling-status processing">
+                    切片中 {{ getTilingStatus(element.id)?.progress }}%
+                  </span>
+                </template>
+                <template v-else-if="getTilingStatus(element.id)?.status === 'PENDING'">
+                  <span class="tiling-status pending">等待处理</span>
+                </template>
+                <template v-else-if="getTilingStatus(element.id)?.status === 'FAILED'">
+                  <span class="tiling-status failed">处理失败</span>
+                </template>
+                <template v-else>
+                  {{ element.hotspotCount || 0 }} 个热点
+                </template>
               </span>
-            </template>
-            <template v-else-if="getTilingStatus(scene.id)?.status === 'PENDING'">
-              <span class="tiling-status pending">等待处理</span>
-            </template>
-            <template v-else-if="getTilingStatus(scene.id)?.status === 'FAILED'">
-              <span class="tiling-status failed">处理失败</span>
-            </template>
-            <template v-else>
-              {{ scene.hotspotCount || 0 }} 个热点
-            </template>
-          </span>
-        </div>
-        <el-dropdown trigger="click" @command="(cmd: string) => handleCommand(cmd, scene.id)">
-          <el-button text size="small" class="scene-more" @click.stop>...</el-button>
-          <template #dropdown>
-            <el-dropdown-menu>
-              <el-dropdown-item command="rename">重命名</el-dropdown-item>
-              <el-dropdown-item command="delete" style="color: var(--danger)">删除</el-dropdown-item>
-            </el-dropdown-menu>
-          </template>
-        </el-dropdown>
-      </div>
+            </div>
+            <el-dropdown trigger="click" @command="(cmd: string) => handleCommand(cmd, element.id)">
+              <el-button text size="small" class="scene-more" @click.stop>...</el-button>
+              <template #dropdown>
+                <el-dropdown-menu>
+                  <el-dropdown-item command="rename">重命名</el-dropdown-item>
+                  <el-dropdown-item command="delete" style="color: var(--danger)">删除</el-dropdown-item>
+                </el-dropdown-menu>
+              </template>
+            </el-dropdown>
+          </div>
+        </template>
+      </draggable>
 
-      <div v-if="vm.scenes.value.length === 0 && !vm.isUploading.value" class="list-empty">
+      <div v-if="localScenes.length === 0 && !vm.isUploading.value" class="list-empty">
         暂无场景，点击 + 上传全景图创建
       </div>
     </div>
@@ -92,10 +100,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
+import draggable from 'vuedraggable'
 import { Plus } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import type { SceneViewModel } from '@/viewmodels/SceneViewModel'
+import type { Scene } from '@/types'
 
 const props = defineProps<{
   viewModel: SceneViewModel
@@ -108,6 +118,22 @@ const emit = defineEmits<{
 
 const vm = props.viewModel
 const fileInput = ref<HTMLInputElement>()
+
+// 本地排序列表，与 viewModel.scenes 同步
+const localScenes = ref<Scene[]>([...vm.scenes.value])
+
+watch(
+  () => vm.scenes.value,
+  (newScenes) => {
+    localScenes.value = [...newScenes]
+  },
+  { immediate: true },
+)
+
+function handleDragEnd() {
+  const reordered = localScenes.value.map((s, i) => ({ id: s.id, sortOrder: i }))
+  vm.reorderScenes(reordered)
+}
 
 function getTilingStatus(sceneId: string) {
   return vm.tilingStatusMap.get(sceneId)

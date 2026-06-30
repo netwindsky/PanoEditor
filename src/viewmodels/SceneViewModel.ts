@@ -162,6 +162,21 @@ export class SceneViewModel {
     }
   }
 
+  // === 场景排序 ===
+  async reorderScenes(newOrder: { id: string; sortOrder: number }[]): Promise<void> {
+    // 1. 更新本地 scenes 顺序
+    const orderMap = new Map(newOrder.map((n) => [n.id, n.sortOrder]))
+    const sorted = [...this.scenes.value].sort(
+      (a, b) => (orderMap.get(a.id) ?? a.sortOrder) - (orderMap.get(b.id) ?? b.sortOrder),
+    )
+    this.scenes.value = sorted
+
+    // 2. 持久化到后端
+    for (const item of newOrder) {
+      await this.sceneService.updateScene(item.id, { sortOrder: item.sortOrder })
+    }
+  }
+
   // === 切片进度轮询 ===
   private startTilingPolling(sceneId: string, projectId: string): void {
     console.log('[SceneViewModel] Starting tiling polling for:', sceneId)

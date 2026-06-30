@@ -4,7 +4,6 @@
       <div class="section-title">资源库</div>
       <div class="library-filter">
         <el-select v-model="filterType" size="small" placeholder="类型筛选" clearable style="width: 100%">
-          <el-option label="全景图" value="panorama" />
           <el-option label="图片" value="image" />
           <el-option label="视频" value="video" />
           <el-option label="音频" value="audio" />
@@ -45,7 +44,12 @@ const projectId = computed(() => projectStore.currentProject?.id || '')
 async function fetchResources() {
   if (!projectId.value) return
   const res = await getResources(projectId.value, filterType.value || undefined)
-  resources.value = res.data.data.records
+  let list: Resource[] = res.data.data.records
+  // 不筛选类型时排除全景图（全景图由场景管理，不视为普通资源）
+  if (!filterType.value) {
+    list = list.filter((r) => r.type !== 'panorama')
+  }
+  resources.value = list
 }
 
 watch(filterType, fetchResources, { immediate: true })

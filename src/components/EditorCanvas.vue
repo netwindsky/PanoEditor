@@ -43,6 +43,7 @@ import type { PanoEngineAdapter } from '@/utils/PanoEngineAdapter'
 import type { HotspotToolType } from '@/types'
 import { buildHotspotParams } from '@/utils/hotspotFactory'
 import { parsePoints, serializePoints, isQuadLike } from '@/utils/quadPoints'
+import { useEditorStore } from '@/stores/editor'
 
 const props = defineProps<{
   vm: EditorViewModel
@@ -51,6 +52,7 @@ const props = defineProps<{
 const vm = props.vm
 const panoViewerRef = ref<InstanceType<typeof PanoEngineViewer>>()
 const canvasContainer = ref<HTMLElement>()
+const editorStore = useEditorStore()
 let engine: PanoEngineAdapter | null = null
 
 // 所有已就绪场景的 imageConfig，用于预加载到引擎实现无缝切换
@@ -382,6 +384,7 @@ function handlePointerCancel() {
 
 function onEngineReady(adapter: PanoEngineAdapter) {
   engine = adapter
+  editorStore.setEngineAdapter(adapter)
   // 注入相机锁定器：拖拽热点时锁定全景旋转，结束时解锁
   vm.hotspotViewModel.setCameraLock({
     lock: () => engine?.disableControls(),
