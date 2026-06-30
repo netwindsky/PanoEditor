@@ -47,13 +47,13 @@ describe('HotspotViewModel 拖拽时锁定全景旋转', () => {
   })
 
   it('startDrag 时锁定全景旋转', () => {
-    vm.startDrag('a')
+    vm.startDrag('a', 0, 0)
     expect(cameraLock.lock).toHaveBeenCalledTimes(1)
     expect(cameraLock.unlock).not.toHaveBeenCalled()
   })
 
   it('endDrag 时解锁全景旋转', () => {
-    vm.startDrag('a')
+    vm.startDrag('a', 0, 0)
     vm.endDrag()
     expect(cameraLock.unlock).toHaveBeenCalledTimes(1)
   })
@@ -64,7 +64,7 @@ describe('HotspotViewModel 拖拽时锁定全景旋转', () => {
   })
 
   it('forceEndDrag 在拖拽中时解锁并清空拖拽状态', () => {
-    vm.startDrag('a')
+    vm.startDrag('a', 0, 0)
     vm.forceEndDrag()
     expect(cameraLock.unlock).toHaveBeenCalledTimes(1)
     expect(vm.draggingHotspotId.value).toBeNull()
@@ -77,7 +77,7 @@ describe('HotspotViewModel 拖拽时锁定全景旋转', () => {
   })
 
   it('forceEndDrag 不向后端提交更新(异常恢复不应误写)', () => {
-    vm.startDrag('a')
+    vm.startDrag('a', 0, 0)
     vm.forceEndDrag()
     expect(service.updateHotspot).not.toHaveBeenCalled()
   })
@@ -86,7 +86,7 @@ describe('HotspotViewModel 拖拽时锁定全景旋转', () => {
     const vm2 = new HotspotViewModel(service)
     vm2.hotspots.value = [makeHotspot('a')]
     expect(() => {
-      vm2.startDrag('a')
+      vm2.startDrag('a', 0, 0)
       vm2.endDrag()
     }).not.toThrow()
   })

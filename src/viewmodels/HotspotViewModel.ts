@@ -1,6 +1,6 @@
 import { ref, computed } from 'vue'
 import type { Hotspot, CreateHotspotParams, UpdateHotspotParams, HotspotService } from '@/models'
-import { parsePoints, serializePoints } from '@/utils/quadPoints'
+import { parsePoints, serializePoints, isQuadLike } from '@/utils/quadPoints'
 
 /**
  * 相机锁定器接口
@@ -35,6 +35,13 @@ export class HotspotViewModel {
   /** 四边形热点整体拖拽时记录的初始状态 */
   private quadDragInitialCenter: { ath: number; atv: number } | null = null
   private quadDragInitialPoints: string | null = null
+
+  /**
+   * 拖拽起点偏移：点击时鼠标球坐标与热点中心的差值。
+   * 拖动过程中热点新中心 = 鼠标球坐标 - 偏移，保证点击点相对热点中心的位置
+   * 在拖动全程不变，避免"第一次 move 热点跳到鼠标点"的跳变 bug。
+   */
+  private dragOffset: { ath: number; atv: number } | null = null
 
   constructor(private hotspotService: HotspotService) {}
 
@@ -94,14 +101,29 @@ export class HotspotViewModel {
   }
 
   // === 拖拽逻辑 ===
-  startDrag(hotspotId: string): void {
+  /**
+   * 开始拖拽热点。
+   * @param hotspotId 热点 ID
+   * @param mouseAth  点击时鼠标的球坐标 ath（度）
+   * @param mouseAtv  点击时鼠标的球坐标 atv（度）
+   */
+  startDrag(hotspotId: string, mouseAth: number, mouseAtv: number): void {
     this.draggingHotspotId.value = hotspotId
 
-    // 四边形热点：记录初始 center 和 points，用于整体拖拽时同步平移
     const hotspot = this.hotspots.value.find((h) => h.id === hotspotId)
-    if (hotspot && hotspot.type === 'quad' && hotspot.points) {
-      this.quadDragInitialCenter = { ath: hotspot.ath, atv: hotspot.atv }
-      this.quadDragInitialPoints = hotspot.points
+    if (hotspot) {
+      // 记录点击时鼠标与热点中心的偏移，拖动时用鼠标减偏移得到新中心，
+      // 保持点击点相对热点中心的位置不变，避免跳变。
+      this.dragOffset = {
+        ath: this.normalizeAth(mouseAth - hotspot.ath),
+        atv: mouseAtv - hotspot.atv,
+      }
+
+      // 四边形热点：记录初始 center 和 points，用于整体拖拽时同步平移
+      if (isQuadLike(hotspot.type) && hotspot.points) {
+        this.quadDragInitialCenter = { ath: hotspot.ath, atv: hotspot.atv }
+        this.quadDragInitialPoints = hotspot.points
+      }
     }
 
     // 拖拽热点时锁定全景旋转，避免热点与背景一起移动导致对不准位置
@@ -125,12 +147,16 @@ export class HotspotViewModel {
     const hotspot = this.getDraggingHotspot()
     if (!hotspot) return
 
-    this.setHotspotCoords(hotspot, ath, atv)
+    // 热点新中心 = 鼠标球坐标 - 点击时记录的偏移，
+    // 保证点击点相对热点中心的位置在拖动全程不变，避免跳变。
+    const newAth = this.dragOffset ? ath - this.dragOffset.ath : ath
+    const newAtv = this.dragOffset ? atv - this.dragOffset.atv : atv
+    this.setHotspotCoords(hotspot, newAth, newAtv)
 
     // 四边形热点整体拖拽：将 center 的位移 delta 同步应用到 4 个顶点
-    if (hotspot.type === 'quad' && this.quadDragInitialCenter && this.quadDragInitialPoints) {
-      const deltaAth = ath - this.quadDragInitialCenter.ath
-      const deltaAtv = atv - this.quadDragInitialCenter.atv
+    if (isQuadLike(hotspot.type) && this.quadDragInitialCenter && this.quadDragInitialPoints) {
+      const deltaAth = newAth - this.quadDragInitialCenter.ath
+      const deltaAtv = newAtv - this.quadDragInitialCenter.atv
       const pts = parsePoints(this.quadDragInitialPoints)
       if (pts.length === 4) {
         pts.forEach((p) => {
@@ -169,7 +195,7 @@ export class HotspotViewModel {
           atv: hotspot.atv,
         }
         // 四边形热点：一并提交更新后的 points
-        if (hotspot.type === 'quad' && hotspot.points) {
+        if (isQuadLike(hotspot.type) && hotspot.points) {
           params.points = hotspot.points
         }
         this.updateHotspot(hotspot.id, params)
@@ -177,6 +203,7 @@ export class HotspotViewModel {
       this.draggingHotspotId.value = null
       this.quadDragInitialCenter = null
       this.quadDragInitialPoints = null
+      this.dragOffset = null
       // 拖拽结束，解锁全景旋转
       this.cameraLock.unlock()
     }
@@ -191,6 +218,7 @@ export class HotspotViewModel {
       this.draggingHotspotId.value = null
       this.quadDragInitialCenter = null
       this.quadDragInitialPoints = null
+      this.dragOffset = null
       this.cameraLock.unlock()
     }
   }

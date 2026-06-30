@@ -2,8 +2,9 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { HotspotViewModel } from './HotspotViewModel'
 import type { Hotspot, HotspotService } from '@/models'
 
-function makeQuadHotspot(
+function makeQuadLikeHotspot(
   id: string,
+  type: 'quad' | 'video' = 'quad',
   ath = 0,
   atv = 0,
   points = '0 0 10 0 10 10 0 10',
@@ -11,12 +12,21 @@ function makeQuadHotspot(
   return {
     id,
     sceneId: 's1',
-    name: `四边形-${id}`,
-    type: 'quad',
+    name: `${type === 'video' ? '视频' : '四边形'}-${id}`,
+    type,
     ath,
     atv,
     points,
   } as Hotspot
+}
+
+function makeQuadHotspot(
+  id: string,
+  ath = 0,
+  atv = 0,
+  points = '0 0 10 0 10 10 0 10',
+): Hotspot {
+  return makeQuadLikeHotspot(id, 'quad', ath, atv, points)
 }
 
 function makeService(): HotspotService {
@@ -24,7 +34,7 @@ function makeService(): HotspotService {
     fetchHotspots: vi.fn(),
     createHotspot: vi.fn(),
     updateHotspot: vi.fn().mockImplementation((id, params) =>
-      Promise.resolve(makeQuadHotspot(id, params.ath ?? 0, params.atv ?? 0, params.points)),
+      Promise.resolve(makeQuadLikeHotspot(id, 'quad', params.ath ?? 0, params.atv ?? 0, params.points)),
     ),
     deleteHotspot: vi.fn().mockResolvedValue(undefined),
   } as unknown as HotspotService
@@ -43,7 +53,7 @@ describe('HotspotViewModel 四边形热点整体拖拽', () => {
     const h = makeQuadHotspot('q1', 5, 5, '10 20 30 20 30 40 10 40')
     vm.hotspots.value = [h]
     vm.selectHotspot('q1')
-    vm.startDrag('q1')
+    vm.startDrag('q1', 5, 5)
 
     // 拖拽开始后，内部应记录初始 points
     expect(vm.hotspots.value[0].points).toBe('10 20 30 20 30 40 10 40')
@@ -53,7 +63,7 @@ describe('HotspotViewModel 四边形热点整体拖拽', () => {
     const h = makeQuadHotspot('q1', 0, 0, '0 0 10 0 10 10 0 10')
     vm.hotspots.value = [h]
     vm.selectHotspot('q1')
-    vm.startDrag('q1')
+    vm.startDrag('q1', 0, 0)
 
     // 先拖到 (5, 5) —— 此时 delta = (5, 5)
     vm.updateDragToCoords(5, 5)
@@ -76,7 +86,7 @@ describe('HotspotViewModel 四边形热点整体拖拽', () => {
     const h = makeQuadHotspot('q1', 170, 0, '170 0 180 0 180 10 170 10')
     vm.hotspots.value = [h]
     vm.selectHotspot('q1')
-    vm.startDrag('q1')
+    vm.startDrag('q1', 170, 0)
 
     // 向右拖到 190°（越过 +180 边界，应归一化为 -170）
     vm.updateDragToCoords(190, 0)
@@ -91,12 +101,41 @@ describe('HotspotViewModel 四边形热点整体拖拽', () => {
     const h = makeQuadHotspot('q1', 0, 0, '0 0 10 0 10 10 0 10')
     vm.hotspots.value = [h]
     vm.selectHotspot('q1')
-    vm.startDrag('q1')
+    vm.startDrag('q1', 0, 0)
 
     vm.updateDragToCoords(5, 5)
     vm.endDrag()
 
     expect(service.updateHotspot).toHaveBeenCalledWith('q1', {
+      ath: 5,
+      atv: 5,
+      points: '5 5 15 5 15 15 5 15',
+    })
+  })
+
+  it('拖拽视频热点时，center 和 4 个顶点应像 quad 一样同步平移', () => {
+    const h = makeQuadLikeHotspot('v1', 'video', 0, 0, '0 0 10 0 10 10 0 10')
+    vm.hotspots.value = [h]
+    vm.selectHotspot('v1')
+    vm.startDrag('v1', 0, 0)
+
+    vm.updateDragToCoords(5, 5)
+
+    expect(vm.hotspots.value[0].ath).toBe(5)
+    expect(vm.hotspots.value[0].atv).toBe(5)
+    expect(vm.hotspots.value[0].points).toBe('5 5 15 5 15 15 5 15')
+  })
+
+  it('视频热点 endDrag 后应同时提交 center 和 points 到后端', () => {
+    const h = makeQuadLikeHotspot('v1', 'video', 0, 0, '0 0 10 0 10 10 0 10')
+    vm.hotspots.value = [h]
+    vm.selectHotspot('v1')
+    vm.startDrag('v1', 0, 0)
+
+    vm.updateDragToCoords(5, 5)
+    vm.endDrag()
+
+    expect(service.updateHotspot).toHaveBeenCalledWith('v1', {
       ath: 5,
       atv: 5,
       points: '5 5 15 5 15 15 5 15',
@@ -114,11 +153,48 @@ describe('HotspotViewModel 四边形热点整体拖拽', () => {
     } as Hotspot
     vm.hotspots.value = [infoH]
     vm.selectHotspot('i1')
-    vm.startDrag('i1')
+    vm.startDrag('i1', 10, 20)
 
     vm.updateDragToCoords(15, 25)
     expect(vm.hotspots.value[0].ath).toBe(15)
     expect(vm.hotspots.value[0].atv).toBe(25)
     expect(vm.hotspots.value[0].points).toBeUndefined()
+  })
+
+  it('点击偏移在拖动全程保持不变（不跳变）', () => {
+    // 热点中心在 (0, 0)，鼠标点击在 (3, 2) → offset = (3, 2)
+    const h = makeQuadHotspot('q1', 0, 0, '0 0 10 0 10 10 0 10')
+    vm.hotspots.value = [h]
+    vm.selectHotspot('q1')
+    vm.startDrag('q1', 3, 2)
+
+    // 鼠标移动到 (8, 7) → 热点中心 = 鼠标 - offset = (5, 5)
+    vm.updateDragToCoords(8, 7)
+    expect(vm.hotspots.value[0].ath).toBe(5)
+    expect(vm.hotspots.value[0].atv).toBe(5)
+
+    // 鼠标继续移动到 (13, 12) → 热点中心 = (10, 10)
+    vm.updateDragToCoords(13, 12)
+    expect(vm.hotspots.value[0].ath).toBe(10)
+    expect(vm.hotspots.value[0].atv).toBe(10)
+
+    // 关键：整个拖动过程中，鼠标与热点中心的差值始终 = offset = (3, 2)
+    // 即点击点相对热点中心的位置不变，不会跳变
+  })
+
+  it('非零初始中心 + 非零偏移时拖动正确', () => {
+    // 热点中心在 (20, 10)，鼠标点击在 (25, 12) → offset = (5, 2)
+    const h = makeQuadHotspot('q1', 20, 10, '20 10 30 10 30 20 20 20')
+    vm.hotspots.value = [h]
+    vm.selectHotspot('q1')
+    vm.startDrag('q1', 25, 12)
+
+    // 鼠标移动到 (30, 17) → 热点中心 = (30-5, 17-2) = (25, 15)
+    vm.updateDragToCoords(30, 17)
+    expect(vm.hotspots.value[0].ath).toBe(25)
+    expect(vm.hotspots.value[0].atv).toBe(15)
+
+    // 4 顶点同步平移 delta = (25-20, 15-10) = (5, 5)
+    expect(vm.hotspots.value[0].points).toBe('25 15 35 15 35 25 25 25')
   })
 })

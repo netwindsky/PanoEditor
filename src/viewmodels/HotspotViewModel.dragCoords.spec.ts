@@ -38,7 +38,8 @@ describe('HotspotViewModel.updateDragToCoords 绝对定位', () => {
     service = makeService()
     vm = new HotspotViewModel(service)
     vm.hotspots.value = [makeHotspot('a', 0, 0)]
-    vm.startDrag('a')
+    // 传入与热点中心相同的鼠标坐标 → offset = 0，保持原有"绝对定位"测试语义
+    vm.startDrag('a', 0, 0)
   })
 
   it('应把拖拽中热点的 ath/atv 直接设为传入的绝对坐标', () => {
