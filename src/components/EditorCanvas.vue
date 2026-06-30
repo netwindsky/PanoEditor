@@ -273,6 +273,8 @@ function onHandlePointerDown(e: PointerEvent, index: number) {
   const viewport = canvasContainer.value?.querySelector('.canvas-viewport') as HTMLElement | null
   viewport?.setPointerCapture(e.pointerId)
   engine?.disableControls()
+  // 同步设置拖动 flag，阻止 syncHotspots 全量重建
+  engine?.setDraggingMode(true)
 }
 
 // 指针事件处理
@@ -285,7 +287,16 @@ function handlePointerDown(e: PointerEvent) {
     if (hotspotId) {
       vm.hotspotViewModel.selectHotspot(hotspotId)
       vm.setRightPanelSection('hotspot')
-      vm.hotspotViewModel.startDrag(hotspotId)
+      // 传入点击时鼠标的球坐标，供 ViewModel 记录鼠标与热点中心的偏移，
+      // 拖动时用鼠标减偏移得到新中心，避免首次 move 跳变。
+      const coords = engine.getCoordsFromPoint(e.clientX, e.clientY)
+      vm.hotspotViewModel.startDrag(hotspotId, coords.ath, coords.atv)
+      // 同步设置拖动 flag，阻止 syncHotspots 全量重建
+      engine.setDraggingMode(true)
+      // 同步设置拖动 flag，阻止 syncHotspots 全量重建
+      engine.setDraggingMode(true)
+      // 同步设置拖动 flag，阻止 syncHotspots 全量重建
+      engine.setDraggingMode(true)
     }
   }
 }
@@ -305,8 +316,8 @@ function handlePointerMove(e: PointerEvent) {
       pts[selectedPointIndex.value].ath = coords.ath
       pts[selectedPointIndex.value].atv = coords.atv
       hotspot.points = serializePoints(pts)
-      // 实时同步到引擎，避免触发 PanoEngineViewer 的 watch 全量重建
-      engine.updateHotspotInScene(hotspot)
+      // 轻量级更新：只刷新 mesh 顶点，不销毁+重建 video/texture
+      engine.updateQuadGeometry(hotspot.id, hotspot.points)
     }
     return
   }
@@ -320,8 +331,8 @@ function handlePointerMove(e: PointerEvent) {
 
     const hotspot = vm.hotspotViewModel.hotspots.value.find((h) => h.id === id)
     if (hotspot && isQuadLike(hotspot.type)) {
-      // 四边形热点：points 已随 center 同步平移，需要重建 mesh 几何体
-      engine.updateHotspotInScene(hotspot)
+      // 四边形/视频热点：轻量级更新顶点几何体，避免重建 video 元素导致卡顿
+      engine.updateQuadGeometry(hotspot.id, hotspot.points)
     } else {
       engine.moveHotspotTo(id, coords.ath, coords.atv)
     }
@@ -334,6 +345,8 @@ function handlePointerUp() {
     isDraggingHandle.value = false
     selectedPointIndex.value = null
     engine?.enableControls()
+    // 解除拖动 flag，恢复 syncHotspots 正常工作
+    engine?.setDraggingMode(false)
 
     // 保存到后端
     const hotspot = vm.hotspotViewModel.selectedHotspot.value
@@ -345,6 +358,8 @@ function handlePointerUp() {
 
   if (vm.hotspotViewModel.isDragging.value) {
     vm.hotspotViewModel.endDrag()
+    // 解除拖动 flag，恢复 syncHotspots 正常工作
+    engine?.setDraggingMode(false)
   }
 }
 
@@ -355,11 +370,13 @@ function handlePointerCancel() {
     isDraggingHandle.value = false
     selectedPointIndex.value = null
     engine?.enableControls()
+    engine?.setDraggingMode(false)
     return
   }
 
   if (vm.hotspotViewModel.isDragging.value) {
     vm.hotspotViewModel.forceEndDrag()
+    engine?.setDraggingMode(false)
   }
 }
 

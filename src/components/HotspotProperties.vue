@@ -505,7 +505,7 @@ const infoContent = reactive<InfoContent>({
   imageUrl: '',
 })
 
-const showUrl = computed(() => ['image', 'quad', 'model', 'video'].includes(form.type))
+const showUrl = computed(() => ['image', 'quad', 'model'].includes(form.type))
 
 // 根据热点数据推断动作类型
 function inferAction(hotspot: Hotspot): HotspotAction {
