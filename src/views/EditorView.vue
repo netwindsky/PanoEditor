@@ -11,11 +11,12 @@
       <RightPanel v-if="vm.rightPanelVisible.value" :vm="vm" />
     </div>
     <StatusBar :vm="vm" />
+    <ProjectModal v-model="showProjectModal" />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, provide, onMounted, onBeforeUnmount, computed } from 'vue'
+import { ref, provide, onMounted, onBeforeUnmount, computed, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { EditorViewModel } from '@/viewmodels/EditorViewModel'
 import { ProjectRepository } from '@/models/repositories/ProjectRepository'
@@ -33,6 +34,7 @@ import EditorCanvas from '@/components/EditorCanvas.vue'
 import RightPanel from '@/components/RightPanel.vue'
 import TimelineBar from '@/components/TimelineBar.vue'
 import StatusBar from '@/components/StatusBar.vue'
+import ProjectModal from '@/components/ProjectModal.vue'
 
 const route = useRoute()
 const showProjectModal = ref(false)
@@ -65,6 +67,12 @@ onMounted(async () => {
     await vm.loadProject(projectId.value)
   } else {
     showProjectModal.value = true
+  }
+})
+
+watch(projectId, async (newId, oldId) => {
+  if (newId && newId !== oldId) {
+    await vm.loadProject(newId)
   }
 })
 

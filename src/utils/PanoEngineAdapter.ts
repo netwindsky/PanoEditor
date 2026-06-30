@@ -195,6 +195,14 @@ export class PanoEngineAdapter {
   }
 
   /**
+   * 将球面 ath/atv 坐标投影到屏幕坐标。
+   * 用于编辑器在全景画面上叠加控制点等临时标记。
+   */
+  public projectToScreen(ath: number, atv: number): { x: number; y: number; visible: boolean } {
+    return this.engine.projectToScreen(ath, atv)
+  }
+
+  /**
    * 获取相机中心方向对应的 ath/atv 坐标
    */
   public getCenterCoords(): { ath: number; atv: number } {
