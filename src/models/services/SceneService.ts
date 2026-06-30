@@ -56,6 +56,32 @@ export class SceneService {
     return { scene }
   }
 
+  /**
+   * 批量上传全景图并创建场景
+   * 业务步骤：1.批量上传文件作为资源 2.为每个成功上传的资源创建场景
+   */
+  async uploadPanoramas(
+    projectId: string,
+    files: File[]
+  ): Promise<{ scenes: Scene[]; failed: { fileName: string; error: string }[] }> {
+    // 1. 批量上传文件作为资源
+    const batchResponse = await this.resourceRepo.batchUploadResources(
+      projectId,
+      files,
+      'panorama'
+    )
+
+    // 2. 为每个成功上传的资源创建场景
+    const scenes: Scene[] = []
+    for (const resource of batchResponse.succeeded) {
+      const sceneName = resource.name.replace(/\.[^.]+$/, '')
+      const scene = await this.createScene(projectId, sceneName, resource.url)
+      scenes.push(scene)
+    }
+
+    return { scenes, failed: batchResponse.failed }
+  }
+
   async fetchTilingProgress(sceneId: string): Promise<TileProgress> {
     return this.sceneRepo.fetchTilingProgress(sceneId)
   }

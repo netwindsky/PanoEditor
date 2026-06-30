@@ -2,12 +2,12 @@
   <div class="scene-list">
     <div class="list-header">
       <span class="list-title">场景列表</span>
-      <el-button text size="small" @click="handleAdd" :loading="vm.uploading.value">
-        <el-icon v-if="!vm.uploading.value"><Plus /></el-icon>
+      <el-button text size="small" @click="handleAdd" :loading="vm.isUploading.value">
+        <el-icon v-if="!vm.isUploading.value"><Plus /></el-icon>
       </el-button>
     </div>
 
-    <!-- 上传进度条 -->
+    <!-- 单文件上传进度条 -->
     <div v-if="vm.uploading.value" class="upload-progress">
       <el-progress 
         :percentage="vm.uploadProgress.value" 
@@ -16,6 +16,17 @@
         status="success"
       />
       <span class="upload-label">上传中 {{ vm.uploadProgress.value }}%</span>
+    </div>
+
+    <!-- 批量上传进度 -->
+    <div v-if="vm.batchUploading.value" class="upload-progress">
+      <el-progress 
+        :percentage="Math.round((vm.batchUploadCurrent.value / vm.batchUploadTotal.value) * 100)" 
+        :stroke-width="4" 
+        :show-text="true"
+        status="success"
+      />
+      <span class="upload-label">上传中 {{ vm.batchUploadCurrent.value }} / {{ vm.batchUploadTotal.value }}</span>
     </div>
     
     <!-- 上传错误提示 -->
@@ -28,7 +39,7 @@
         v-for="scene in vm.scenes.value"
         :key="scene.id"
         :class="['scene-item', { active: vm.currentScene.value?.id === scene.id }]"
-        @click="vm.selectScene(scene.id)"
+        @click="emit('select', scene.id)"
       >
         <div
           class="scene-thumb"
@@ -64,7 +75,7 @@
         </el-dropdown>
       </div>
 
-      <div v-if="vm.scenes.value.length === 0 && !vm.uploading.value" class="list-empty">
+      <div v-if="vm.scenes.value.length === 0 && !vm.isUploading.value" class="list-empty">
         暂无场景，点击 + 上传全景图创建
       </div>
     </div>
@@ -72,6 +83,7 @@
     <input
       ref="fileInput"
       type="file"
+      multiple
       style="display: none"
       accept="image/*"
       @change="handleFileChange"
@@ -88,6 +100,10 @@ import type { SceneViewModel } from '@/viewmodels/SceneViewModel'
 const props = defineProps<{
   viewModel: SceneViewModel
   projectId?: string
+}>()
+
+const emit = defineEmits<{
+  (e: 'select', sceneId: string): void
 }>()
 
 const vm = props.viewModel
@@ -111,11 +127,17 @@ function handleCommand(command: string, sceneId: string) {
 
 async function handleFileChange(event: Event) {
   const target = event.target as HTMLInputElement
-  const file = target.files?.[0]
-  if (!file) return
+  const files = Array.from(target.files || [])
+  if (files.length === 0) return
 
-  if (!file.type.startsWith('image/')) {
-    ElMessage.error('请选择图片文件')
+  // 过滤非图片文件
+  const imageFiles = files.filter((file) => file.type.startsWith('image/'))
+  const nonImageCount = files.length - imageFiles.length
+  if (nonImageCount > 0) {
+    ElMessage.warning(`已过滤 ${nonImageCount} 个非图片文件`)
+  }
+
+  if (imageFiles.length === 0) {
     target.value = ''
     return
   }
@@ -127,9 +149,22 @@ async function handleFileChange(event: Event) {
   }
 
   try {
-    console.log('[SceneList] Starting upload for file:', file.name)
-    await vm.uploadPanorama(props.projectId, file)
-    ElMessage.success('上传成功')
+    if (imageFiles.length === 1) {
+      // 单文件上传，使用原有逻辑
+      console.log('[SceneList] Starting upload for file:', imageFiles[0].name)
+      await vm.uploadPanorama(props.projectId, imageFiles[0])
+      ElMessage.success('上传成功')
+    } else {
+      // 批量上传
+      console.log('[SceneList] Starting batch upload for', imageFiles.length, 'files')
+      await vm.uploadPanoramas(props.projectId, imageFiles)
+      const failedCount = vm.batchUploadFailed.value.length
+      if (failedCount > 0) {
+        ElMessage.warning(`${imageFiles.length - failedCount} 个文件上传成功，${failedCount} 个失败`)
+      } else {
+        ElMessage.success(`${imageFiles.length} 个文件上传成功`)
+      }
+    }
   } catch (error: any) {
     console.error('[SceneList] Upload failed:', error)
     ElMessage.error(vm.uploadError.value || '上传失败')

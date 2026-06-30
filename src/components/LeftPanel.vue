@@ -11,7 +11,7 @@
       </div>
     </div>
     <div class="panel-content">
-      <SceneList v-if="vm.leftPanelTab.value === 'scene'" :viewModel="vm.sceneViewModel" :projectId="projectId" />
+      <SceneList v-if="vm.leftPanelTab.value === 'scene'" :viewModel="vm.sceneViewModel" :projectId="projectId" @select="(id: string) => vm.switchScene(id)" />
       <AssetGrid v-else-if="vm.leftPanelTab.value === 'asset'" :vm="vm.assetViewModel" :projectId="projectId" />
       <LayerPanel v-else-if="vm.leftPanelTab.value === 'layer'" />
     </div>

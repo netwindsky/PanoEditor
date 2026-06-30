@@ -200,6 +200,16 @@ export interface UploadResourceParams {
   type: ResourceType
 }
 
+export interface BatchUploadResponse {
+  succeeded: Resource[]
+  failed: FailedItem[]
+}
+
+export interface FailedItem {
+  fileName: string
+  error: string
+}
+
 // ============ 后期处理 ============
 export interface PostProcessing {
   id: string
@@ -281,7 +291,7 @@ export interface TileProgress {
 // ============ 编辑器状态 ============
 export type EditorTool = 'select' | 'hotspot' | 'pan' | 'zoom'
 
-export type HotspotToolType = 'info' | 'scene' | 'image' | 'quad' | 'model'
+export type HotspotToolType = 'info' | 'scene' | 'image' | 'quad' | 'model' | 'video'
 
 export type LeftPanelTab = 'scene' | 'asset' | 'layer'
 

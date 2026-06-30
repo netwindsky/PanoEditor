@@ -1,5 +1,5 @@
 import http from './index'
-import type { ApiResponse, Resource, ResourceType } from '@/types'
+import type { ApiResponse, Resource, ResourceType, BatchUploadResponse } from '@/types'
 import type { AxiosProgressEvent } from 'axios'
 
 export function getResources(projectId: string, type?: ResourceType) {
@@ -20,6 +20,19 @@ export function uploadResource(
   return http.post<ApiResponse<Resource>>(`/projects/${projectId}/resources/upload`, formData, {
     headers: { 'Content-Type': 'multipart/form-data' },
     onUploadProgress,
+  })
+}
+
+export function batchUploadResources(
+  projectId: string,
+  files: File[],
+  type: ResourceType,
+) {
+  const formData = new FormData()
+  files.forEach((file) => formData.append('files', file))
+  formData.append('type', type)
+  return http.post<ApiResponse<BatchUploadResponse>>(`/projects/${projectId}/resources/batch-upload`, formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
   })
 }
 

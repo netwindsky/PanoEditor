@@ -17,13 +17,18 @@ export class SceneViewModel {
   uploading = ref(false)
   uploadProgress = ref(0)
   uploadError = ref<string>('')
+  // 批量上传状态
+  batchUploading = ref(false)
+  batchUploadTotal = ref(0)
+  batchUploadCurrent = ref(0)
+  batchUploadFailed = ref<{ fileName: string; error: string }[]>([])
   tilingStatusMap = reactive(new Map<string, TilingStatus>())
   private pollingTimers = new Map<string, ReturnType<typeof setInterval>>()
 
   // === 计算属性 ===
   hasScenes = computed(() => this.scenes.value.length > 0)
   currentSceneConfig = computed(() => this.currentScene.value?.imageConfig ?? null)
-  isUploading = computed(() => this.uploading.value)
+  isUploading = computed(() => this.uploading.value || this.batchUploading.value)
   currentUploadProgress = computed(() => this.uploadProgress.value)
 
   // 当前场景的切片状态，归一化为 PanoEngineViewer 期望的 PROCESSING / READY / FAILED。
@@ -105,6 +110,42 @@ export class SceneViewModel {
       console.log('[SceneViewModel] Resetting upload state')
       this.uploading.value = false
       this.uploadProgress.value = 0
+    }
+  }
+
+  // === 批量场景创建 ===
+  async uploadPanoramas(projectId: string, files: File[]): Promise<void> {
+    console.log('[SceneViewModel] Starting batch upload...')
+    this.batchUploading.value = true
+    this.batchUploadTotal.value = files.length
+    this.batchUploadCurrent.value = 0
+    this.batchUploadFailed.value = []
+    this.uploadError.value = ''
+
+    try {
+      const { scenes, failed } = await this.sceneService.uploadPanoramas(projectId, files)
+
+      console.log('[SceneViewModel] Batch upload complete, scenes:', scenes.length, 'failed:', failed.length)
+      this.scenes.value.push(...scenes)
+
+      // 为每个成功的场景启动切片轮询
+      for (const scene of scenes) {
+        this.startTilingPolling(scene.id, projectId)
+      }
+
+      this.batchUploadFailed.value = failed
+      this.batchUploadCurrent.value = scenes.length
+
+      if (failed.length > 0) {
+        throw new Error(`${failed.length} 个文件上传失败`)
+      }
+    } catch (error: any) {
+      console.error('[SceneViewModel] Batch upload failed:', error)
+      this.uploadError.value = error.message || '批量上传失败'
+      throw error
+    } finally {
+      console.log('[SceneViewModel] Resetting batch upload state')
+      this.batchUploading.value = false
     }
   }
 

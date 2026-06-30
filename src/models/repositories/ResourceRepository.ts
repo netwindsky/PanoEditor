@@ -1,4 +1,4 @@
-import type { Resource, ResourceType } from '@/types'
+import type { Resource, ResourceType, BatchUploadResponse } from '@/types'
 import type { AxiosProgressEvent } from 'axios'
 import * as resourceApi from '@/api/resource'
 
@@ -14,6 +14,11 @@ export interface IResourceRepository {
     type: ResourceType,
     onProgress?: (progress: number) => void
   ): Promise<Resource>
+  batchUploadResources(
+    projectId: string,
+    files: File[],
+    type: ResourceType
+  ): Promise<BatchUploadResponse>
   deleteResource(id: string): Promise<void>
 }
 
@@ -44,6 +49,15 @@ export class ResourceRepository implements IResourceRepository {
           }
         : undefined
     )
+    return res.data.data
+  }
+
+  async batchUploadResources(
+    projectId: string,
+    files: File[],
+    type: ResourceType
+  ): Promise<BatchUploadResponse> {
+    const res = await resourceApi.batchUploadResources(projectId, files, type)
     return res.data.data
   }
 
