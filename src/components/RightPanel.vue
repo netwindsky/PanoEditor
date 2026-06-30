@@ -7,7 +7,7 @@
       </el-button>
     </div>
     <div class="panel-sections">
-      <SceneProperties v-if="vm.rightPanelSection.value === 'scene'" />
+      <SceneProperties v-if="vm.rightPanelSection.value === 'scene'" :vm="vm" />
       <HotspotProperties v-else-if="vm.rightPanelSection.value === 'hotspot'" />
       <AudioSettings v-else-if="vm.rightPanelSection.value === 'audio'" />
       <PostProcessingPanel v-else-if="vm.rightPanelSection.value === 'postprocessing'" />
