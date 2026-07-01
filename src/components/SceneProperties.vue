@@ -133,8 +133,9 @@
 <script setup lang="ts">
 import { computed, reactive, watch, onBeforeUnmount } from 'vue'
 import { useEditorStore } from '@/stores/editor'
-import type { LimitViewMode, FovType, InitialView, SceneLocation } from '@/types'
+import type { LimitViewMode, FovType, InitialView, SceneLocation, ResourceType } from '@/types'
 import type { EditorViewModel } from '@/viewmodels/EditorViewModel'
+import { uploadResource } from '@/api/resource'
 
 const props = defineProps<{
   vm: EditorViewModel
@@ -259,13 +260,26 @@ function handleUpdate() {
 
 /**
  * 从当前全景视口截取 640×360 缩略图并保存。
+ * 将 canvas dataUrl 转为 File 上传到服务器，用返回的 URL 作为 thumbUrl，
+ * 避免 dataUrl 过长超出数据库 VARCHAR(500) 限制。
  */
 async function handleGenerateThumbnail() {
   const adapter = editorStore.engineAdapter
-  if (!adapter) return
+  const scene = props.vm.sceneViewModel.currentScene.value
+  if (!adapter || !scene) return
   try {
     const dataUrl = await adapter.captureThumbnail(640, 360)
-    form.thumbUrl = dataUrl
+
+    // dataUrl → Blob → File
+    const res = await fetch(dataUrl)
+    const blob = await res.blob()
+    const file = new File([blob], `thumb_${scene.id}.jpg`, { type: 'image/jpeg' })
+
+    // 上传到服务器
+    const response = await uploadResource(scene.projectId, file, 'image' as ResourceType)
+    const serverUrl = response.data.data.url
+
+    form.thumbUrl = serverUrl
     void doUpdate()
   } catch (e) {
     console.error('[SceneProperties] 缩略图生成失败:', e)

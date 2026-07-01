@@ -29,13 +29,16 @@ import { ref, shallowRef, watch, computed, onMounted, onBeforeUnmount, nextTick 
 import { PanoEngineAdapter } from '@/utils/PanoEngineAdapter'
 import { perf } from '@/utils/performanceMonitor'
 import type { Hotspot } from '@/types'
+import type { SceneData } from '@panoview'
 
 const props = defineProps<{
-  sceneConfig: string | null
+  /** 引擎直吃的 SceneData（视角来自 ViewModel 派生，非从 JSON string 解析） */
+  sceneData: SceneData | null
   tilingStatus: string
   tilingProgress: number
   hotspots: Hotspot[]
-  allSceneConfigs?: string[]
+  /** 预加载模式：一次性把所有已就绪场景注入引擎，供无缝切换 */
+  allSceneData?: SceneData[]
   sceneId?: string | null
   isDragging?: boolean
 }>()
@@ -47,7 +50,7 @@ const emit = defineEmits<{
 const container = ref<HTMLElement>()
 const engineRef = shallowRef<PanoEngineAdapter | null>(null)
 let isLoading = false
-let pendingSceneConfig: string | null = null
+let pendingSceneData: SceneData | null = null
 let lastHotspotsSnapshot = ''
 let hasPreloaded = false
 
@@ -74,7 +77,7 @@ function endTransitionOverlay() {
 }
 
 // ===== 模式判断 =====
-const usePreloadMode = computed(() => !!props.allSceneConfigs && props.allSceneConfigs.length > 0)
+const usePreloadMode = computed(() => !!props.allSceneData && props.allSceneData.length > 0)
 
 function syncHotspotsIfChanged(engine: PanoEngineAdapter, hotspots: Hotspot[]) {
   // 同步检查拖动 flag（绕过 Vue 响应式 prop 时序问题）。
@@ -97,37 +100,50 @@ watch(
   { deep: true, immediate: true },
 )
 
-// ===== 预加载模式：首次传入 allSceneConfigs 时一次性加载所有场景 =====
-watch(
-  () => [props.allSceneConfigs, props.tilingStatus] as const,
-  async ([configs, status]) => {
-    if (!usePreloadMode.value || hasPreloaded) return
-    if (!configs || status !== 'READY' || isLoading) return
-    if (!container.value) return
+/**
+ * 预加载所有已就绪场景到引擎，并激活当前场景。
+ * 提取为独立函数，供 watch 和 onMounted 复用（onMounted 时数据已就绪但 watch 不会自动触发）。
+ */
+async function startPreload(): Promise<void> {
+  if (!usePreloadMode.value || hasPreloaded) return
+  if (!props.allSceneData || props.tilingStatus !== 'READY' || isLoading) return
+  if (!container.value) return
 
-    isLoading = true
-    startTransitionOverlay()
-    try {
-      const endCreate = perf.stage('viewer-create-engine')
-      const engine = new PanoEngineAdapter(container.value)
-      perfEngineCreateCount++
-      endCreate({ engineCount: perfEngineCreateCount })
+  isLoading = true
+  startTransitionOverlay()
+  try {
+    const endCreate = perf.stage('viewer-create-engine')
+    const engine = new PanoEngineAdapter(container.value)
+    perfEngineCreateCount++
+    endCreate({ engineCount: perfEngineCreateCount })
 
-      const parsedConfigs = configs.map((c) => JSON.parse(c))
-      await perf.measureAsync('viewer-preload-scenes', () =>
-        engine.preloadScenes(parsedConfigs),
-      )
+    await perf.measureAsync('viewer-preload-scenes', () =>
+      engine.preloadScenes(props.allSceneData as unknown as Record<string, any>[]),
+    )
 
-      engineRef.value = engine
-      hasPreloaded = true
+    engineRef.value = engine
+    hasPreloaded = true
+    syncHotspotsIfChanged(engine, props.hotspots)
+    emit('engine-ready', engine)
+
+    // 预加载完成后立即激活当前场景（sceneId watch 不会在初始挂载时触发）
+    if (props.sceneId) {
+      await perf.measureAsync('viewer-switch-scene', () => engine.switchScene(props.sceneId!))
       syncHotspotsIfChanged(engine, props.hotspots)
-      emit('engine-ready', engine)
-    } catch (e) {
-      console.error('Failed to preload scenes:', e)
-    } finally {
-      isLoading = false
       setTimeout(endTransitionOverlay, TRANSITION_HOLD_MS)
     }
+  } catch (e) {
+    console.error('Failed to preload scenes:', e)
+  } finally {
+    isLoading = false
+  }
+}
+
+// ===== 预加载模式：allSceneData / tilingStatus 变化时触发预加载 =====
+watch(
+  () => [props.allSceneData, props.tilingStatus] as const,
+  async () => {
+    await startPreload()
   },
 )
 
@@ -145,8 +161,8 @@ watch(
       syncHotspotsIfChanged(engine, props.hotspots)
     } catch (e) {
       console.warn('Switch scene failed, fallback to single-scene load:', e)
-      if (props.sceneConfig) {
-        await loadScene(props.sceneConfig)
+      if (props.sceneData) {
+        await loadScene(props.sceneData)
         return
       }
     }
@@ -155,27 +171,27 @@ watch(
   },
 )
 
-// ===== 兼容模式：单 sceneConfig 加载 =====
+// ===== 兼容模式：单 sceneData 加载 =====
 watch(
-  () => [props.sceneConfig, props.tilingStatus] as const,
-  ([config, status], old) => {
+  () => [props.sceneData, props.tilingStatus] as const,
+  ([data, status], old) => {
     if (usePreloadMode.value) return
     perf.mark('viewer-watch-fired', {
       status,
-      configChanged: old ? config !== old[0] : true,
+      configChanged: old ? data !== old[0] : true,
       statusChanged: old ? status !== old[1] : true,
       isLoading,
     })
-    if (config && status === 'READY') {
-      loadScene(config)
+    if (data && status === 'READY') {
+      loadScene(data)
     }
   },
 )
 
-async function loadScene(configJson: string) {
+async function loadScene(sceneData: SceneData) {
   if (!container.value) return
   if (isLoading) {
-    pendingSceneConfig = configJson
+    pendingSceneData = sceneData
     return
   }
   isLoading = true
@@ -196,8 +212,7 @@ async function loadScene(configJson: string) {
       perf.mark('viewer-reuse-engine')
     }
 
-    const config = JSON.parse(configJson)
-    await perf.measureAsync('viewer-load-scene-config', () => engine!.loadSceneConfig(config))
+    await perf.measureAsync('viewer-load-scene-config', () => engine!.loadSceneConfig(sceneData))
 
     if (isNewEngine) {
       engineRef.value = engine
@@ -210,12 +225,12 @@ async function loadScene(configJson: string) {
   } finally {
     endLoad()
     isLoading = false
-    if (pendingSceneConfig && pendingSceneConfig !== configJson) {
-      const nextConfig = pendingSceneConfig
-      pendingSceneConfig = null
-      void loadScene(nextConfig)
+    if (pendingSceneData && pendingSceneData !== sceneData) {
+      const next = pendingSceneData
+      pendingSceneData = null
+      void loadScene(next)
     } else {
-      pendingSceneConfig = null
+      pendingSceneData = null
     }
   }
 }
@@ -228,13 +243,20 @@ defineExpose({ getEngine })
 
 onMounted(() => {
   perf.mark('viewer-mounted', {
-    hasConfig: !!props.sceneConfig,
+    hasConfig: !!props.sceneData,
     hasPreload: usePreloadMode.value,
     status: props.tilingStatus,
   })
-  if (usePreloadMode.value) return
-  if (props.sceneConfig && props.tilingStatus === 'READY') {
-    loadScene(props.sceneConfig)
+  if (usePreloadMode.value) {
+    // 初始挂载时若数据已就绪，主动触发预加载。
+    // 此时数据不会再有"变更"来驱动 watch 回调，需要 onMounted 兜底。
+    if (!hasPreloaded && props.allSceneData?.length && props.tilingStatus === 'READY') {
+      void startPreload()
+    }
+    return
+  }
+  if (props.sceneData && props.tilingStatus === 'READY') {
+    loadScene(props.sceneData)
   }
 })
 

@@ -14,12 +14,12 @@
       <div v-else class="canvas-content">
         <PanoEngineViewer
           ref="panoViewerRef"
-          :scene-config="vm.sceneViewModel.currentSceneConfig.value"
+          :scene-data="vm.sceneViewModel.currentEngineSceneData.value"
           :tiling-status="vm.sceneViewModel.currentTilingStatus.value"
           :tiling-progress="vm.sceneViewModel.currentTilingProgress.value"
           :hotspots="vm.hotspotViewModel.hotspots.value"
           :is-dragging="vm.hotspotViewModel.isDragging.value"
-          :all-scene-configs="allSceneConfigs.value"
+          :all-scene-data="vm.sceneViewModel.allEngineSceneData.value"
           :scene-id="vm.sceneViewModel.currentScene.value?.id || null"
           class="pano-preview-wrap"
           @engine-ready="onEngineReady"
@@ -54,13 +54,6 @@ const panoViewerRef = ref<InstanceType<typeof PanoEngineViewer>>()
 const canvasContainer = ref<HTMLElement>()
 const editorStore = useEditorStore()
 let engine: PanoEngineAdapter | null = null
-
-// 所有已就绪场景的 imageConfig，用于预加载到引擎实现无缝切换
-const allSceneConfigs = computed(() =>
-  vm.sceneViewModel.scenes.value
-    .filter((s) => s.imageConfig)
-    .map((s) => s.imageConfig),
-)
 
 // ===== 矩形热点控制点 =====
 const HANDLE_SIZE = 12
