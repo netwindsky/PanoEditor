@@ -1,4 +1,4 @@
-import type { Project, Scene, Hotspot, TourSettings, SceneViewConfig, OverlayLayer } from '@/types'
+import type { Project, Scene, Hotspot, TourSettings, OverlayLayer } from '@/types'
 
 /**
  * 将编辑器数据序列化为 krpano XML 格式
@@ -84,28 +84,10 @@ export function exportToKrpanoXml(
 
   // scenes
   for (const scene of sortedScenes) {
-    // 解析 viewConfig 获取 GPS 坐标
-    let lat: number | undefined
-    let lng: number | undefined
-    let heading: number | undefined
-    let onstart: string | undefined
-
-    if (scene.viewConfig) {
-      try {
-        const vc = JSON.parse(scene.viewConfig) as SceneViewConfig
-        lat = vc.lat
-        lng = vc.lng
-        heading = vc.heading
-        onstart = vc.onstart
-      } catch {
-        // ignore parse error
-      }
-    }
-
-    // 回退到 scene 直接字段
-    lat = lat ?? scene.lat
-    lng = lng ?? scene.lng
-    heading = heading ?? scene.heading
+    // 从 domain scene 直接读取位置与 onstart（Repository 已归一化）
+    const location = scene.location ?? {}
+    const { lat, lng, heading } = location
+    const onstart = scene.onstart
 
     const sceneAttrs = [
       `name="${escapeXml(scene.name)}"`,
@@ -119,18 +101,18 @@ export function exportToKrpanoXml(
 
     lines.push(`  <scene ${sceneAttrs}>`)
 
-    // view
+    // view (InitialView 所有字段必填，无需 null 检查)
     const iv = scene.initialView
     const viewAttrs = [
       `hlookat="${iv.yaw}"`,
       `vlookat="${iv.pitch}"`,
       `fov="${iv.hfov}"`,
-      iv.fovMin != null ? `fovmin="${iv.fovMin}"` : '',
-      iv.fovMax != null ? `fovmax="${iv.fovMax}"` : '',
-      iv.maxPixelZoom != null ? `maxpixelzoom="${iv.maxPixelZoom}"` : '',
-      iv.limitView ? `limitview="${iv.limitView}"` : '',
-      iv.fovType ? `fovtype="${iv.fovType}"` : '',
-    ].filter(Boolean).join(' ')
+      `fovmin="${iv.fovMin}"`,
+      `fovmax="${iv.fovMax}"`,
+      `maxpixelzoom="${iv.maxPixelZoom}"`,
+      `limitview="${iv.limitView}"`,
+      `fovtype="${iv.fovType}"`,
+    ].join(' ')
     lines.push(`    <view ${viewAttrs} />`)
 
     // preview
