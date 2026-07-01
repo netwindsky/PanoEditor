@@ -171,6 +171,34 @@ watch(
   },
 )
 
+// ===== 预加载模式：视角变化时实时更新相机（不重新加载场景） =====
+// 滑块拖动时 sceneData 的 view 字段变化，但 sceneId 不变，只需更新相机朝向和 FOV
+let lastViewSnapshot = ''
+watch(
+  () => props.sceneData,
+  (newData) => {
+    if (!usePreloadMode.value || !hasPreloaded || !newData?.view) return
+    const engine = engineRef.value
+    if (!engine) return
+
+    // 构建 view 快照，避免重复调用 setCameraView
+    const viewSnapshot = JSON.stringify(newData.view)
+    if (viewSnapshot === lastViewSnapshot) return
+    lastViewSnapshot = viewSnapshot
+
+    // 仅当 scene ID 与当前引擎加载的场景一致时，才更新相机（避免干扰场景切换）
+    const currentSceneId = props.sceneId
+    if (currentSceneId && newData.scene.name !== currentSceneId) return
+
+    engine.setCameraView({
+      yaw: Number(newData.view.hlookat) || 0,
+      pitch: Number(newData.view.vlookat) || 0,
+      hfov: Number(newData.view.fov) || 100,
+      fovtype: newData.view.fovtype,
+    })
+  },
+)
+
 // ===== 兼容模式：单 sceneData 加载 =====
 watch(
   () => [props.sceneData, props.tilingStatus] as const,

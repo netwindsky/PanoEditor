@@ -35,17 +35,17 @@
       <div class="section-title">初始视角</div>
       <div class="prop-row">
         <label>水平视角 (Yaw)</label>
-        <el-slider v-model="form.yaw" :min="-180" :max="180" :step="1" size="small" @change="handleUpdate" />
+        <el-slider v-model="form.yaw" :min="-180" :max="180" :step="1" size="small" @input="handlePreviewView" @change="handleUpdate" />
         <span class="prop-value">{{ form.yaw }}°</span>
       </div>
       <div class="prop-row">
         <label>垂直视角 (Pitch)</label>
-        <el-slider v-model="form.pitch" :min="-90" :max="90" :step="1" size="small" @change="handleUpdate" />
+        <el-slider v-model="form.pitch" :min="-90" :max="90" :step="1" size="small" @input="handlePreviewView" @change="handleUpdate" />
         <span class="prop-value">{{ form.pitch }}°</span>
       </div>
       <div class="prop-row">
         <label>视场角 (HFOV)</label>
-        <el-slider v-model="form.hfov" :min="30" :max="150" :step="1" size="small" @change="handleUpdate" />
+        <el-slider v-model="form.hfov" :min="30" :max="150" :step="1" size="small" @input="handlePreviewView" @change="handleUpdate" />
         <span class="prop-value">{{ form.hfov }}°</span>
       </div>
       <div class="prop-row">
@@ -256,6 +256,21 @@ function handleUpdate() {
     debounceTimer = null
     void doUpdate()
   }, 300)
+}
+
+/**
+ * 滑块拖动时实时预览相机视角（不触发 API 保存）。
+ * @input 事件在拖动过程中持续触发，实现即时反馈。
+ */
+function handlePreviewView() {
+  const adapter = editorStore.engineAdapter
+  if (!adapter) return
+  adapter.setCameraView({
+    yaw: form.yaw,
+    pitch: form.pitch,
+    hfov: form.hfov,
+    fovtype: form.fovType,
+  })
 }
 
 /**

@@ -312,6 +312,20 @@ export class PanoEngineAdapter {
   }
 
   /**
+   * 实时更新相机视角（不重新加载场景）。
+   * 用于编辑器滑块拖动时即时反馈：只更新相机朝向和 FOV，不触碰瓦片/几何体。
+   * @param viewData 视角数据（yaw/pitch 对应 hlookat/vlookat，hfov 为视场角）
+   */
+  public setCameraView(viewData: { yaw?: number; pitch?: number; hfov?: number; fovtype?: string }): void {
+    this.engine.setCameraView({
+      hlookat: viewData.yaw,
+      vlookat: viewData.pitch,
+      fov: viewData.hfov,
+      fovtype: viewData.fovtype,
+    })
+  }
+
+  /**
    * 从当前全景视口截取缩略图。
    * 强制渲染一帧，从 WebGL canvas 截取当前视角画面并缩放到目标尺寸。
    * @param width  目标宽度（默认 640）
