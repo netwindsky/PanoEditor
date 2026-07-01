@@ -672,7 +672,7 @@ function doSave() {
     followZoom: form.followZoom,
     content: contentJson || undefined,
     points: form.points || undefined,
-    shader: form.shader || undefined,
+    shader: form.shader,
   }
 
   if (form.action === 'scene') {

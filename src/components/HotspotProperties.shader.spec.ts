@@ -169,4 +169,28 @@ describe('HotspotProperties — shader 选择器', () => {
     const shaderSelect = wrapper.find('[data-testid="shader-select"]')
     expect(shaderSelect.element.value).toBe('')
   })
+
+  it('清空 shader（选"无"）后触发 updateHotspot 携带 shader=""', async () => {
+    const { vm } = createMockViewModel()
+    const wrapper = mountComponent(vm)
+    await flushPromises()
+
+    // 当前 shader 为 'grayscale'
+    const shaderSelect = wrapper.find('[data-testid="shader-select"]')
+    expect(shaderSelect.element.value).toBe('grayscale')
+
+    // 选"无"（value=""）
+    await shaderSelect.setValue('')
+
+    // 推进防抖
+    vi.advanceTimersByTime(500)
+    await flushPromises()
+
+    // 验证 updateHotspot 收到了 shader: ""（而不是 undefined）
+    expect(vm.updateHotspot).toHaveBeenCalled()
+    const lastCall = vm.updateHotspot.mock.calls[vm.updateHotspot.mock.calls.length - 1]
+    expect(lastCall[1]).toHaveProperty('shader', '')
+    // 重点验证: '' 没有被 || undefined 吞掉
+    expect(lastCall[1].shader).toBe('')
+  })
 })
