@@ -68,7 +68,6 @@ describe('SceneService.uploadPanoramas', () => {
       'p1',
       files,
       'panorama',
-      undefined,
     )
     expect(sceneRepo.createScene).toHaveBeenCalledTimes(2)
     // 场景名取文件名去扩展名
