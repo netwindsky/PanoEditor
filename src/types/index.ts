@@ -75,6 +75,48 @@ export interface TourSettings {
 }
 
 // ============ 场景 ============
+export type LimitViewMode = 'auto' | 'range' | 'off'
+export type FovType = 'MFOV' | 'VFOV' | 'DFOV' | 'HFOV'
+
+/** 初始视角（所有字段必填，缺失部分由 Repository 用默认值补齐） */
+export interface InitialView {
+  yaw: number
+  pitch: number
+  hfov: number
+  fovMin: number
+  fovMax: number
+  maxPixelZoom: number
+  limitView: LimitViewMode
+  fovType: FovType
+}
+
+/** 默认初始视角（供 sceneFromDto 兜底 / 组件初始化使用） */
+export const DEFAULT_INITIAL_VIEW: InitialView = {
+  yaw: 0,
+  pitch: 0,
+  hfov: 100,
+  fovMin: 70,
+  fovMax: 140,
+  maxPixelZoom: 2.0,
+  limitView: 'auto',
+  fovType: 'MFOV',
+}
+
+/** GPS 位置（可选字段独立管理） */
+export interface SceneLocation {
+  lat?: number
+  lng?: number
+  heading?: number
+}
+
+/**
+ * 场景领域模型（domain）
+ *
+ * 关键约束：
+ * - `initialView` 必为对象（Repository 从 DTO 三级 fallback + 默认值合成，保证下游无需判空）
+ * - `location` / `onstart` 是 domain 一等字段；不再暴露 `viewConfig` JSON 字符串
+ * - `imageConfig` 保留为原始 JSON 字符串（仅供瓦片/level 消费，不再是视角源）
+ */
 export interface Scene {
   id: string
   projectId: string
@@ -85,49 +127,60 @@ export interface Scene {
   thumbUrl: string
   imageConfig: string
   status: string
-  /** 后端返回 JSON 字符串，store 层会反序列化为 InitialView 对象；null 表示尚无数据（回退读取 viewConfig JSON） */
-  initialView: InitialView | null
+  /** 唯一视角真相：sceneFromDto 保证非 null */
+  initialView: InitialView
+  location: SceneLocation
+  onstart: string
   sortOrder: number
-  viewConfig?: string
-  lat?: number
-  lng?: number
-  heading?: number
   createdAt: string
   updatedAt: string
 }
 
-export type LimitViewMode = 'auto' | 'range' | 'off'
-export type FovType = 'MFOV' | 'VFOV' | 'DFOV' | 'HFOV'
-
-export interface InitialView {
-  hfov: number
-  pitch: number
-  yaw: number
-  fovMin?: number
-  fovMax?: number
-  maxPixelZoom?: number
-  limitView?: LimitViewMode
-  fovType?: FovType
+/**
+ * 后端 DTO（axios 直接接收的形状；仅 Repository 内部使用）
+ *
+ * 后端字段特点：
+ * - `initialView` 是 JSON 字符串或 null
+ * - `viewConfig` 是 JSON 字符串（包含 initialView / lat / lng / heading / onstart 冗余备份）
+ * - `imageConfig` 是 JSON 字符串（包含 tile levels + krpano-style view 默认值）
+ * - `lat` / `lng` / `heading` 顶层字段（历史遗留）
+ */
+export interface SceneDto {
+  id: string
+  projectId: string
+  name: string
+  title: string | null
+  description?: string | null
+  previewUrl: string
+  thumbUrl: string
+  imageConfig: string | null
+  status: string
+  initialView: string | null
+  viewConfig: string | null
+  sortOrder: number
+  lat: number | null
+  lng: number | null
+  heading: number | null
+  createdAt: string
+  updatedAt: string
 }
 
-/** 场景扩展配置（存入 Scene.viewConfig JSON 字符串） */
-export interface SceneViewConfig {
+/**
+ * Repository 内部使用的 viewConfig JSON 结构
+ * @internal 仅在 SceneRepository 的 sceneFromDto/patchToDto 内使用
+ */
+export interface SceneViewConfigJson {
   lat?: number
   lng?: number
   heading?: number
   onstart?: string
-  /** 初始视角数据（后端无独立字段，存入 viewConfig JSON） */
-  initialView?: {
-    yaw: number
-    pitch: number
-    hfov: number
-    fovMin?: number
-    fovMax?: number
-    maxPixelZoom?: number
-    limitView?: LimitViewMode
-    fovType?: FovType
-  }
+  initialView?: Partial<InitialView>
 }
+
+/**
+ * @deprecated 使用 SceneViewConfigJson。保留仅为兼容 stores/scene.ts 遗留导入。
+ */
+export type SceneViewConfig = SceneViewConfigJson
 
 export interface CreateSceneParams {
   name: string
@@ -135,19 +188,20 @@ export interface CreateSceneParams {
   initialView?: Partial<InitialView>
 }
 
+/**
+ * 场景更新参数（domain 层）
+ * Repository 会自动 fan-out 到后端的 initialView / viewConfig 两个字段。
+ */
 export interface UpdateSceneParams {
   name?: string
   title?: string
   description?: string
   previewUrl?: string
   thumbUrl?: string
-  /** store 层会自动序列化对象为 JSON 字符串发送给后端 */
-  initialView?: Partial<InitialView> | string
+  initialView?: InitialView
+  location?: SceneLocation
+  onstart?: string
   sortOrder?: number
-  viewConfig?: string
-  lat?: number
-  lng?: number
-  heading?: number
 }
 
 // ============ 热点 ============

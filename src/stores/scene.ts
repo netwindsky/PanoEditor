@@ -5,7 +5,14 @@ import * as sceneApi from '@/api/scene'
 
 /**
  * 场景 Store（兼容层）
- * TODO: 迁移到 SceneViewModel
+ *
+ * @deprecated 请使用 `SceneViewModel`（通过 `EditorViewModel.sceneViewModel`
+ * 或 provide/inject 获取）。此 Store 保留仅供尚未迁移的旧代码使用，
+ * 新代码不应再引入。计划在下一次 sweep 中删除。
+ *
+ * 迁移指引：
+ *  - `sceneStore.updateScene(id, patch)` → `vm.sceneViewModel.updateScene*`
+ *  - `sceneStore.scenes` → `vm.sceneViewModel.scenes`
  */
 export const useSceneStore = defineStore('scene', () => {
   const scenes = ref<Scene[]>([])

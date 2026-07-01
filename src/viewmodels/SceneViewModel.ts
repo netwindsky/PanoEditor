@@ -1,9 +1,65 @@
 import { ref, reactive, computed } from 'vue'
 import type { Scene, SceneService, TileProgress } from '@/models'
+import type { InitialView, SceneLocation } from '@/types'
+import type { SceneData } from '@panoview'
 
 export interface TilingStatus {
   status: string
   progress: number
+}
+
+/**
+ * 从 domain scene 派生 PanoView 引擎需要的 SceneData。
+ *
+ * 关键：view 字段完全来自 scene.initialView（单一真相），
+ * imageConfig JSON 里的 view (krpano 0/0/90 默认值) 被忽略，避免旧 bug。
+ *
+ * imageConfig 中的 image/preview/thumb 仍然消费（瓦片/预览图路径）。
+ * imageConfig 为空或损坏时返回 null（切片未完成，PanoEngineViewer 不加载）。
+ */
+export function buildEngineSceneData(scene: Scene): SceneData | null {
+  if (!scene.imageConfig) return null
+  let cfg: Record<string, any>
+  try {
+    cfg = JSON.parse(scene.imageConfig)
+  } catch {
+    return null
+  }
+
+  const iv = scene.initialView
+  return {
+    scene: {
+      name: scene.id,
+      title: scene.title || scene.name,
+      onstart: scene.onstart || '',
+      thumburl: cfg.thumb?.url || scene.thumbUrl || '',
+      lat: scene.location.lat != null ? String(scene.location.lat) : '',
+      lng: scene.location.lng != null ? String(scene.location.lng) : '',
+      heading: scene.location.heading != null ? String(scene.location.heading) : '',
+    },
+    view: {
+      hlookat: String(iv.yaw),
+      vlookat: String(iv.pitch),
+      fov: String(iv.hfov),
+      fovtype: iv.fovType,
+      fovmin: String(iv.fovMin),
+      fovmax: String(iv.fovMax),
+      maxpixelzoom: String(iv.maxPixelZoom),
+      limitview: iv.limitView,
+    },
+    preview: cfg.preview?.url ? { url: cfg.preview.url } : undefined,
+    image: {
+      type: cfg.image?.type || 'CUBE',
+      multires: cfg.image?.multires ?? true,
+      tilesize: String(cfg.image?.tilesize ?? '512'),
+      levels: (cfg.image?.levels || []).map((level: any) => ({
+        tiledimagewidth: String(level.tiledimagewidth),
+        tiledimageheight: String(level.tiledimageheight),
+        cube: { url: level.cube?.url || '' },
+      })),
+    },
+    hotspots: [], // 编辑器热点由 HotspotViewModel 独立管理，不注入这里
+  }
 }
 
 /**
@@ -27,9 +83,25 @@ export class SceneViewModel {
 
   // === 计算属性 ===
   hasScenes = computed(() => this.scenes.value.length > 0)
-  currentSceneConfig = computed(() => this.currentScene.value?.imageConfig ?? null)
   isUploading = computed(() => this.uploading.value || this.batchUploading.value)
   currentUploadProgress = computed(() => this.uploadProgress.value)
+
+  /**
+   * 当前场景派生给引擎的 SceneData。
+   * 视角来自 scene.initialView（单一真相），imageConfig 里的 view 默认值被忽略。
+   */
+  currentEngineSceneData = computed<SceneData | null>(() =>
+    this.currentScene.value ? buildEngineSceneData(this.currentScene.value) : null,
+  )
+
+  /**
+   * 所有切片就绪场景的 SceneData 列表，供预加载模式使用。
+   */
+  allEngineSceneData = computed<SceneData[]>(() =>
+    this.scenes.value
+      .map((s) => buildEngineSceneData(s))
+      .filter((x): x is SceneData => x !== null),
+  )
 
   // 当前场景的切片状态，归一化为 PanoEngineViewer 期望的 PROCESSING / READY / FAILED。
   // 优先采用实时轮询(tilingStatusMap)，否则回退到持久化的 Scene.status。
@@ -216,19 +288,7 @@ export class SceneViewModel {
     try {
       const updated = await this.sceneService.fetchScene(projectId, sceneId)
       if (!updated) return
-
-      const idx = this.scenes.value.findIndex((s) => s.id === sceneId)
-      if (idx !== -1) {
-        this.scenes.value = [
-          ...this.scenes.value.slice(0, idx),
-          updated,
-          ...this.scenes.value.slice(idx + 1),
-        ]
-      }
-
-      if (this.currentScene.value?.id === sceneId) {
-        this.currentScene.value = updated
-      }
+      this.replaceSceneInList(updated)
     } catch (error) {
       console.error('[SceneViewModel] Refresh scene after tiling failed:', error)
     }
@@ -239,6 +299,63 @@ export class SceneViewModel {
     if (timer) {
       clearInterval(timer)
       this.pollingTimers.delete(sceneId)
+    }
+  }
+
+  // === 场景写入（对外唯一入口，走 Service，自动同步 scenes / currentScene） ===
+
+  /**
+   * 更新初始视角。写入后：
+   *  1. Repository 会把 initialView 双写到后端 initialView + viewConfig 字段
+   *  2. 返回的新 Scene 覆盖 scenes 数组条目 + currentScene（若指向同一场景）
+   *  3. currentEngineSceneData / allEngineSceneData 的响应式派生自动重算，
+   *     引擎观察到 SceneData 变更后重新加载相机视角。
+   */
+  async updateSceneView(sceneId: string, initialView: InitialView): Promise<Scene> {
+    const updated = await this.sceneService.updateScene(sceneId, { initialView })
+    this.replaceSceneInList(updated)
+    return updated
+  }
+
+  /** 更新 GPS 位置（可选同时更新 onstart 脚本） */
+  async updateSceneLocation(
+    sceneId: string,
+    location: SceneLocation,
+    onstart?: string,
+  ): Promise<Scene> {
+    const params: { location: SceneLocation; onstart?: string } = { location }
+    if (onstart !== undefined) params.onstart = onstart
+    const updated = await this.sceneService.updateScene(sceneId, params)
+    this.replaceSceneInList(updated)
+    return updated
+  }
+
+  /** 更新元数据：名称 / 标题 / 缩略图 URL */
+  async updateSceneMeta(
+    sceneId: string,
+    patch: { name?: string; title?: string; thumbUrl?: string },
+  ): Promise<Scene> {
+    const params: Record<string, unknown> = {}
+    if (patch.name !== undefined) params.name = patch.name
+    if (patch.title !== undefined) params.title = patch.title
+    if (patch.thumbUrl !== undefined) params.thumbUrl = patch.thumbUrl
+    const updated = await this.sceneService.updateScene(sceneId, params as any)
+    this.replaceSceneInList(updated)
+    return updated
+  }
+
+  /**
+   * 将 scenes 数组中同 id 的条目替换为新 Scene，并同步 currentScene 引用。
+   * 用新数组引用触发响应式派生（computed 才会重算）。
+   */
+  private replaceSceneInList(updated: Scene): void {
+    const idx = this.scenes.value.findIndex((s) => s.id === updated.id)
+    if (idx === -1) return
+    const next = [...this.scenes.value]
+    next[idx] = updated
+    this.scenes.value = next
+    if (this.currentScene.value?.id === updated.id) {
+      this.currentScene.value = updated
     }
   }
 
