@@ -45,6 +45,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   (e: 'engine-ready', engine: PanoEngineAdapter): void
+  (e: 'scene-changed', sceneId: string): void
 }>()
 
 const container = ref<HTMLElement>()
@@ -56,6 +57,21 @@ let hasPreloaded = false
 
 let perfEngineCreateCount = 0
 let perfLoadSceneCount = 0
+
+// 引擎内部发起的场景切换标记：用于 sceneId watch 跳过重复切换
+let sceneChangedByEngine = false
+let engineSceneListenerAttached = false
+
+function attachEngineSceneListener() {
+  if (engineSceneListenerAttached || !container.value) return
+  engineSceneListenerAttached = true
+  container.value.addEventListener('scenechanged', ((event: CustomEvent) => {
+    const sceneId = event.detail?.sceneId
+    if (!sceneId || sceneId === props.sceneId) return
+    sceneChangedByEngine = true
+    emit('scene-changed', sceneId)
+  }) as EventListener)
+}
 
 // ===== 场景切换过渡遮罩状态 =====
 const showTransitionOverlay = ref(false)
@@ -121,6 +137,7 @@ async function startPreload(): Promise<void> {
       engine.preloadScenes(props.allSceneData as unknown as Record<string, any>[]),
     )
 
+    attachEngineSceneListener()
     engineRef.value = engine
     hasPreloaded = true
     syncHotspotsIfChanged(engine, props.hotspots)
@@ -129,6 +146,9 @@ async function startPreload(): Promise<void> {
     // 预加载完成后立即激活当前场景（sceneId watch 不会在初始挂载时触发）
     if (props.sceneId) {
       await perf.measureAsync('viewer-switch-scene', () => engine.switchScene(props.sceneId!))
+      // 场景切换会触发 changeScene → initScene(manageHotspots:true) 清空热点，
+      // 必须强制重置快照以确保 syncHotspots 不被快照比对跳过
+      lastHotspotsSnapshot = ''
       syncHotspotsIfChanged(engine, props.hotspots)
       setTimeout(endTransitionOverlay, TRANSITION_HOLD_MS)
     }
@@ -152,12 +172,22 @@ watch(
   () => props.sceneId,
   async (newId, oldId) => {
     if (!usePreloadMode.value || !newId || newId === oldId) return
+
+    // 引擎内部已通过 hotspot 点击完成了场景切换，跳过重复切换
+    if (sceneChangedByEngine) {
+      sceneChangedByEngine = false
+      return
+    }
+
     const engine = engineRef.value
     if (!engine) return
 
     startTransitionOverlay()
     try {
       await perf.measureAsync('viewer-switch-scene', () => engine.switchScene(newId))
+      // 场景切换会触发 changeScene → initScene(manageHotspots:true) 清空热点，
+      // 必须强制重置快照以确保 syncHotspots 不被快照比对跳过
+      lastHotspotsSnapshot = ''
       syncHotspotsIfChanged(engine, props.hotspots)
     } catch (e) {
       console.warn('Switch scene failed, fallback to single-scene load:', e)
@@ -234,6 +264,7 @@ async function loadScene(sceneData: SceneData) {
     if (!engine) {
       const endCreate = perf.stage('viewer-create-engine')
       engine = new PanoEngineAdapter(container.value)
+      attachEngineSceneListener()
       perfEngineCreateCount++
       endCreate({ engineCount: perfEngineCreateCount })
     } else {

@@ -23,6 +23,7 @@
           :scene-id="vm.sceneViewModel.currentScene.value?.id || null"
           class="pano-preview-wrap"
           @engine-ready="onEngineReady"
+          @scene-changed="onSceneChanged"
         />
         <div
           v-if="vm.activeTool.value === 'hotspot' && isSceneReady"
@@ -387,6 +388,15 @@ function onEngineReady(adapter: PanoEngineAdapter) {
   if (vm.hotspotViewModel.hotspots.value.length > 0) {
     engine.syncHotspots(vm.hotspotViewModel.hotspots.value)
   }
+}
+
+/**
+ * 引擎内部通过 hotspot click 触发场景切换后，
+ * 同步更新 EditorViewModel 中的 currentScene 和热点列表。
+ */
+function onSceneChanged(sceneId: string) {
+  if (vm.sceneViewModel.currentScene.value?.id === sceneId) return
+  void vm.switchScene(sceneId)
 }
 
 // 注意：热点增删的引擎同步统一由 PanoEngineViewer 内部的 watch 负责，
