@@ -71,23 +71,23 @@ describe('PanoEngineAdapter.getCurrentView', () => {
     adapter = new PanoEngineAdapter(document.createElement('div'))
   })
 
-  it('应合并 getCenterCoords 和 getCameraFov 返回 yaw/pitch/hfov', () => {
+  it('应将引擎内部数学惯例转换为 krpano 惯例（正 ath → 负 yaw，正 atv → 负 pitch）', () => {
     getCenterCoords.mockReturnValue({ ath: 45, atv: 30 })
     getCameraFov.mockReturnValue(90)
 
     const view = adapter.getCurrentView()
 
-    expect(view).toEqual({ yaw: 45, pitch: 30, hfov: 90 })
+    expect(view).toEqual({ yaw: -45, pitch: -30, hfov: 90 })
     expect(getCenterCoords).toHaveBeenCalledTimes(1)
     expect(getCameraFov).toHaveBeenCalledTimes(1)
   })
 
-  it('负角度也应该正确传递', () => {
+  it('负角度也应正确翻转', () => {
     getCenterCoords.mockReturnValue({ ath: -120, atv: -45 })
     getCameraFov.mockReturnValue(60)
 
     const view = adapter.getCurrentView()
 
-    expect(view).toEqual({ yaw: -120, pitch: -45, hfov: 60 })
+    expect(view).toEqual({ yaw: 120, pitch: 45, hfov: 60 })
   })
 })

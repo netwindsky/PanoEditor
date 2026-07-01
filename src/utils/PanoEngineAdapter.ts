@@ -94,6 +94,11 @@ export class PanoEngineAdapter {
 
   /**
    * 将后端 JSON 配置转换为标准库 SceneData 格式
+   *
+   * @deprecated 已由 `SceneViewModel.buildEngineSceneData` 取代（走域模型
+   * `Scene.initialView` 作为视角单一真相）。保留仅供 `loadSceneConfig` 兼容
+   * 直接吃 raw imageConfig JSON 的旧调用路径。新代码应把 domain `Scene`
+   * 转成 `SceneData` 后再传入引擎，不要依赖此 helper 读取 view。
    */
   private convertToSceneData(config: Record<string, any>): SceneData {
     return {
@@ -297,7 +302,12 @@ export class PanoEngineAdapter {
   public getCurrentView(): { yaw: number; pitch: number; hfov: number } {
     const { ath, atv } = this.engine.getCenterCoords()
     const hfov = this.engine.getCameraFov()
-    return { yaw: ath, pitch: atv, hfov }
+    // 引擎内部 getCenterCoords() 使用数学惯例（atan2/asin），
+    //   ath > 0 = 左转（atan2(-x, z)），atv > 0 = 仰视（asin(y)）
+    // 但 initCameraView 遵循 krpano 惯例：
+    //   hlookat > 0 = 右转，vlookat > 0 = 俯视
+    // 此处进行惯例转换，确保初始视角的保存/回读不产生符号翻转。
+    return { yaw: -ath, pitch: -atv, hfov }
   }
 
   /**
