@@ -24,7 +24,7 @@
       <div class="prop-row">
         <el-button
           size="small"
-          :disabled="!currentScene"
+          :disabled="!editorStore.engineAdapter"
           @click="handleGenerateThumbnail"
         >
           生成缩略图
@@ -132,11 +132,9 @@
 
 <script setup lang="ts">
 import { computed, reactive, watch, onBeforeUnmount } from 'vue'
-import { useSceneStore } from '@/stores/scene'
 import { useEditorStore } from '@/stores/editor'
-import type { LimitViewMode, FovType, SceneViewConfig } from '@/types'
+import type { LimitViewMode, FovType, InitialView, SceneLocation } from '@/types'
 import type { EditorViewModel } from '@/viewmodels/EditorViewModel'
-import { generateThumbnailFromUrl } from '@/utils/thumbnailGenerator'
 
 const props = defineProps<{
   vm: EditorViewModel
@@ -144,7 +142,6 @@ const props = defineProps<{
 
 const currentScene = computed(() => props.vm.sceneViewModel.currentScene.value)
 
-const sceneStore = useSceneStore()
 const editorStore = useEditorStore()
 
 const form = reactive({
@@ -168,41 +165,24 @@ const form = reactive({
 watch(
   () => props.vm.sceneViewModel.currentScene.value,
   (scene) => {
-    if (scene) {
-      // 优先使用 scene.initialView，若无（后端 API 不返回该字段）则从 viewConfig JSON 回退读取
-      let iv = scene.initialView
-      if (!iv && scene.viewConfig) {
-        try {
-          const vc: SceneViewConfig = JSON.parse(scene.viewConfig)
-          if (vc.initialView) iv = vc.initialView as any
-        } catch {
-          // viewConfig 解析失败时忽略
-        }
-      }
-      form.name = scene.name
-      form.title = scene.title ?? ''
-      form.thumbUrl = scene.thumbUrl ?? ''
-      form.yaw = iv?.yaw ?? 0
-      form.pitch = iv?.pitch ?? 0
-      form.hfov = iv?.hfov ?? 100
-      form.fovMin = iv?.fovMin ?? 70
-      form.fovMax = iv?.fovMax ?? 140
-      form.maxPixelZoom = iv?.maxPixelZoom ?? 2.0
-      form.limitView = iv?.limitView ?? 'auto'
-      form.fovType = iv?.fovType ?? 'MFOV'
-
-      // 解析 viewConfig JSON 获取 GPS 坐标
-      let viewConfig: SceneViewConfig = {}
-      try {
-        viewConfig = scene.viewConfig ? JSON.parse(scene.viewConfig) : {}
-      } catch {
-        viewConfig = {}
-      }
-      form.lat = viewConfig.lat ?? null
-      form.lng = viewConfig.lng ?? null
-      form.heading = viewConfig.heading ?? null
-      form.onstart = viewConfig.onstart ?? ''
-    }
+    if (!scene) return
+    // Repository 已把 initialView / location / onstart 归一化，直读即可
+    const iv = scene.initialView
+    form.name = scene.name
+    form.title = scene.title ?? ''
+    form.thumbUrl = scene.thumbUrl ?? ''
+    form.yaw = iv.yaw
+    form.pitch = iv.pitch
+    form.hfov = iv.hfov
+    form.fovMin = iv.fovMin
+    form.fovMax = iv.fovMax
+    form.maxPixelZoom = iv.maxPixelZoom
+    form.limitView = iv.limitView
+    form.fovType = iv.fovType
+    form.lat = scene.location.lat ?? null
+    form.lng = scene.location.lng ?? null
+    form.heading = scene.location.heading ?? null
+    form.onstart = scene.onstart ?? ''
   },
   { immediate: true },
 )
@@ -211,14 +191,8 @@ async function doUpdate() {
   const scene = props.vm.sceneViewModel.currentScene.value
   if (!scene) return
 
-  // 序列化 GPS 坐标到 viewConfig JSON
-  const viewConfig: SceneViewConfig = {}
-  if (form.lat !== null) viewConfig.lat = form.lat
-  if (form.lng !== null) viewConfig.lng = form.lng
-  if (form.heading !== null) viewConfig.heading = form.heading
-  if (form.onstart) viewConfig.onstart = form.onstart
-  // 后端无独立 initialView 字段，写入 viewConfig JSON 确保持久化
-  viewConfig.initialView = {
+  const iv = scene.initialView
+  const nextView: InitialView = {
     yaw: form.yaw,
     pitch: form.pitch,
     hfov: form.hfov,
@@ -228,37 +202,49 @@ async function doUpdate() {
     limitView: form.limitView,
     fovType: form.fovType,
   }
+  const location: SceneLocation = {}
+  if (form.lat !== null) location.lat = form.lat
+  if (form.lng !== null) location.lng = form.lng
+  if (form.heading !== null) location.heading = form.heading
 
-  const updated = await sceneStore.updateScene(scene.id, {
-    name: form.name,
-    title: form.title,
-    thumbUrl: form.thumbUrl,
-    initialView: {
-      yaw: form.yaw,
-      pitch: form.pitch,
-      hfov: form.hfov,
-      fovMin: form.fovMin,
-      fovMax: form.fovMax,
-      maxPixelZoom: form.maxPixelZoom,
-      limitView: form.limitView,
-      fovType: form.fovType,
-    },
-    viewConfig: JSON.stringify(viewConfig),
-  })
-  // 同步 ViewModel 场景数据
-  if (updated) {
-    const vmScenes = props.vm.sceneViewModel.scenes.value
-    const idx = vmScenes.findIndex((s) => s.id === scene.id)
-    if (idx !== -1) {
-      const updatedScenes = [...vmScenes]
-      updatedScenes[idx] = updated
-      props.vm.sceneViewModel.scenes.value = updatedScenes
-    }
-    if (props.vm.sceneViewModel.currentScene.value?.id === scene.id) {
-      props.vm.sceneViewModel.currentScene.value = updated
-    }
+  const viewChanged =
+    nextView.yaw !== iv.yaw ||
+    nextView.pitch !== iv.pitch ||
+    nextView.hfov !== iv.hfov ||
+    nextView.fovMin !== iv.fovMin ||
+    nextView.fovMax !== iv.fovMax ||
+    nextView.maxPixelZoom !== iv.maxPixelZoom ||
+    nextView.limitView !== iv.limitView ||
+    nextView.fovType !== iv.fovType
+
+  const locationChanged =
+    (location.lat ?? null) !== (scene.location.lat ?? null) ||
+    (location.lng ?? null) !== (scene.location.lng ?? null) ||
+    (location.heading ?? null) !== (scene.location.heading ?? null) ||
+    form.onstart !== (scene.onstart ?? '')
+
+  const metaChanged =
+    form.name !== scene.name ||
+    form.title !== (scene.title ?? '') ||
+    form.thumbUrl !== (scene.thumbUrl ?? '')
+
+  const vm = props.vm.sceneViewModel
+  if (metaChanged) {
+    await vm.updateSceneMeta(scene.id, {
+      name: form.name,
+      title: form.title,
+      thumbUrl: form.thumbUrl,
+    })
   }
-  editorStore.markDirty()
+  if (viewChanged) {
+    await vm.updateSceneView(scene.id, nextView)
+  }
+  if (locationChanged) {
+    await vm.updateSceneLocation(scene.id, location, form.onstart)
+  }
+  if (metaChanged || viewChanged || locationChanged) {
+    editorStore.markDirty()
+  }
 }
 
 // 防抖：连续操作合并为一次 API 调用
@@ -272,13 +258,13 @@ function handleUpdate() {
 }
 
 /**
- * 从全景原图中心裁切 16:9 生成缩略图并保存。
+ * 从当前全景视口截取 640×360 缩略图并保存。
  */
 async function handleGenerateThumbnail() {
-  const scene = props.vm.sceneViewModel.currentScene.value
-  if (!scene || !scene.previewUrl) return
+  const adapter = editorStore.engineAdapter
+  if (!adapter) return
   try {
-    const dataUrl = await generateThumbnailFromUrl(scene.previewUrl)
+    const dataUrl = await adapter.captureThumbnail(640, 360)
     form.thumbUrl = dataUrl
     void doUpdate()
   } catch (e) {
