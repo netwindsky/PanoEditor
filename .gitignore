@@ -34,3 +34,8 @@ npm-debug.log*
 
 # TypeScript 缓存
 *.tsbuildinfo
+
+# AI Agent 工具生成
+.omc/
+.playwright-mcp/
+.sisyphus/
