@@ -12,6 +12,7 @@
 import { PanoEngine } from '@panoview'
 import type { SceneData, Hotspot as PanoHotspot } from '@panoview'
 import { perf } from '@/utils/performanceMonitor'
+import { resizeImageDataUrl } from '@/utils/thumbnailGenerator'
 import type { Hotspot } from '@/types'
 
 export class PanoEngineAdapter {
@@ -308,6 +309,20 @@ export class PanoEngineAdapter {
     //   hlookat > 0 = 右转，vlookat > 0 = 俯视
     // 此处进行惯例转换，确保初始视角的保存/回读不产生符号翻转。
     return { yaw: -ath, pitch: -atv, hfov }
+  }
+
+  /**
+   * 从当前全景视口截取缩略图。
+   * 强制渲染一帧，从 WebGL canvas 截取当前视角画面并缩放到目标尺寸。
+   * @param width  目标宽度（默认 640）
+   * @param height 目标高度（默认 360）
+   */
+  public async captureThumbnail(
+    width: number = 640,
+    height: number = 360,
+  ): Promise<string> {
+    const fullImage = this.engine.captureView()
+    return resizeImageDataUrl(fullImage, width, height)
   }
 
   /**

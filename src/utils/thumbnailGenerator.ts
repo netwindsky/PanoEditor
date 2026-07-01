@@ -53,6 +53,38 @@ function loadImage(url: string): Promise<HTMLImageElement> {
 }
 
 /**
+ * 将图片 dataURL 缩放到目标尺寸。
+ * @param dataUrl 源图 dataURL（支持 image/jpeg 或 image/png）
+ * @param width  目标宽度
+ * @param height 目标高度
+ * @param quality JPEG 质量（默认 0.85）
+ */
+export function resizeImageDataUrl(
+  dataUrl: string,
+  width: number,
+  height: number,
+  quality: number = 0.85,
+): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const img = new Image()
+    img.onload = () => {
+      const canvas = document.createElement('canvas')
+      canvas.width = width
+      canvas.height = height
+      const ctx = canvas.getContext('2d')
+      if (!ctx) {
+        reject(new Error('无法获取 canvas 2d context'))
+        return
+      }
+      ctx.drawImage(img, 0, 0, width, height)
+      resolve(canvas.toDataURL('image/jpeg', quality))
+    }
+    img.onerror = () => reject(new Error('图片加载失败'))
+    img.src = dataUrl
+  })
+}
+
+/**
  * 从 URL 生成缩略图 dataURL。
  * @param url 全景原图 URL
  * @returns Promise<dataURL>（image/jpeg, quality=0.85）
