@@ -11,6 +11,7 @@
  */
 import { PanoEngine } from '@panoview'
 import type { SceneData, Hotspot as PanoHotspot } from '@panoview'
+import TWEEN, { Tween } from '@tweenjs/tween.js'
 import { perf } from '@/utils/performanceMonitor'
 import { resizeImageDataUrl } from '@/utils/thumbnailGenerator'
 import type { Hotspot } from '@/types'
@@ -22,6 +23,8 @@ export class PanoEngineAdapter {
   // 拖动模式 flag（同步设置，绕过 Vue 响应式时序问题）。
   // 拖动期间 syncHotspotsIfChanged 据此跳过全量重建，避免每帧 delete+create 导致闪烁。
   private _isDragging = false
+  /** 当前正在运行的相机视角动画 Tween，用于连续调用时打断上一次 */
+  private currentViewTween: Tween<{ yaw: number; pitch: number }> | null = null
 
   constructor(container: HTMLElement) {
     // autoLoad:false —— 跳过引擎内置 XML demo，改用后端场景数据
@@ -324,6 +327,76 @@ export class PanoEngineAdapter {
       fov: viewData.hfov,
       fovtype: viewData.fovtype,
     })
+  }
+
+  /**
+   * 用补间动画平滑地把相机视角旋转到目标 yaw/pitch（krpano 惯例）。
+   *
+   * 典型用途：点击右侧标注列表项时把相机对准该标注（hotspot.ath/atv 就是
+   * 目标 yaw/pitch）。
+   *
+   * yaw 采用最短路径归一化：例如从 170° 旋转到 -170° 走 +20°（终点 190）
+   * 而不是 -340°，避免"绕地球一圈"的观感。
+   *
+   * 连续调用时会先停掉上一次未完成的 Tween，避免视角叠加/抖动。
+   * duration <= 0 时同步直接切换视角。
+   *
+   * @param target.yaw       目标水平角（krpano 惯例，正 = 右转）
+   * @param target.pitch     目标垂直角（krpano 惯例，正 = 俯视）
+   * @param target.duration  动画时长（毫秒），默认 600。<= 0 时立即切换
+   */
+  public animateToView(target: { yaw: number; pitch: number; duration?: number }): void {
+    const duration = target.duration ?? 600
+
+    // 无动画：直接切换，避免测试/低端设备启动 tween 的额外开销
+    if (duration <= 0) {
+      this.engine.setCameraView({ hlookat: target.yaw, vlookat: target.pitch })
+      return
+    }
+
+    // 打断上一次未完成的动画，防止两次调用互相拉扯
+    if (this.currentViewTween) {
+      this.currentViewTween.stop()
+      this.currentViewTween = null
+    }
+
+    // 起点使用 krpano 惯例（getCurrentView 已完成引擎数学惯例 → krpano 惯例的翻转）
+    const start = this.getCurrentView()
+
+    // yaw 最短路径归一化：把终点搬到距起点最近的等价角
+    const shortestYaw = this.shortestYawTarget(start.yaw, target.yaw)
+
+    const tween = new Tween<{ yaw: number; pitch: number }>({
+      yaw: start.yaw,
+      pitch: start.pitch,
+    })
+      .to({ yaw: shortestYaw, pitch: target.pitch }, duration)
+      .easing(TWEEN.Easing.Quadratic.Out)
+      .onUpdate((state) => {
+        this.engine.setCameraView({ hlookat: state.yaw, vlookat: state.pitch })
+      })
+      .onComplete(() => {
+        // 自然结束后清空引用，避免下一次调用 stop 已完成的 Tween
+        if (this.currentViewTween === tween) {
+          this.currentViewTween = null
+        }
+      })
+      .start()
+
+    this.currentViewTween = tween
+  }
+
+  /**
+   * 计算 yaw 的最短路径目标：
+   * 让 (target - start) 的差值落在 [-180, 180]（不含 -180）之间，
+   * 从而 Tween 以直线插值走的就是球面上的最短弧。
+   */
+  private shortestYawTarget(startYaw: number, targetYaw: number): number {
+    let diff = targetYaw - startYaw
+    // 归一化到 (-180, 180]
+    while (diff > 180) diff -= 360
+    while (diff <= -180) diff += 360
+    return startYaw + diff
   }
 
   /**
