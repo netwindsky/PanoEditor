@@ -195,6 +195,7 @@ export class PanoEngineAdapter {
       feather: hotspot.feather,
       followzoom: hotspot.followZoom ? '1' : undefined,
       content: hotspot.content || '',
+      shader: hotspot.shader || undefined,
     }
   }
 

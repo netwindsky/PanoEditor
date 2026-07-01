@@ -91,3 +91,62 @@ describe('PanoEngineAdapter.getCurrentView', () => {
     expect(view).toEqual({ yaw: 120, pitch: 45, hfov: 60 })
   })
 })
+
+describe('PanoEngineAdapter.syncHotspots', () => {
+  let adapter: PanoEngineAdapter
+
+  beforeEach(() => {
+    adapter = new PanoEngineAdapter(document.createElement('div'))
+  })
+
+  it('应将 shader 字段传递给引擎热点创建', () => {
+    const hotspots = [
+      {
+        id: 'quad1',
+        sceneId: 's1',
+        name: '四边形热点',
+        type: 'quad' as const,
+        ath: 45,
+        atv: 10,
+        url: 'https://example.com/image.jpg',
+        shader: 'grayscale',
+        points: '10 20 30 40 50 60 70 80',
+      },
+    ]
+
+    adapter.syncHotspots(hotspots)
+
+    // 验证 createHotspots 被调用，且 shader 字段被传递
+    const createHotspotsMock = vi.mocked(
+      (adapter as any).engine.hotspotsManager.createHotspots,
+    )
+    expect(createHotspotsMock).toHaveBeenCalledTimes(1)
+
+    const panoHotspots = createHotspotsMock.mock.calls[0][0]
+    expect(panoHotspots).toHaveLength(1)
+    expect(panoHotspots[0]).toHaveProperty('shader', 'grayscale')
+  })
+
+  it('未设置 shader 时不传递 shader 字段', () => {
+    const hotspots = [
+      {
+        id: 'quad2',
+        sceneId: 's1',
+        name: '无着色器热点',
+        type: 'quad' as const,
+        ath: 0,
+        atv: 0,
+        url: 'https://example.com/image.jpg',
+        points: '10 20 30 40 50 60 70 80',
+      },
+    ]
+
+    adapter.syncHotspots(hotspots)
+
+    const createHotspotsMock = vi.mocked(
+      (adapter as any).engine.hotspotsManager.createHotspots,
+    )
+    const panoHotspots = createHotspotsMock.mock.calls[0][0]
+    expect(panoHotspots[0].shader).toBeUndefined()
+  })
+})
