@@ -297,7 +297,6 @@ onBeforeUnmount(() => {
 
 .thumb-preview {
   width: 100%;
-  height: 80px;
   border-radius: 4px;
   overflow: hidden;
   background: var(--bg-tertiary, #f5f5f5);
@@ -309,26 +308,7 @@ onBeforeUnmount(() => {
 
 .thumb-preview img {
   width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.thumb-preview {
-  width: 100%;
-  height: 80px;
-  border-radius: 4px;
-  overflow: hidden;
-  background: var(--bg-tertiary, #f5f5f5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 8px;
-}
-
-.thumb-preview img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+  display: block;
 }
 
 .thumb-placeholder {
