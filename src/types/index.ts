@@ -411,7 +411,7 @@ export type HotspotToolType = 'info' | 'scene' | 'image' | 'quad' | 'model' | 'v
 
 export type LeftPanelTab = 'scene' | 'asset' | 'layer'
 
-export type RightPanelSection = 'scene' | 'hotspot' | 'audio' | 'postprocessing' | 'asset' | 'tour' | 'overlay'
+export type RightPanelSection = 'scene' | 'hotspot' | 'audio' | 'postprocessing' | 'tour' | 'overlay'
 
 /** krpano 覆盖层类型 */
 export type LayerType = 'text' | 'image' | 'button' | 'container'
