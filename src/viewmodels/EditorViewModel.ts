@@ -71,6 +71,8 @@ export class EditorViewModel {
 
   // === 场景切换 ===
   async switchScene(sceneId: string): Promise<void> {
+    // 防重入：引擎内部切换后触发 sceneId 属性变化导致重复调用
+    if (this.sceneViewModel.currentScene.value?.id === sceneId) return
     this.sceneViewModel.selectScene(sceneId)
     if (this.sceneViewModel.currentScene.value) {
       await this.hotspotViewModel.loadHotspots(
