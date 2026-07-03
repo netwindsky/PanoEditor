@@ -13,7 +13,11 @@
         :class="['timeline-thumb', { active: vm.sceneViewModel.currentScene.value?.id === scene.id }]"
         @click="handleSceneClick(scene.id)"
       >
-        <div class="thumb-image" :style="{ backgroundImage: 'url(' + (scene.thumbUrl || scene.previewUrl) + ')' }">
+        <div
+          class="thumb-image"
+          :class="{ 'no-thumb': !scene.thumbUrl }"
+          :style="scene.thumbUrl ? { backgroundImage: 'url(' + scene.thumbUrl + ')' } : undefined"
+        >
           <span class="thumb-index">{{ index + 1 }}</span>
         </div>
         <span class="thumb-name">{{ scene.name }}</span>
@@ -93,6 +97,11 @@ function handleSceneClick(sceneId: string) {
   background-size: cover;
   background-position: center;
   position: relative;
+  background-color: var(--bg-tertiary);
+}
+
+.thumb-image.no-thumb {
+  background-image: none !important;
 }
 
 .thumb-index {

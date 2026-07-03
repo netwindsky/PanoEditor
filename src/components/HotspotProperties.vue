@@ -306,24 +306,8 @@
     <div v-else class="no-selection">请从上方列表选择或添加一个热点</div>
 
     <!-- 资源库弹窗 -->
-    <el-dialog v-model="showAssetDialog" title="选择资源" width="600px" :close-on-click-modal="true" destroy-on-close>
+    <el-dialog v-model="showAssetDialog" title="选择标注资源" width="600px" :close-on-click-modal="true" destroy-on-close>
       <div class="asset-dialog-content">
-        <div class="asset-filter-tabs">
-          <button
-            class="filter-tab"
-            :class="{ active: assetFilterType === 'image' }"
-            @click="assetFilterType = 'image'; openAssetDialog()"
-          >
-            标注资源
-          </button>
-          <button
-            class="filter-tab"
-            :class="{ active: assetFilterType === 'panorama' }"
-            @click="assetFilterType = 'panorama'; openAssetDialog()"
-          >
-            全景图
-          </button>
-        </div>
         <div v-if="assetList.length === 0" class="asset-empty">暂无资源，请先上传</div>
         <ul v-else class="asset-list">
           <li
@@ -378,7 +362,7 @@ const scenes = computed(() => vm.sceneViewModel.scenes.value)
 
 const clearing = ref(false)
 const showAssetDialog = ref(false)
-const assetFilterType = ref<'image' | 'panorama' | 'video'>('image')
+const assetFilterType = ref<'image' | 'video'>('image')
 const eventPlaceholder = '{"click":"func()"}'
 
 // 资源库 / 上传相关状态

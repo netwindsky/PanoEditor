@@ -10,13 +10,13 @@
         </el-select>
       </div>
       <div class="library-grid">
-        <div v-for="resource in resources" :key="resource.id" class="library-item" @click="handleSelect(resource)">
+        <div v-for="resource in displayResources" :key="resource.id" class="library-item" @click="handleSelect(resource)">
           <div class="library-thumb" :style="{ backgroundImage: `url(${resource.thumbUrl || resource.url})` }">
             <span class="library-badge">{{ resource.type }}</span>
           </div>
           <span class="library-name">{{ resource.name }}</span>
         </div>
-        <div v-if="resources.length === 0" class="library-empty">
+        <div v-if="displayResources.length === 0" class="library-empty">
           暂无资源
         </div>
       </div>
@@ -29,6 +29,7 @@
 
 <script setup lang="ts">
 import { ref, watch, computed } from 'vue'
+
 import { useEditorStore } from '@/stores/editor'
 import { useProjectStore } from '@/stores/project'
 import { getResources } from '@/api/resource'
@@ -40,6 +41,12 @@ const filterType = ref<ResourceType | ''>('')
 const resources = ref<Resource[]>([])
 
 const projectId = computed(() => projectStore.currentProject?.id || '')
+const displayResources = computed(() => {
+  return resources.value.filter((r) => {
+    const type = r.type?.toLowerCase()
+    return r.url && ['image', 'video', 'audio'].includes(type)
+  })
+})
 
 async function fetchResources() {
   if (!projectId.value) return

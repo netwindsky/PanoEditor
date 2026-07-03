@@ -12,7 +12,6 @@
     </div>
     <div class="panel-content">
       <SceneList v-if="vm.leftPanelTab.value === 'scene'" :viewModel="vm.sceneViewModel" :projectId="projectId" @select="(id: string) => vm.switchScene(id)" />
-      <AssetGrid v-else-if="vm.leftPanelTab.value === 'asset'" :vm="vm.assetViewModel" :projectId="projectId" />
       <LayerPanel v-else-if="vm.leftPanelTab.value === 'layer'" />
     </div>
   </aside>
@@ -21,7 +20,6 @@
 <script setup lang="ts">
 import type { EditorViewModel } from '@/viewmodels/EditorViewModel'
 import SceneList from './SceneList.vue'
-import AssetGrid from './AssetGrid.vue'
 import LayerPanel from './LayerPanel.vue'
 
 const props = defineProps<{
@@ -31,7 +29,6 @@ const props = defineProps<{
 
 const tabs = [
   { key: 'scene' as const, label: '场景' },
-  { key: 'asset' as const, label: '资源' },
   { key: 'layer' as const, label: '图层' },
 ]
 </script>

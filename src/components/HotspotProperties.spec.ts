@@ -821,7 +821,7 @@ describe('HotspotProperties UI 重构', () => {
 
         const dialog = wrapper.find('.el-dialog')
         expect(dialog.exists()).toBe(true)
-        expect(dialog.text()).toContain('选择资源')
+        expect(dialog.text()).toContain('选择标注资源')
       })
 
       it('打开资源库时应调用 loadResources 加载资源列表', async () => {

@@ -10,12 +10,12 @@ export class ResourceService {
 
   async fetchResources(projectId: string, type?: ResourceType): Promise<Resource[]> {
     const resources = await this.repository.fetchResources(projectId, type)
-    // 当不指定 type 时，排除全景图资源。
-    // 全景图由 SceneService 管理，上传时存入资源表但不应作为普通资源展示。
-    if (type === undefined) {
-      return resources.filter((r) => r.type !== 'panorama')
-    }
-    return resources
+    // 后端默认已只返回 image/video/audio 标注资源；此处保留防御性过滤，
+    // 排除 panorama/document/other 等无意义资源以及 URL 为空的脏数据。
+    return resources.filter((r) => {
+      const t = r.type?.toLowerCase()
+      return r.url && ['image', 'video', 'audio'].includes(t)
+    })
   }
 
   async uploadResource(

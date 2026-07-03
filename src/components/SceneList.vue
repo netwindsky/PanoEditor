@@ -49,7 +49,8 @@
           >
             <div
               class="scene-thumb"
-              :style="{ backgroundImage: 'url(' + (element.thumbUrl || element.previewUrl) + ')' }"
+              :class="{ 'no-thumb': !element.thumbUrl }"
+              :style="element.thumbUrl ? { backgroundImage: 'url(' + element.thumbUrl + ')' } : undefined"
             />
             <div class="scene-info">
               <span class="scene-name">{{ element.name }}</span>
@@ -251,6 +252,23 @@ async function handleFileChange(event: Event) {
   background-size: cover;
   background-position: center;
   flex-shrink: 0;
+  background-color: var(--bg-tertiary);
+}
+
+.scene-thumb.no-thumb {
+  background-image: none !important;
+  position: relative;
+}
+
+.scene-thumb.no-thumb::after {
+  content: '无缩略图';
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  color: var(--text-muted);
 }
 
 .scene-info {

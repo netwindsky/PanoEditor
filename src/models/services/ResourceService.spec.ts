@@ -28,7 +28,7 @@ function makeRepo(): IResourceRepository {
 }
 
 describe('ResourceService.fetchResources', () => {
-  it('不传 type 时自动过滤掉 type=panorama 的资源', async () => {
+  it('不传 type 时自动过滤掉非标注资源（panorama/document/other）和空 URL 资源', async () => {
     const repo = makeRepo()
     const service = new ResourceService(repo)
 
@@ -38,14 +38,16 @@ describe('ResourceService.fetchResources', () => {
       makeResource({ id: '3', name: '视频1', type: 'video' }),
       makeResource({ id: '4', name: '全景图2', type: 'panorama' }),
       makeResource({ id: '5', name: '音频1', type: 'audio' }),
+      makeResource({ id: '6', name: '文档1', type: 'document' }),
+      makeResource({ id: '7', name: '空URL', type: 'image', url: '' }),
+      makeResource({ id: '8', name: '未知类型', type: 'other' }),
     ]
     vi.mocked(repo.fetchResources).mockResolvedValue(resources)
 
     const result = await service.fetchResources('p1')
 
-    // 应过滤掉全景图，只保留 image/video/audio
+    // 应只保留有 URL 的 image/video/audio 标注资源
     expect(result).toHaveLength(3)
-    expect(result.every((r) => r.type !== 'panorama')).toBe(true)
     expect(result.map((r) => r.id)).toEqual(['1', '3', '5'])
   })
 

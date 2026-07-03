@@ -8,7 +8,6 @@
     </div>
     <div class="grid-filter">
       <el-select v-model="vm.filterType.value" size="small" placeholder="资源类型" clearable style="width: 100%">
-        <el-option label="全景图" value="panorama" />
         <el-option label="图片" value="image" />
         <el-option label="视频" value="video" />
         <el-option label="音频" value="audio" />
@@ -20,13 +19,13 @@
       <span class="upload-label">上传中 {{ vm.uploadProgress.value }}%</span>
     </div>
     <div class="grid-content">
-      <div v-for="resource in vm.resources.value" :key="resource.id" class="asset-item" @click="handleSelect(resource)">
+      <div v-for="resource in displayResources" :key="resource.id" class="asset-item" @click="handleSelect(resource)">
         <div class="asset-thumb" :style="{ backgroundImage: 'url(' + (resource.thumbUrl || resource.url) + ')' }">
           <span class="asset-type-badge">{{ resource.type }}</span>
         </div>
         <span class="asset-name">{{ resource.name }}</span>
       </div>
-      <div v-if="vm.resources.value.length === 0 && !vm.uploading.value" class="grid-empty">
+      <div v-if="displayResources.length === 0 && !vm.uploading.value" class="grid-empty">
         暂无资源，点击上传
       </div>
     </div>
@@ -41,7 +40,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { ref, watch, computed } from 'vue'
 import { Upload } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import type { AssetViewModel } from '@/viewmodels/AssetViewModel'
@@ -53,6 +52,13 @@ const props = defineProps<{
 }>()
 
 const fileInput = ref<HTMLInputElement>()
+
+const displayResources = computed(() => {
+  return props.vm.resources.value.filter((r) => {
+    const type = r.type?.toLowerCase()
+    return r.url && ['image', 'video', 'audio'].includes(type)
+  })
+})
 
 watch(() => props.vm.filterType.value, () => {
   props.vm.loadResources(props.projectId, props.vm.filterType.value || undefined)
