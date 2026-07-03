@@ -28,12 +28,11 @@ export class PanoEngineAdapter {
 
   constructor(container: HTMLElement) {
     // autoLoad:false —— 跳过引擎内置 XML demo，改用后端场景数据
-    // enableStats:false / enablePostProcessing:false —— 编辑器环境不需要性能面板和后期处理
+    // enableStats:false —— 编辑器环境不显示性能面板
+    // 后期处理默认开启（用户在后期面板控制启用开关），以保证调整参数时画布实时预览。
     const end = perf.stage('adapter-create-panoengine')
     this.engine = new PanoEngine(container, {
       autoLoad: false,
-      enableStats: false,
-      enablePostProcessing: false,
       maxPixelRatio: 2,
     })
     end()
@@ -247,19 +246,6 @@ export class PanoEngineAdapter {
    */
   public updateQuadGeometry(hotspotId: string, points: string): void {
     this.engine.hotspotsManager.updateQuadGeometry(hotspotId, points)
-  }
-
-  /**
-   * 设置/查询拖动模式 flag。
-   * 同步设置，绕过 Vue 响应式 prop 时序问题。
-   * PanoEngineViewer.syncHotspotsIfChanged 据此跳过全量重建。
-   */
-  public setDraggingMode(flag: boolean): void {
-    this._isDragging = flag
-  }
-
-  public isDraggingMode(): boolean {
-    return this._isDragging
   }
 
   // ==================== 拖动模式 flag ====================
@@ -480,6 +466,122 @@ export class PanoEngineAdapter {
    */
   public enableControls(): void {
     this.engine.enableControls()
+  }
+
+  // ==================== 后期处理 ====================
+
+  /**
+   * 应用完整的后期处理配置（从后端表单模型映射到引擎参数）。
+   *
+   * 字段映射约定（面板字段 → 引擎 BasicEffectParams）：
+   *   exposure      → brightness = exposure - 1（exposure=1.0 表示无偏移）
+   *   contrast      → contrast
+   *   saturation    → saturation
+   *   colorTemperature [-100,100] → temperature [-1,1]（÷100）
+   * 其余引擎参数（sepia/hueRotate/vignette/grain/noiseAmount）由 preset 决定。
+   *
+   * @param config 后端持久化的后期配置（与 PostProcessing 形状兼容）
+   */
+  public applyPostConfig(config: {
+    enabled: boolean
+    presetStyle?: string
+    exposure?: number
+    contrast?: number
+    saturation?: number
+    colorTemperature?: number
+    lutResourceId?: string | null
+    lutIntensity?: number
+    lutFileUrl?: string | null
+  }): void {
+    const pp = this.engine.getPostProcessing()
+    if (!pp) return
+
+    if (config.enabled) {
+      pp.enable()
+    } else {
+      pp.disable()
+      return
+    }
+
+    const presetStyle = config.presetStyle || 'original'
+    const isBuiltinPreset =
+      presetStyle !== 'custom' && presetStyle !== '' && pp.applyPreset(presetStyle)
+
+    // 数值参数（exposure/contrast/saturation/colorTemperature）始终以表单值为准，
+    // 覆盖 preset 的同名参数，保证 UI 所见即所得。
+    const exposure = typeof config.exposure === 'number' ? config.exposure : 1.0
+    const contrast = typeof config.contrast === 'number' ? config.contrast : 1.0
+    const saturation = typeof config.saturation === 'number' ? config.saturation : 1.0
+    const colorTemp = typeof config.colorTemperature === 'number' ? config.colorTemperature : 0
+
+    // 读取当前 preset 的其它参数（sepia/vignette/grain 等），保证自定义数值修改时
+    // 不会把 preset 的风格效果一并抹掉；如果是 custom 或 preset 不存在，则使用默认值。
+    const base = isBuiltinPreset ? pp.getEffectParams() : {
+      brightness: 0, contrast: 1, saturation: 1, hueRotate: 0, sepia: 0,
+      temperature: 0, vignette: 0, grain: 0, noiseAmount: 0,
+    }
+    pp.setEffectParams({
+      ...base,
+      brightness: exposure - 1,
+      contrast,
+      saturation,
+      temperature: colorTemp / 100,
+    })
+
+    // LUT
+    if (config.lutResourceId && config.lutFileUrl) {
+      void this.loadLutFromUrl(config.lutFileUrl)
+    } else {
+      pp.removeLut()
+    }
+    pp.setLutIntensity(typeof config.lutIntensity === 'number' ? config.lutIntensity : 1)
+  }
+
+  /**
+   * 切换后期启用状态（不改动参数）。
+   */
+  public setPostEnabled(enabled: boolean): void {
+    const pp = this.engine.getPostProcessing()
+    if (!pp) return
+    if (enabled) pp.enable()
+    else pp.disable()
+  }
+
+  /**
+   * 仅切换预设（保留当前数值覆盖，由面板在数值变化时再次调用 applyPostConfig 同步）。
+   */
+  public applyPostPreset(presetName: string): boolean {
+    const pp = this.engine.getPostProcessing()
+    if (!pp) return false
+    return pp.applyPreset(presetName)
+  }
+
+  /**
+   * 从 URL 下载 LUT 文件并加载到引擎。
+   * 内部 fetch→Blob→File，复用引擎原生的 .cube / .png 解析逻辑。
+   */
+  public async loadLutFromUrl(url: string): Promise<boolean> {
+    const pp = this.engine.getPostProcessing()
+    if (!pp) return false
+    try {
+      const resp = await fetch(url, { credentials: 'include' })
+      if (!resp.ok) throw new Error(`HTTP ${resp.status}`)
+      const blob = await resp.blob()
+      const name = url.split('/').pop() || 'lut'
+      const file = new File([blob], name, { type: blob.type || 'application/octet-stream' })
+      return await pp.loadLutFile(file)
+    } catch (e) {
+      console.error('Failed to load LUT from url:', url, e)
+      return false
+    }
+  }
+
+  public removeLut(): void {
+    this.engine.getPostProcessing()?.removeLut()
+  }
+
+  public setLutIntensity(intensity: number): void {
+    this.engine.getPostProcessing()?.setLutIntensity(intensity)
   }
 
   /**

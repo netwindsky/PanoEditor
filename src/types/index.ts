@@ -332,6 +332,7 @@ export interface PostProcessing {
   sceneId: string
   presetStyle: string
   lutResourceId: string
+  lutIntensity: number
   toneMapping: string
   exposure: number
   contrast: number
@@ -344,7 +345,8 @@ export interface PostProcessing {
 
 export interface UpdatePostProcessingParams {
   presetStyle?: string
-  lutResourceId?: string
+  lutResourceId?: string | null
+  lutIntensity?: number
   toneMapping?: string
   exposure?: number
   contrast?: number
@@ -353,6 +355,33 @@ export interface UpdatePostProcessingParams {
   bloomStrength?: number
   bloomThreshold?: number
   enabled?: boolean
+}
+
+/** 后期预设（来自后端 /post-processing/presets） */
+export interface PostPreset {
+  presetStyle: string
+  name?: string
+  toneMapping?: string
+  exposure?: number
+  contrast?: number
+  saturation?: number
+  colorTemperature?: number
+  bloomStrength?: number
+  bloomThreshold?: number
+}
+
+/** LUT 资源 */
+export interface LutResource {
+  id: string
+  projectId: string
+  name: string
+  format: string
+  fileUrl: string
+  previewUrl?: string
+  lutSize?: string
+  sizeBytes: number
+  uploadedBy?: string
+  createdAt: string
 }
 
 export interface RegisterParams {
