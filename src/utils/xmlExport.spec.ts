@@ -226,4 +226,114 @@ describe('exportToKrpanoXml — XML 导出工具', () => {
     expect(idx2).toBeGreaterThan(-1)
     expect(idx1).toBeLessThan(idx2)
   })
+
+  // ===== 对齐参考 733012.xml 格式 =====
+
+  it('根 krpano 标签含 version=1.19 与 title 属性（取自 project.name）', () => {
+    const xml = exportToKrpanoXml(
+      { id: 'p1', name: '雪漠书院', description: '', coverUrl: '', sceneCount: 0, createdAt: '', updatedAt: '' },
+      [],
+      null,
+    )
+    // 根标签出现在第一行
+    expect(xml.startsWith('<krpano ')).toBe(true)
+    expect(xml).toContain('version="1.19"')
+    expect(xml).toContain('title="雪漠书院"')
+  })
+
+  it('输出 <include url="skin/vtourskin.xml" /> 默认皮肤引用', () => {
+    const xml = exportToKrpanoXml(
+      { id: 'p1', name: 'proj', description: '', coverUrl: '', sceneCount: 0, createdAt: '', updatedAt: '' },
+      [],
+      null,
+    )
+    expect(xml).toContain('<include url="skin/vtourskin.xml" />')
+  })
+
+  it('startup action 含 autorun="onstart" 与 startscene 兜底逻辑', () => {
+    const xml = exportToKrpanoXml(
+      { id: 'p1', name: 'proj', description: '', coverUrl: '', sceneCount: 0, createdAt: '', updatedAt: '' },
+      [],
+      makeTourSettings({ autoRotate: false, loadsceneBlend: '' }),
+    )
+    expect(xml).toContain('<action name="startup" autorun="onstart">')
+    expect(xml).toContain('if(startscene === null OR !scene[get(startscene)], copy(startscene,scene[0].name); )')
+    expect(xml).toContain('loadscene(get(startscene), null, MERGE')
+    expect(xml).toContain('if(startactions !== null, startactions() )')
+  })
+
+  it('imageConfig 为合法多分辨率 JSON 时输出 CUBE multires tilesize + 多 level + cube url', () => {
+    const imageConfig = JSON.stringify({
+      type: 'CUBE',
+      multires: true,
+      tilesize: 512,
+      levels: [
+        { tiledimagewidth: 7424, tiledimageheight: 7424, cube: { url: 'panos/s1/%s/l4/%0v/l4_%s_%0v_%0h.jpg' } },
+        { tiledimagewidth: 1024, tiledimageheight: 1024, cube: { url: 'panos/s1/%s/l1/%0v/l1_%s_%0v_%0h.jpg' } },
+      ],
+    })
+    const scenes = [makeScene({ imageConfig })]
+    const xml = exportToKrpanoXml(
+      { id: 'p1', name: 'proj', description: '', coverUrl: '', sceneCount: 1, createdAt: '', updatedAt: '' },
+      scenes,
+      null,
+    )
+    expect(xml).toContain('<image type="CUBE" multires="true" tilesize="512">')
+    expect(xml).toContain('<level tiledimagewidth="7424" tiledimageheight="7424">')
+    expect(xml).toContain('<cube url="panos/s1/%s/l4/%0v/l4_%s_%0v_%0h.jpg" />')
+    expect(xml).toContain('<level tiledimagewidth="1024" tiledimageheight="1024">')
+    expect(xml).toContain('<cube url="panos/s1/%s/l1/%0v/l1_%s_%0v_%0h.jpg" />')
+    expect(xml).toContain('</image>')
+  })
+
+  it('imageConfig 为非 JSON / 简单字符串时降级为 <image><cube url="..."/></image>', () => {
+    const scenes = [makeScene({ imageConfig: 'panos/s1/pano.jpg' })]
+    const xml = exportToKrpanoXml(
+      { id: 'p1', name: 'proj', description: '', coverUrl: '', sceneCount: 1, createdAt: '', updatedAt: '' },
+      scenes,
+      null,
+    )
+    expect(xml).toContain('<image>')
+    expect(xml).toContain('<cube url="panos/s1/pano.jpg" />')
+    expect(xml).toContain('</image>')
+    // 不应出现 multires
+    expect(xml).not.toContain('multires=')
+  })
+
+  it('hotspot 输出 url/width/height/scale/rotate/blendmode/bgcolor 属性（参考 733012.xml 中的自定义 svg 热点）', () => {
+    const scenes = [makeScene()]
+    const hotspots = [makeHotspot({
+      url: 'public/logo.svg',
+      width: 80,
+      height: 80,
+      scale: 1.0,
+      rotate: 0,
+      blendmode: 'normal',
+      bgcolor: '0xFFFFFF',
+    })]
+    const xml = exportToKrpanoXml(
+      { id: 'p1', name: 'proj', description: '', coverUrl: '', sceneCount: 1, createdAt: '', updatedAt: '' },
+      scenes,
+      null,
+      hotspots,
+    )
+    expect(xml).toContain('url="public/logo.svg"')
+    expect(xml).toContain('width="80"')
+    expect(xml).toContain('height="80"')
+    expect(xml).toContain('scale="1"')
+    expect(xml).toContain('rotate="0"')
+    expect(xml).toContain('blendmode="normal"')
+    expect(xml).toContain('bgcolor="0xFFFFFF"')
+  })
+
+  it('scene onstart 为空时输出 onstart=""（与参考格式一致）', () => {
+    const scenes = [makeScene({ onstart: '' })]
+    const xml = exportToKrpanoXml(
+      { id: 'p1', name: 'proj', description: '', coverUrl: '', sceneCount: 1, createdAt: '', updatedAt: '' },
+      scenes,
+      null,
+    )
+    // 场景标签里应保留 onstart=""
+    expect(xml).toMatch(/<scene[^>]*onstart=""/)
+  })
 })

@@ -1,11 +1,13 @@
 import { ref, computed } from 'vue'
 import type { EditorTool, HotspotToolType, LeftPanelTab, RightPanelSection } from '@/types'
-import type { CreateHotspotParams, UpdateHotspotParams } from '@/types'
+import type { CreateHotspotParams, UpdateHotspotParams, Project, TourSettings } from '@/types'
 import { perf } from '@/utils/performanceMonitor'
 import { SceneViewModel } from './SceneViewModel'
 import { HotspotViewModel } from './HotspotViewModel'
 import { AssetViewModel } from './AssetViewModel'
 import type { ProjectService, SceneService, HotspotService, ResourceService } from '@/models'
+import { exportToKrpanoXml } from '@/utils/xmlExport'
+import { downloadXml } from '@/utils/downloadFile'
 
 /**
  * 编辑器主控 ViewModel
@@ -25,11 +27,15 @@ export class EditorViewModel {
   isDirty = ref(false)
   isSaving = ref(false)
   lastSavedAt = ref<string>('')
+  currentProject = ref<Project | null>(null)
 
   // === 子 ViewModel ===
   sceneViewModel: SceneViewModel
   hotspotViewModel: HotspotViewModel
   assetViewModel: AssetViewModel
+
+  // === 服务引用（exportConfig 等跨场景操作需要） ===
+  private hotspotService: HotspotService
 
   // === 计算属性 ===
   canSave = computed(() => this.isDirty.value && !this.isSaving.value)
@@ -40,6 +46,7 @@ export class EditorViewModel {
     hotspotService: HotspotService,
     resourceService: ResourceService
   ) {
+    this.hotspotService = hotspotService
     this.sceneViewModel = new SceneViewModel(sceneService)
     this.hotspotViewModel = new HotspotViewModel(hotspotService)
     this.assetViewModel = new AssetViewModel(resourceService)
@@ -51,10 +58,11 @@ export class EditorViewModel {
 
     // 优化：项目数据和场景列表无依赖关系，改为并行加载
     const endParallel = perf.stage('vm-load-parallel')
-    await Promise.all([
+    const [project] = await Promise.all([
       this.projectService.loadProject(projectId),
       this.sceneViewModel.loadScenes(projectId),
     ])
+    this.currentProject.value = project
     endParallel({ sceneCount: this.sceneViewModel.scenes.value.length })
 
     if (this.sceneViewModel.currentScene.value) {
@@ -133,6 +141,42 @@ export class EditorViewModel {
     }
   }
 
+  // === 配置导出 ===
+  /**
+   * 导出当前项目为 krpano XML 配置文件并触发浏览器下载。
+   *
+   * - 汇总所有场景、所有场景的热点（通过 hotspotService 逐场景拉取最新数据）
+   * - 解析 Project.settings（JSON 字符串）为 TourSettings
+   * - 调用 exportToKrpanoXml 生成 XML，然后通过 downloadXml 下载
+   */
+  async exportConfig(): Promise<void> {
+    const project = this.currentProject.value
+    if (!project) {
+      throw new Error('当前没有打开的项目，无法导出配置')
+    }
+    const scenes = this.sceneViewModel.scenes.value
+
+    // 并行拉取所有场景的热点（不污染 hotspotViewModel 当前场景的列表）
+    const hotspotLists = await Promise.all(
+      scenes.map((s) => this.hotspotService.fetchHotspots(s.id)),
+    )
+    const hotspots = hotspotLists.flat()
+
+    // settings 解析（容错）
+    let settings: TourSettings | null = null
+    if (project.settings) {
+      try {
+        settings = JSON.parse(project.settings) as TourSettings
+      } catch {
+        settings = null
+      }
+    }
+
+    const xml = exportToKrpanoXml(project, scenes, settings, hotspots)
+    const baseName = sanitizeFilename(project.name || 'tour')
+    downloadXml(xml, baseName)
+  }
+
   // === 热点操作 ===
   async addHotspot(params: CreateHotspotParams): Promise<void> {
     if (!this.sceneViewModel.currentScene.value) return
@@ -175,4 +219,9 @@ export class EditorViewModel {
   dispose(): void {
     this.sceneViewModel.dispose()
   }
+}
+
+/** 替换 Windows/Linux/macOS 文件名非法字符为下划线 */
+function sanitizeFilename(name: string): string {
+  return name.replace(/[\\/:*?"<>|]/g, '_').trim() || 'tour'
 }

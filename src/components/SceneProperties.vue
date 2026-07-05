@@ -119,14 +119,6 @@
         @change="handleUpdate"
       />
     </div>
-    <div class="prop-section">
-      <div class="section-title">快捷操作</div>
-      <div class="prop-actions">
-        <el-button size="small" @click="editorStore.setRightPanelSection('audio')">音频设置</el-button>
-        <el-button size="small" @click="editorStore.setRightPanelSection('postprocessing')">后期处理</el-button>
-        <el-button size="small" @click="editorStore.setRightPanelSection('asset')">资源库</el-button>
-      </div>
-    </div>
   </div>
 </template>
 
@@ -383,9 +375,4 @@ onBeforeUnmount(() => {
   text-align: right;
 }
 
-.prop-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
 </style>

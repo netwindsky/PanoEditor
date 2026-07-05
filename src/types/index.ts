@@ -438,7 +438,7 @@ export type EditorTool = 'select' | 'hotspot' | 'pan' | 'zoom'
 
 export type HotspotToolType = 'info' | 'scene' | 'image' | 'quad' | 'model' | 'video'
 
-export type LeftPanelTab = 'scene' | 'layer'
+export type LeftPanelTab = 'scene'
 
 export type RightPanelSection = 'scene' | 'hotspot' | 'audio' | 'postprocessing' | 'tour' | 'overlay'
 

@@ -1,18 +1,7 @@
 <template>
   <aside class="left-panel">
-    <div class="panel-tabs">
-      <div
-        v-for="tab in tabs"
-        :key="tab.key"
-        :class="['panel-tab', { active: vm.leftPanelTab.value === tab.key }]"
-        @click="vm.setLeftPanelTab(tab.key)"
-      >
-        {{ tab.label }}
-      </div>
-    </div>
     <div class="panel-content">
-      <SceneList v-if="vm.leftPanelTab.value === 'scene'" :viewModel="vm.sceneViewModel" :projectId="projectId" @select="(id: string) => vm.switchScene(id)" />
-      <LayerPanel v-else-if="vm.leftPanelTab.value === 'layer'" />
+      <SceneList :viewModel="vm.sceneViewModel" :projectId="projectId" @select="(id: string) => vm.switchScene(id)" />
     </div>
   </aside>
 </template>
@@ -20,17 +9,11 @@
 <script setup lang="ts">
 import type { EditorViewModel } from '@/viewmodels/EditorViewModel'
 import SceneList from './SceneList.vue'
-import LayerPanel from './LayerPanel.vue'
 
-const props = defineProps<{
+defineProps<{
   vm: EditorViewModel
   projectId?: string
 }>()
-
-const tabs = [
-  { key: 'scene' as const, label: '场景' },
-  { key: 'layer' as const, label: '图层' },
-]
 </script>
 
 <style scoped>
@@ -41,32 +24,6 @@ const tabs = [
   display: flex;
   flex-direction: column;
   flex-shrink: 0;
-}
-
-.panel-tabs {
-  display: flex;
-  border-bottom: 1px solid var(--border-color);
-}
-
-.panel-tab {
-  flex: 1;
-  text-align: center;
-  padding: 10px 0;
-  font-size: 13px;
-  color: var(--text-secondary);
-  cursor: pointer;
-  transition: all 0.2s;
-  border-bottom: 2px solid transparent;
-}
-
-.panel-tab:hover {
-  color: var(--text-primary);
-  background: var(--bg-hover);
-}
-
-.panel-tab.active {
-  color: var(--accent);
-  border-bottom-color: var(--accent);
 }
 
 .panel-content {

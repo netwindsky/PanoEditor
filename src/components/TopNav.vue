@@ -16,6 +16,10 @@
         <el-icon><FolderOpened /></el-icon>
         项目
       </el-button>
+      <el-button size="small" :loading="exporting" @click="handleExport">
+        <el-icon><Download /></el-icon>
+        导出配置
+      </el-button>
       <el-button size="small" type="primary" :loading="vm.isSaving.value" @click="handleSave">
         <el-icon><DocumentChecked /></el-icon>
         保存
@@ -33,7 +37,9 @@
 </template>
 
 <script setup lang="ts">
-import { FolderOpened, DocumentChecked, View, Upload } from '@element-plus/icons-vue'
+import { ref } from 'vue'
+import { ElMessage } from 'element-plus'
+import { FolderOpened, DocumentChecked, View, Upload, Download } from '@element-plus/icons-vue'
 import type { EditorViewModel } from '@/viewmodels/EditorViewModel'
 
 const props = defineProps<{
@@ -41,6 +47,7 @@ const props = defineProps<{
 }>()
 
 const showProjectModal = defineModel<boolean>({ default: false })
+const exporting = ref(false)
 
 async function handleSave() {
   await props.vm.save()
@@ -55,6 +62,20 @@ function handlePreview() {
   // 开发环境查看器在 5001 端口，生产环境使用同域名相对路径
   const viewerBase = import.meta.env.DEV ? 'http://localhost:5001' : ''
   window.open(`${viewerBase}/${projectId}`, '_blank')
+}
+
+async function handleExport() {
+  if (exporting.value) return
+  exporting.value = true
+  try {
+    await props.vm.exportConfig()
+    ElMessage.success('配置文件已生成并开始下载')
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : '导出失败，请重试'
+    ElMessage.error(msg)
+  } finally {
+    exporting.value = false
+  }
 }
 
 async function handlePublish() {
