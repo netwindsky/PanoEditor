@@ -20,6 +20,15 @@
         <el-icon><Download /></el-icon>
         导出配置
       </el-button>
+      <el-button
+        size="small"
+        :loading="vm.isStaticExporting.value"
+        @click="handleStaticExport"
+        title="导出可独立部署的静态 ZIP 包（含 Viewer + 资源）"
+      >
+        <el-icon><Box /></el-icon>
+        静态化导出
+      </el-button>
       <el-button size="small" type="primary" :loading="vm.isSaving.value" @click="handleSave">
         <el-icon><DocumentChecked /></el-icon>
         保存
@@ -39,7 +48,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { ElMessage } from 'element-plus'
-import { FolderOpened, DocumentChecked, View, Upload, Download } from '@element-plus/icons-vue'
+import { FolderOpened, DocumentChecked, View, Upload, Download, Box } from '@element-plus/icons-vue'
 import type { EditorViewModel } from '@/viewmodels/EditorViewModel'
 
 const props = defineProps<{
@@ -78,9 +87,19 @@ async function handleExport() {
   }
 }
 
-async function handlePublish() {
-  // TODO: 实现发布
-}
+  async function handlePublish() {
+    // TODO: 实现发布
+  }
+
+  async function handleStaticExport() {
+    try {
+      await props.vm.exportStatic()
+      ElMessage.success('静态包已生成并开始下载')
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : '静态化导出失败，请重试'
+      ElMessage.error(msg)
+    }
+  }
 </script>
 
 <style scoped>

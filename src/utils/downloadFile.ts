@@ -23,6 +23,22 @@ export function downloadTextFile(content: string, filename: string, mime: string
 }
 
 /**
+ * 将 Blob 数据作为文件下载到本地
+ * @param blob Blob 数据
+ * @param filename 文件名（含扩展名）
+ */
+export function downloadBlob(blob: Blob, filename: string): void {
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = filename
+  document.body.appendChild(a)
+  a.click()
+  document.body.removeChild(a)
+  URL.revokeObjectURL(url)
+}
+
+/**
  * 导出 krpano XML 配置的便捷封装
  * @param xml XML 字符串
  * @param baseName 不含后缀的文件名（自动追加 .xml）

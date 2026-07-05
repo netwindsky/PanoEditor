@@ -7,7 +7,8 @@ import { HotspotViewModel } from './HotspotViewModel'
 import { AssetViewModel } from './AssetViewModel'
 import type { ProjectService, SceneService, HotspotService, ResourceService } from '@/models'
 import { exportToKrpanoXml } from '@/utils/xmlExport'
-import { downloadXml } from '@/utils/downloadFile'
+import { downloadXml, downloadBlob } from '@/utils/downloadFile'
+import { buildProjectZip, type PackProgress } from '@/utils/staticPacker'
 
 /**
  * 编辑器主控 ViewModel
@@ -175,6 +176,49 @@ export class EditorViewModel {
     const xml = exportToKrpanoXml(project, scenes, settings, hotspots)
     const baseName = sanitizeFilename(project.name || 'tour')
     downloadXml(xml, baseName)
+  }
+
+  // === 静态化导出（独立部署 ZIP 包） ===
+  /** 静态化导出进度回调信息 */
+  readonly staticExportProgress = ref<PackProgress | null>(null)
+  readonly isStaticExporting = ref(false)
+
+  /**
+   * 将当前项目打包为可独立部署的静态 ZIP 包并触发浏览器下载。
+   * 包含：index.html（内置 three.js viewer）+ config.json + assets/（全景瓦片/热点资源）
+   * @returns 下载的 ZIP Blob（供测试/编程使用）
+   */
+  async exportStatic(): Promise<Blob> {
+    const project = this.currentProject.value
+    if (!project) {
+      throw new Error('当前没有打开的项目，无法导出静态包')
+    }
+    if (this.isStaticExporting.value) {
+      throw new Error('正在导出静态包，请等待当前任务完成')
+    }
+
+    this.isStaticExporting.value = true
+    this.staticExportProgress.value = { phase: 'collect', percent: 0 }
+    try {
+      const scenes = this.sceneViewModel.scenes.value
+      const hotspotLists = await Promise.all(
+        scenes.map((s) => this.hotspotService.fetchHotspots(s.id)),
+      )
+      const hotspots = hotspotLists.flat()
+
+      const blob = await buildProjectZip(project, scenes, hotspots, {
+        onProgress: (p) => {
+          this.staticExportProgress.value = p
+        },
+      })
+
+      const baseName = sanitizeFilename(project.name || 'tour')
+      downloadBlob(blob, `${baseName}.zip`)
+      return blob
+    } finally {
+      this.isStaticExporting.value = false
+      this.staticExportProgress.value = null
+    }
   }
 
   // === 热点操作 ===
