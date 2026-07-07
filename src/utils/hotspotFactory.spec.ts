@@ -78,6 +78,31 @@ describe('buildHotspotParams', () => {
     // 与 quad 的差异：无 bgcolor
     expect(p.bgcolor).toBeUndefined()
   })
+
+  it('web 类型默认使用 DOM 版 custom-web 样式（4 点贴附），提供 url/width/height/points', () => {
+    const ath = 30
+    const atv = -10
+    const p = buildHotspotParams('web', ath, atv)
+    expect(p.type).toBe('web')
+    // 关键：必须走 DOM custom-web（带 CSS matrix3d 4 点透视贴附），不是 custom-web-css3d（单点平面）
+    expect(p.style).toBe('custom-web')
+    // 需要 4 个顶点（8 个数字），createQuadHotspot 才能进入 WebHotspot 分支
+    expect(p.points).toBeTruthy()
+    const nums = p.points!.trim().split(/\s+/).map(Number)
+    expect(nums).toHaveLength(8)
+    expect(nums.every((n) => !Number.isNaN(n))).toBe(true)
+    // url 默认给空白页，避免 iframe 真的加载外部站点
+    expect(p.url).toBe('about:blank')
+    // 宽度/高度必须是纯数字（不加 px），因为 DOM WebHotspot 的 baseWidth/baseHeight 走 parseFloat
+    expect(typeof p.width).toBe('number')
+    expect(typeof p.height).toBe('number')
+    expect((p.width as number)!).toBeGreaterThan(0)
+    expect((p.height as number)!).toBeGreaterThan(0)
+    // 默认分辨率 16:9（640×360），符合视频/网页最常见比例
+    expect(p.width / p.height).toBeCloseTo(16 / 9, 2)
+    // 无 bgcolor（DOM web 不使用贴图）
+    expect(p.bgcolor).toBeUndefined()
+  })
 })
 
 describe('buildHotspotXml', () => {

@@ -40,6 +40,7 @@ const typeIcons: Record<string, string> = {
   quad: '▭',
   model: '⬡',
   video: '▶',
+  web: '◳',
 }
 
 // 热点类型标签映射
@@ -50,6 +51,7 @@ const typeLabels: Record<string, string> = {
   quad: '矩形',
   model: '3D模型',
   video: '视频',
+  web: '网页',
 }
 
 // 样式短标签映射
@@ -70,6 +72,7 @@ const styleShortLabels: Record<string, string> = {
   'custom-image': '图片',
   'custom-video': '视频',
   'custom-web': '网页',
+  'custom-web-css3d': '3D网页',
 }
 
 function getHotspotIcon(type: string): string {

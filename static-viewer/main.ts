@@ -20,6 +20,17 @@ const $ = <T extends HTMLElement = HTMLElement>(sel: string) =>
   document.querySelector(sel) as T | null
 
 async function main() {
+  // 打印构建版本（方便排查部署版本）。__BUILD_VERSION__ 由 vite define 注入为字面量对象
+  try {
+    const bv = __BUILD_VERSION__
+    if (bv) {
+      console.log(
+        `%cPanoViewer v${bv.versionHash} (PanoView:${bv.panoviewCommit}${bv.panoviewDirty ? ' dirty' : ''})`,
+        'color:#4dabf7;font-weight:bold',
+      )
+    }
+  } catch { /* ignore */ }
+
   const container = $('#pano') as HTMLElement
   const loading = $('#loading') as HTMLElement
   const loadingText = $('#loading-text') as HTMLElement
@@ -105,7 +116,8 @@ async function main() {
       : cfg.scenes[0].scene.name
 
     loadingText.textContent = '正在加载全景...'
-    await engine.loadScenes(cfg.scenes)
+    // manageHotspots: true（默认）——静态包的热点由引擎管理（内嵌在 cfg.scenes[i].hotspots 中）
+    await engine.loadScenes(cfg.scenes, { manageHotspots: true })
     // loadScenes 默认加载 scenes[0]，需要切到 initialId
     if (initialId !== cfg.scenes[0].scene.name) {
       await engine.changeScene(initialId)

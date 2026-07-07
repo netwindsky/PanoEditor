@@ -5,12 +5,15 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "prebuild": "node scripts/check-panoview-version.mjs",
     "build": "npm run build:viewer && vue-tsc -b && vite build",
-    "build:viewer": "vite build --config vite.config.viewer.ts",
+    "build:strict": "node scripts/check-panoview-version.mjs --strict && npm run build:viewer && vue-tsc -b && vite build",
+    "build:viewer": "node scripts/check-panoview-version.mjs && vite build --config vite.config.viewer.ts",
     "preview": "vite preview",
     "typecheck": "vue-tsc --noEmit",
     "test:unit": "vitest",
-    "test:run": "vitest run"
+    "test:run": "vitest run",
+    "version:check": "node scripts/check-panoview-version.mjs"
   },
   "dependencies": {
     "@tweenjs/tween.js": "^25.0.0",

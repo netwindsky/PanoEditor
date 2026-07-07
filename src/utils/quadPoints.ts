@@ -39,11 +39,14 @@ export function serializePoints(pts: QuadPoint[]): string {
 }
 
 /**
- * 是否为"四边形几何"类热点（quad 图片 或 video 视频）。
- * 两者共用 4 顶点 points 与控制点编辑逻辑，仅渲染器不同。
+ * 是否为"四边形几何"类热点（quad 贴图 / video 视频 / web 网页）。
+ * 三者共用 4 顶点 points 与控制点编辑逻辑，仅渲染器不同：
+ * - quad: 贴图 mesh
+ * - video: 视频 mesh
+ * - web: CSS3D iframe（引擎以 4 点中心为锚点放置）
  */
 export function isQuadLike(type: HotspotType | string | undefined): boolean {
-  return type === 'quad' || type === 'video'
+  return type === 'quad' || type === 'video' || type === 'web'
 }
 
 /** 判断 url 是否指向视频资源（容忍 query 串），用于阻止图片热点误选视频。 */

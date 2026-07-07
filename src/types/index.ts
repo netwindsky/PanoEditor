@@ -206,7 +206,7 @@ export interface UpdateSceneParams {
 
 // ============ 热点 ============
 // 热点类型枚举
-export type HotspotType = 'info' | 'scene' | 'image' | 'quad' | 'model' | 'video'
+export type HotspotType = 'info' | 'scene' | 'image' | 'quad' | 'model' | 'video' | 'web'
 
 // 与后端HotspotResponse完全对齐，使用ath/atv球坐标（与PanoViewV2标准库一致）
 export interface Hotspot {

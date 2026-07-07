@@ -26,8 +26,16 @@ import {
 } from '@/utils/staticExport'
 import type { Project, Scene, Hotspot } from '@/types'
 
-/** Viewer 产物所在的 URL 前缀（dev server 与生产 build 都可访问） */
-const VIEWER_BASE = '/static-viewer/'
+/**
+ * Viewer 产物 URL 前缀：基于 Vite 的 base 配置拼接，支持编辑器部署到子路径。
+ * - dev server: BASE_URL = '/' → '/static-viewer/'
+ * - 部署到子路径（如 VITE_BASE=/editor/）：'/editor/static-viewer/'
+ * - BASE_URL 若以 './' 结尾（相对 base 模式），同样可工作
+ */
+function resolveViewerBase(): string {
+  const base = (import.meta.env.BASE_URL || '/').replace(/\/$/, '')
+  return `${base}/static-viewer/`
+}
 
 export type PackPhase = 'collect' | 'download' | 'pack' | 'done'
 
@@ -244,7 +252,8 @@ export async function createStaticPack(opts: PackOptions): Promise<Blob> {
   //   assets/index.css
   //   assets/textureLoader.worker.js
   // 通过解析 index.html 中 <script>/<link> 引用得到 js/css 列表，再固定加上 worker。
-  const viewerHtmlUrl = VIEWER_BASE + 'index.html'
+  const viewerBase = resolveViewerBase()
+  const viewerHtmlUrl = viewerBase + 'index.html'
   let viewerHtml = ''
   try {
     const htmlBlob = await fetcher(viewerHtmlUrl)
@@ -277,7 +286,7 @@ export async function createStaticPack(opts: PackOptions): Promise<Blob> {
 
   // 下载 viewer 资源，写入 zip 对应路径
   for (const relPath of assetRefs) {
-    const url = VIEWER_BASE + relPath
+    const url = viewerBase + relPath
     try {
       const blob = await fetcher(url)
       zip.file(relPath, blob)
@@ -292,6 +301,19 @@ export async function createStaticPack(opts: PackOptions): Promise<Blob> {
   // 替换标题占位符后写入 zip 根的 index.html
   const finalHtml = viewerHtml.replace(/__PROJECT_TITLE__/g, title)
   zip.file('index.html', finalHtml)
+
+  // 写入 version.json（包含 PanoViewV2 commit hash，方便部署后排查版本问题）
+  // __BUILD_VERSION__ 由 vite define 注入为字面量对象
+  try {
+    // @ts-ignore — 由 vite define 注入，TypeScript 静态分析看不到
+    const versionInfo = __BUILD_VERSION__
+    if (versionInfo) {
+      zip.file('version.json', JSON.stringify(versionInfo, null, 2))
+    }
+  } catch {
+    // 版本信息写入失败不影响打包
+  }
+
   emit(onProgress, { phase: 'pack', percent: 99 })
 
   const blob = await zip.generateAsync({ type: 'blob' }, (meta) => {

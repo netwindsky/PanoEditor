@@ -34,6 +34,7 @@ const FIELDS_BY_TYPE: Partial<Record<HotspotType, HotspotField[]>> = {
   image: ['url', 'width', 'height', 'scale', 'rotate', 'blendmode'],
   quad: ['url', 'points', 'width', 'height', 'blendmode'],
   model: ['url', 'scale', 'rotate'],
+  web: ['url', 'points', 'width', 'height', 'scale'],
 }
 
 /**

@@ -81,6 +81,7 @@ const hotspotTypeLabels: Record<HotspotToolType, string> = {
   quad: '矩形热点',
   model: '3D模型热点',
   video: '视频热点',
+  web: '网页热点',
 }
 
 const hotspotTypeLabel = computed(() =>

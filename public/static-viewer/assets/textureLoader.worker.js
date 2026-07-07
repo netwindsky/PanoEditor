@@ -1,0 +1,1 @@
+(function(){"use strict";self.onmessage=async t=>{const{id:s,type:o,url:r}=t.data;if(o==="loadTexture")try{const e=await fetch(r);if(!e.ok)throw new Error(`Failed to fetch image: ${e.status} ${e.statusText}`);const a=await e.blob();self.postMessage({id:s,blob:a})}catch(e){self.postMessage({id:s,error:e.message||"Unknown error"})}}})();

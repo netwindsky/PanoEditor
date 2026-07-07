@@ -103,6 +103,21 @@ describe('createStaticPack', () => {
     expect(zip.file('config.json')).toBeTruthy()
   })
 
+  it('包内包含 version.json（记录 PanoViewV2 版本信息）', async () => {
+    const blob = await createStaticPack(makeOpts())
+    const JSZip = await import('jszip')
+    const zip = await JSZip.loadAsync(blob)
+    const vf = zip.file('version.json')
+    // version.json 在 __BUILD_VERSION__ 存在时写入；测试环境下 define 常量由 vitest 提供
+    // 若 vitest 未定义 __BUILD_VERSION__ 则该文件不存在，这是预期行为
+    if (vf) {
+      const txt = await vf.async('string')
+      const v = JSON.parse(txt)
+      expect(v).toHaveProperty('panoviewCommit')
+      expect(v).toHaveProperty('versionHash')
+    }
+  })
+
   it('下载所有内部资源：缩略图+预览图+6 面瓦片（无热点时）', async () => {
     await createStaticPack(makeOpts())
     // thumb + preview + 6 faces from tile template

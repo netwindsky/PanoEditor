@@ -19,6 +19,7 @@ const DEFAULT_NAMES: Record<HotspotToolType, string> = {
   quad: '矩形热点',
   model: '模型热点',
   video: '视频热点',
+  web: '网页热点',
 }
 
 /**
@@ -64,6 +65,21 @@ export function buildHotspotParams(
       ath - d, atv + d, // 左下
     ].join(' ')
     return { ...base, points, url: PLACEHOLDER_QUAD_URL }
+  }
+
+  if (type === 'web') {
+    // web 热点复用 quad 的 4 顶点几何，引擎 createQuadHotspot 内按 style==='custom-web'
+    // 分支创建 DOM WebHotspot（通过 CSS matrix3d 做 4 点透视贴附投影到屏幕）。
+    // 默认 url 使用 about:blank 空白页，用户后续在属性面板填入真实网页地址。
+    // width/height 传纯数字（DOM WebHotspot 的 baseWidth/baseHeight 走 parseFloat）。
+    const d = 8 // 默认半边长（度）
+    const points = [
+      ath - d, atv - d,
+      ath + d, atv - d,
+      ath + d, atv + d,
+      ath - d, atv + d,
+    ].join(' ')
+    return { ...base, style: 'custom-web', points, url: 'about:blank', width: 640, height: 360 }
   }
 
   if (type === 'image') {

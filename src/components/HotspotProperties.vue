@@ -55,19 +55,33 @@
       <!-- 尺寸变换 -->
       <div class="prop-card">
         <div class="card-title">尺寸变换</div>
-        <div class="prop-field">
-          <label>宽度</label>
-          <el-input-number v-model="form.width" size="small" :min="0" :step="1" controls-position="right" />
-        </div>
-        <div class="prop-field">
-          <label>高度</label>
-          <el-input-number v-model="form.height" size="small" :min="0" :step="1" controls-position="right" />
-        </div>
-        <div class="prop-field">
+        <!-- web 类型下：宽高即 iframe 内嵌页面的渲染分辨率（像素），影响内容清晰度与宽高比 -->
+        <template v-if="form.type === 'web'">
+          <div class="prop-field">
+            <label>分辨率宽 (px)</label>
+            <el-input-number v-model="form.width" size="small" :min="160" :step="40" controls-position="right" />
+          </div>
+          <div class="prop-field">
+            <label>分辨率高 (px)</label>
+            <el-input-number v-model="form.height" size="small" :min="90" :step="40" controls-position="right" />
+          </div>
+          <p class="field-hint">分辨率决定 iframe 渲染大小与内容宽高比，实际屏幕尺寸由四个顶点位置决定。常用：1280×720（16:9）/ 1920×1080 / 375×667（手机页面）。</p>
+        </template>
+        <template v-else>
+          <div v-if="form.type !== 'info' && form.type !== 'scene'" class="prop-field">
+            <label>宽度</label>
+            <el-input-number v-model="form.width" size="small" :min="0" :step="1" controls-position="right" />
+          </div>
+          <div v-if="form.type !== 'info' && form.type !== 'scene'" class="prop-field">
+            <label>高度</label>
+            <el-input-number v-model="form.height" size="small" :min="0" :step="1" controls-position="right" />
+          </div>
+        </template>
+        <div v-if="['image', 'model'].includes(form.type)" class="prop-field">
           <label>缩放</label>
           <el-input-number v-model="form.scale" size="small" :min="0.001" :step="0.01" :precision="3" controls-position="right" />
         </div>
-        <div class="prop-field">
+        <div v-if="['image', 'model'].includes(form.type)" class="prop-field">
           <label>旋转</label>
           <el-input-number v-model="form.rotate" size="small" :step="1" :precision="1" controls-position="right" />
         </div>
@@ -196,7 +210,17 @@
             </div>
           </div>
         </template>
-        <template v-if="isQuadLike(form.type)">
+        <template v-if="form.type === 'web'">
+          <div class="prop-field">
+            <label>网页地址</label>
+            <el-input v-model="form.url" size="small" placeholder="https://example.com" />
+          </div>
+          <div class="prop-field hint-text">
+            <label>&nbsp;</label>
+            <span class="field-hint">输入以 http(s):// 开头的完整 URL；目标站点需允许 iframe 嵌入。</span>
+          </div>
+        </template>
+        <template v-if="isQuadLike(form.type) && form.type !== 'web'">
           <div class="prop-field">
             <label>混合模式</label>
             <el-select v-model="form.blendmode" size="small" clearable placeholder="默认">
@@ -253,10 +277,10 @@
         <div class="card-title">交互设置</div>
         <div class="prop-field">
           <label>动作</label>
-          <el-select v-model="form.action" size="small" placeholder="选择动作">
+          <el-select v-model="form.action" size="small" placeholder="选择动作" :disabled="form.type === 'web'">
             <el-option label="无动作" value="none" />
-            <el-option label="跳转场景" value="scene" />
-            <el-option label="打开链接" value="link" />
+            <el-option v-if="form.type !== 'web'" label="跳转场景" value="scene" />
+            <el-option v-if="form.type !== 'web'" label="打开链接" value="link" />
             <el-option label="执行脚本" value="script" />
           </el-select>
         </div>
@@ -266,7 +290,7 @@
             <el-option v-for="scene in scenes" :key="scene.id" :label="scene.name" :value="scene.id" />
           </el-select>
         </div>
-        <div v-if="form.action === 'link'" class="prop-field">
+        <div v-if="form.action === 'link' && form.type !== 'web'" class="prop-field">
           <label>链接地址</label>
           <el-input v-model="form.url" size="small" placeholder="https://..." />
         </div>
@@ -474,6 +498,7 @@ const typeLabels: Record<string, string> = {
   quad: '矩形热点',
   model: '3D模型热点',
   video: '视频热点',
+  web: '网页热点',
 }
 
 interface InfoContent {
@@ -577,7 +602,13 @@ watch(
     form.name = hotspot.name
     form.type = hotspot.type || 'info'
     form.tooltip = hotspot.tooltip || ''
-    form.style = hotspot.style || 'pulsing-dot'
+    // 不同类型有各自合理的默认 style，避免历史数据缺字段时显示错乱
+    const defaultStyle: Record<string, string> = {
+      info: 'pulsing-dot',
+      image: 'custom-image',
+      web: 'custom-web',
+    }
+    form.style = hotspot.style || defaultStyle[form.type] || ''
     form.ath = hotspot.ath ?? 0
     form.atv = hotspot.atv ?? 0
     form.url = hotspot.url || ''
@@ -710,7 +741,7 @@ function doSave() {
   }
 
   // 媒体类型热点的 url 不受动作影响
-  if (['image', 'quad', 'model', 'video'].includes(form.type)) {
+  if (['image', 'quad', 'model', 'video', 'web'].includes(form.type)) {
     updates.url = form.url || undefined
   }
 
@@ -1149,5 +1180,11 @@ function handleExportXml() {
   text-align: center;
   color: var(--text-secondary, #999);
   font-size: 13px;
+}
+
+.hint-text .field-hint {
+  font-size: 11px;
+  color: var(--text-secondary, #999);
+  line-height: 1.5;
 }
 </style>

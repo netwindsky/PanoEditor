@@ -2,7 +2,8 @@ import { createRouter, createWebHistory } from 'vue-router'
 import { perf } from '@/utils/performanceMonitor'
 
 const router = createRouter({
-  history: createWebHistory(),
+  // createWebHistory() 无参时自动使用 import.meta.env.BASE_URL（由 vite.config.ts 的 base 决定）
+  history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     {
       path: '/login',

@@ -34,3 +34,6 @@ npm-debug.log*
 
 # TypeScript 缓存
 *.tsbuildinfo
+
+# 构建时生成的版本信息（每次 build 都会重新生成）
+src/generated/
