@@ -23,25 +23,27 @@
       <HotspotProperties v-else-if="vm.rightPanelSection.value === 'hotspot'" />
       <AudioSettings v-else-if="vm.rightPanelSection.value === 'audio'" />
       <PostProcessingPanel v-else-if="vm.rightPanelSection.value === 'postprocessing'" />
+      <LightingPanel v-else-if="vm.rightPanelSection.value === 'lighting'" :vm="vm" />
     </div>
   </aside>
 </template>
 
 <script setup lang="ts">
 import type { Component } from 'vue'
-import { Close, Collection, InfoFilled, Headset, MagicStick } from '@element-plus/icons-vue'
+import { Close, Collection, InfoFilled, Headset, MagicStick, Sunny } from '@element-plus/icons-vue'
 import type { EditorViewModel } from '@/viewmodels/EditorViewModel'
 import SceneProperties from './SceneProperties.vue'
 import HotspotProperties from './HotspotProperties.vue'
 import AudioSettings from './AudioSettings.vue'
 import PostProcessingPanel from './PostProcessingPanel.vue'
+import LightingPanel from './LightingPanel.vue'
 
 defineProps<{
   vm: EditorViewModel
 }>()
 
 interface TabItem {
-  key: 'scene' | 'hotspot' | 'audio' | 'postprocessing'
+  key: 'scene' | 'hotspot' | 'audio' | 'postprocessing' | 'lighting'
   label: string
   icon: Component
 }
@@ -51,6 +53,7 @@ const tabs: TabItem[] = [
   { key: 'hotspot', label: '标注', icon: InfoFilled },
   { key: 'audio', label: '音频', icon: Headset },
   { key: 'postprocessing', label: '后期', icon: MagicStick },
+  { key: 'lighting', label: '光照', icon: Sunny },
 ]
 </script>
 

@@ -297,7 +297,7 @@ export interface UpdateHotspotParams {
 }
 
 // ============ 资源 ============
-export type ResourceType = 'image' | 'video' | 'audio' | 'panorama' | 'model'
+export type ResourceType = 'image' | 'video' | 'audio' | 'panorama' | 'model' | 'envmap'
 
 export interface Resource {
   id: string
@@ -370,6 +370,36 @@ export interface PostPreset {
   bloomThreshold?: number
 }
 
+// ============ 场景光照 ============
+/**
+ * 场景光照配置（后端持久化形状）。
+ * 太阳光字段带 sun 前缀；引擎 SunLightConfig 无前缀，转换见 api/lighting.ts。
+ */
+export interface LightingConfig {
+  id: string
+  sceneId: string
+  /** HDR 环境贴图地址（/uploads/...），null 表示使用默认 RoomEnvironment */
+  envMapUrl: string | null
+  sunEnabled: boolean
+  /** 方位角（度，0~360） */
+  sunAzimuth: number
+  /** 仰角（度，-90~90） */
+  sunElevation: number
+  sunIntensity: number
+  /** CSS 颜色字符串，如 '#fff2cc' */
+  sunColor: string
+}
+
+/** 场景光照更新参数（全部字段可选，envMapUrl 可置 null 恢复默认环境） */
+export interface UpdateLightingParams {
+  envMapUrl?: string | null
+  sunEnabled?: boolean
+  sunAzimuth?: number
+  sunElevation?: number
+  sunIntensity?: number
+  sunColor?: string
+}
+
 /** LUT 资源 */
 export interface LutResource {
   id: string
@@ -440,7 +470,7 @@ export type HotspotToolType = 'info' | 'scene' | 'image' | 'quad' | 'model' | 'v
 
 export type LeftPanelTab = 'scene'
 
-export type RightPanelSection = 'scene' | 'hotspot' | 'audio' | 'postprocessing' | 'tour' | 'overlay'
+export type RightPanelSection = 'scene' | 'hotspot' | 'audio' | 'postprocessing' | 'lighting' | 'tour' | 'overlay'
 
 /** krpano 覆盖层类型 */
 export type LayerType = 'text' | 'image' | 'button' | 'container'

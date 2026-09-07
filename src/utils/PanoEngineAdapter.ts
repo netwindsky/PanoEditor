@@ -10,7 +10,7 @@
  * - DOM 层热点命中检测（与引擎 3D 射线命中组合）
  */
 import { PanoEngine } from '@panoview'
-import type { SceneData, Hotspot as PanoHotspot } from '@panoview'
+import type { SceneData, Hotspot as PanoHotspot, SunLightConfig } from '@panoview'
 import TWEEN, { Tween } from '@tweenjs/tween.js'
 import { perf } from '@/utils/performanceMonitor'
 import { resizeImageDataUrl } from '@/utils/thumbnailGenerator'
@@ -533,6 +533,36 @@ export class PanoEngineAdapter {
    */
   public setWebIframesEditable(editable: boolean): void {
     this.engine.hotspotsManager.setWebIframesEditable(editable)
+  }
+
+  // ==================== 场景光照 ====================
+
+  /**
+   * 设置 HDR 环境贴图（影响模型热点 PBR 照明/金属反射）。
+   * @param url HDR 地址；null 恢复默认 RoomEnvironment
+   */
+  public async setEnvironmentMap(url: string | null): Promise<void> {
+    await this.engine.setEnvironmentMap(url)
+  }
+
+  /** 配置太阳方向光（开关/方位角/仰角/强度/颜色） */
+  public setSunLight(config: SunLightConfig): void {
+    this.engine.setSunLight(config)
+  }
+
+  /** 读取当前太阳光配置快照（未设置过返回 null，供 gizmo 拖拽保留强度/颜色参数） */
+  public getSunLightConfig(): SunLightConfig | null {
+    return this.engine.getSunLightConfig()
+  }
+
+  /** 将太阳位置投影到屏幕坐标（供画布 gizmo 使用） */
+  public projectSunToScreen(): { x: number; y: number; visible: boolean } {
+    return this.engine.projectSunToScreen()
+  }
+
+  /** 屏幕坐标反算太阳方位角/仰角（供画布 gizmo 拖拽使用） */
+  public screenToSunDirection(screenX: number, screenY: number): { azimuth: number; elevation: number } {
+    return this.engine.screenToSunDirection(screenX, screenY)
   }
 
   // ==================== 后期处理 ====================

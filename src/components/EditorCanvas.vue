@@ -45,6 +45,7 @@ import type { HotspotToolType } from '@/types'
 import { buildHotspotParams } from '@/utils/hotspotFactory'
 import { parsePoints, serializePoints, isQuadLike, isMeshQuad, centerOfPoints } from '@/utils/quadPoints'
 import { useEditorStore } from '@/stores/editor'
+import { updateLighting } from '@/api/lighting'
 
 const props = defineProps<{
   vm: EditorViewModel
@@ -55,6 +56,14 @@ const panoViewerRef = ref<InstanceType<typeof PanoEngineViewer>>()
 const canvasContainer = ref<HTMLElement>()
 const editorStore = useEditorStore()
 let engine: PanoEngineAdapter | null = null
+
+// ===== 太阳 gizmo（可拖拽太阳方向光）=====
+// 范式与 quad-handle 一致：命令式创建绝对定位 DOM 圆点，挂在 PanoEngineViewer 根节点上，
+// 由独立的 requestAnimationFrame 循环每帧用 engine.projectSunToScreen() 刷新位置。
+const sunGizmo = ref<HTMLElement | null>(null)
+// 是否正在拖拽太阳 gizmo（拖拽中不响应热点/控制点逻辑，并锁定全景旋转）
+const isDraggingSun = ref(false)
+let sunRafId: number | null = null
 
 // ===== 矩形热点控制点 =====
 const HANDLE_SIZE = 12
@@ -200,6 +209,151 @@ function clearQuadHandles() {
   selectedPointIndex.value = null
 }
 
+// ===== 太阳 gizmo 实现（范式同 quad-handle：命令式 DOM + RAF 刷新）=====
+
+function createSunGizmo() {
+  if (sunGizmo.value) return
+  const container = panoViewerRef.value?.$el as HTMLElement | undefined
+  if (!container) return
+
+  const gizmo = document.createElement('div')
+  gizmo.className = 'sun-gizmo'
+  gizmo.textContent = '☀'
+  gizmo.style.position = 'absolute'
+  gizmo.style.width = '36px'
+  gizmo.style.height = '36px'
+  gizmo.style.left = '0'
+  gizmo.style.top = '0'
+  gizmo.style.display = 'none'
+  gizmo.style.alignItems = 'center'
+  gizmo.style.justifyContent = 'center'
+  gizmo.style.fontSize = '26px'
+  gizmo.style.lineHeight = '1'
+  gizmo.style.color = '#ffd34d'
+  gizmo.style.background = 'radial-gradient(circle, rgba(255,193,7,0.35) 0%, rgba(255,193,7,0.08) 70%, transparent 100%)'
+  gizmo.style.border = '2px solid rgba(255,211,77,0.9)'
+  gizmo.style.borderRadius = '50%'
+  gizmo.style.boxShadow = '0 0 14px rgba(255,193,7,0.75)'
+  gizmo.style.textShadow = '0 0 8px rgba(255,150,0,0.9)'
+  gizmo.style.transform = 'translate(-50%, -50%)'
+  gizmo.style.pointerEvents = 'auto'
+  gizmo.style.cursor = 'grab'
+  gizmo.style.zIndex = '101'
+  gizmo.style.userSelect = 'none'
+  gizmo.style.touchAction = 'none'
+
+  gizmo.addEventListener('pointerdown', (e) => onSunGizmoPointerDown(e))
+  gizmo.addEventListener('pointerenter', () => {
+    if (!isDraggingSun.value) gizmo.style.transform = 'translate(-50%, -50%) scale(1.15)'
+  })
+  gizmo.addEventListener('pointerleave', () => {
+    if (!isDraggingSun.value) gizmo.style.transform = 'translate(-50%, -50%)'
+  })
+
+  container.appendChild(gizmo)
+  sunGizmo.value = gizmo
+  startSunUpdateLoop()
+}
+
+function removeSunGizmo() {
+  stopSunUpdateLoop()
+  sunGizmo.value?.remove()
+  sunGizmo.value = null
+  isDraggingSun.value = false
+}
+
+function startSunUpdateLoop() {
+  if (sunRafId) return
+  const loop = () => {
+    updateSunGizmo()
+    sunRafId = requestAnimationFrame(loop)
+  }
+  sunRafId = requestAnimationFrame(loop)
+}
+
+function stopSunUpdateLoop() {
+  if (sunRafId) {
+    cancelAnimationFrame(sunRafId)
+    sunRafId = null
+  }
+}
+
+// 每帧刷新：位置跟随太阳投影；太阳未启用/在相机背后时隐藏；
+// 仅 select 工具下可交互（其他工具 pointer-events:none，避免遮挡热点放置）
+function updateSunGizmo() {
+  const gizmo = sunGizmo.value
+  if (!gizmo || !engine) return
+
+  const screen = engine.projectSunToScreen()
+
+  if (screen.visible) {
+    gizmo.style.display = 'flex'
+    gizmo.style.left = `${screen.x}px`
+    gizmo.style.top = `${screen.y}px`
+  } else {
+    gizmo.style.display = 'none'
+  }
+  // 拖拽中保持 grabbing；非 select 工具禁用指针事件并复位 hover 缩放，避免遮挡热点放置
+  gizmo.style.pointerEvents = vm.activeTool.value === 'select' ? 'auto' : 'none'
+  gizmo.style.cursor = isDraggingSun.value ? 'grabbing' : 'grab'
+  if (vm.activeTool.value !== 'select') {
+    gizmo.style.transform = 'translate(-50%, -50%)'
+  }
+}
+
+function onSunGizmoPointerDown(e: PointerEvent) {
+  // 阻止冒泡：避免触发画布空白点击取消选中 / 热点放置
+  e.stopPropagation()
+  e.preventDefault()
+  isDraggingSun.value = true
+  const viewport = canvasContainer.value?.querySelector('.canvas-viewport') as HTMLElement | null
+  // 与 quad-handle 一致：指针捕获设在 viewport 上，保证移出 gizmo 仍能收到 move/up
+  viewport?.setPointerCapture(e.pointerId)
+  // 锁定全景旋转，拖拽期间画面不转动
+  engine?.disableControls()
+}
+
+// 拖拽中：实时反算方位/仰角并下发引擎预览，其余太阳参数（强度/颜色/开关）保持不变
+function handleSunDragMove(e: PointerEvent) {
+  if (!engine) return
+  const current = engine.getSunLightConfig()
+  if (!current) return
+  const { azimuth, elevation } = engine.screenToSunDirection(e.clientX, e.clientY)
+  engine.setSunLight({ ...current, azimuth, elevation })
+}
+
+// 松手：解锁全景旋转，并把最终方位/仰角持久化一次（拖拽中不请求后端）
+async function handleSunDragEnd() {
+  if (!engine) {
+    isDraggingSun.value = false
+    return
+  }
+  isDraggingSun.value = false
+  engine.enableControls()
+
+  const config = engine.getSunLightConfig()
+  const sceneId = vm.sceneViewModel.currentScene.value?.id
+  if (config && sceneId) {
+    try {
+      await updateLighting(sceneId, {
+        sunAzimuth: config.azimuth,
+        sunElevation: config.elevation,
+      })
+      editorStore.markDirty()
+      // 通知光照面板重新拉取配置回填滑块，避免面板旧值回弹覆盖
+      editorStore.notifySunLightingChanged()
+    } catch (err) {
+      console.warn('太阳方向持久化失败:', err)
+    }
+  }
+}
+
+// 指针取消/移出：解锁全景旋转，引擎预览保留但不持久化（与热点 forceEndDrag 语义一致）
+function handleSunDragCancel() {
+  isDraggingSun.value = false
+  engine?.enableControls()
+}
+
 function startUpdateLoop() {
   if (rafId) return
   const loop = () => {
@@ -321,6 +475,12 @@ function handlePointerDown(e: PointerEvent) {
 // quad/image/model 会自动补齐引擎所需的 points/url 默认值，避免创建即报错。
 
 function handlePointerMove(e: PointerEvent) {
+  // 优先处理太阳 gizmo 拖拽（拖动中热点/控制点逻辑全部短路）
+  if (isDraggingSun.value) {
+    handleSunDragMove(e)
+    return
+  }
+
   // 优先处理控制点拖拽
   if (isDraggingHandle.value && selectedPointIndex.value !== null && engine) {
     const hotspot = vm.hotspotViewModel.selectedHotspot.value
@@ -367,6 +527,12 @@ function handlePointerMove(e: PointerEvent) {
 }
 
 function handlePointerUp() {
+  // 优先处理太阳 gizmo 拖拽结束（解锁旋转 + 持久化方位/仰角）
+  if (isDraggingSun.value) {
+    void handleSunDragEnd()
+    return
+  }
+
   // 优先处理控制点拖拽结束
   if (isDraggingHandle.value && selectedPointIndex.value !== null) {
     isDraggingHandle.value = false
@@ -390,6 +556,12 @@ function handlePointerUp() {
 // 健壮性：指针取消（pointercancel）或移出窗口（pointerleave）时强制结束拖拽，
 // 避免全景旋转被永久锁死（forceEndDrag 只解锁不提交后端）。
 function handlePointerCancel() {
+  // 太阳 gizmo 拖拽中断：解锁旋转，保留引擎预览但不持久化
+  if (isDraggingSun.value) {
+    handleSunDragCancel()
+    return
+  }
+
   if (isDraggingHandle.value) {
     isDraggingHandle.value = false
     selectedPointIndex.value = null
@@ -407,6 +579,8 @@ function handlePointerCancel() {
 function onEngineReady(adapter: PanoEngineAdapter) {
   engine = adapter
   editorStore.setEngineAdapter(adapter)
+  // 引擎就绪后挂载太阳 gizmo（等 viewer DOM 渲染完成）
+  void nextTick(() => createSunGizmo())
   // 注入相机锁定器：拖拽热点时锁定全景旋转，结束时解锁
   vm.hotspotViewModel.setCameraLock({
     lock: () => engine?.disableControls(),
@@ -436,6 +610,7 @@ function onSceneChanged(sceneId: string) {
 
 onBeforeUnmount(() => {
   clearQuadHandles()
+  removeSunGizmo()
   // 卸载时若仍在拖拽，强制解锁，避免遗留锁定状态
   if (vm.hotspotViewModel.isDragging.value) {
     vm.hotspotViewModel.forceEndDrag()
