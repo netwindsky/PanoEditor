@@ -26,11 +26,11 @@ const globalStubs = {
     template:
       '<input :value="modelValue" @input="$emit(\'update:modelValue\', $event.target.value)" @change="$emit(\'change\', $event.target.value)" />',
   },
-  'el-slider': {
-    props: ['modelValue', 'min', 'max', 'step', 'size'],
+  'el-input-number': {
+    props: ['modelValue', 'size', 'min', 'max', 'step', 'precision', 'controlsPosition'],
     emits: ['update:modelValue', 'change'],
     template:
-      '<input type="range" :value="modelValue" :min="min" :max="max" :step="step" @input="$emit(\'update:modelValue\', Number($event.target.value))" @change="$emit(\'change\', Number($event.target.value))" />',
+      '<input type="number" :value="modelValue" :min="min" :max="max" :step="step" @input="$emit(\'update:modelValue\', Number($event.target.value))" @change="$emit(\'change\', Number($event.target.value))" />',
   },
   'el-button': {
     template: '<button v-bind="$attrs"><slot /></button>',
@@ -62,10 +62,10 @@ describe('SceneProperties — 视角限制 (fovMin/fovMax/maxPixelZoom)', () => 
     })
     await flushPromises()
 
-    const sliders = wrapper.findAll('input[type="range"]')
-    expect(Number(sliders[3].element.value)).toBe(70)
-    expect(Number(sliders[4].element.value)).toBe(140)
-    expect(Number(sliders[5].element.value)).toBe(2.0)
+    const inputs = wrapper.findAll('input[type="number"]')
+    expect(Number(inputs[3].element.value)).toBe(70)
+    expect(Number(inputs[4].element.value)).toBe(140)
+    expect(Number(inputs[5].element.value)).toBe(2.0)
   })
 
   it('修改 fovMin 后调用 updateSceneView 携带新值', async () => {
@@ -76,9 +76,9 @@ describe('SceneProperties — 视角限制 (fovMin/fovMax/maxPixelZoom)', () => 
     })
     await flushPromises()
 
-    const sliders = wrapper.findAll('input[type="range"]')
-    await sliders[3].setValue(50)
-    await sliders[3].trigger('change')
+    const inputs = wrapper.findAll('input[type="number"]')
+    await inputs[3].setValue(50)
+    await inputs[3].trigger('change')
 
     vi.advanceTimersByTime(300)
     await flushPromises()
@@ -98,9 +98,9 @@ describe('SceneProperties — 视角限制 (fovMin/fovMax/maxPixelZoom)', () => 
     })
     await flushPromises()
 
-    const sliders = wrapper.findAll('input[type="range"]')
-    await sliders[4].setValue(150)
-    await sliders[4].trigger('change')
+    const inputs = wrapper.findAll('input[type="number"]')
+    await inputs[4].setValue(150)
+    await inputs[4].trigger('change')
 
     vi.advanceTimersByTime(300)
     await flushPromises()
@@ -119,9 +119,9 @@ describe('SceneProperties — 视角限制 (fovMin/fovMax/maxPixelZoom)', () => 
     })
     await flushPromises()
 
-    const sliders = wrapper.findAll('input[type="range"]')
-    await sliders[5].setValue(3.5)
-    await sliders[5].trigger('change')
+    const inputs = wrapper.findAll('input[type="number"]')
+    await inputs[5].setValue(3.5)
+    await inputs[5].trigger('change')
 
     vi.advanceTimersByTime(300)
     await flushPromises()
@@ -140,9 +140,9 @@ describe('SceneProperties — 视角限制 (fovMin/fovMax/maxPixelZoom)', () => 
     })
     await flushPromises()
 
-    const sliders = wrapper.findAll('input[type="range"]')
-    expect(Number(sliders[3].element.value)).toBe(70)
-    expect(Number(sliders[4].element.value)).toBe(140)
-    expect(Number(sliders[5].element.value)).toBe(2.0)
+    const inputs = wrapper.findAll('input[type="number"]')
+    expect(Number(inputs[3].element.value)).toBe(70)
+    expect(Number(inputs[4].element.value)).toBe(140)
+    expect(Number(inputs[5].element.value)).toBe(2.0)
   })
 })

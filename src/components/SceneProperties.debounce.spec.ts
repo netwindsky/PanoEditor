@@ -26,11 +26,11 @@ const globalStubs = {
     template:
       '<input :value="modelValue" @input="$emit(\'update:modelValue\', $event.target.value)" @change="$emit(\'change\', $event.target.value)" />',
   },
-  'el-slider': {
-    props: ['modelValue', 'min', 'max', 'step', 'size'],
+  'el-input-number': {
+    props: ['modelValue', 'size', 'min', 'max', 'step', 'precision', 'controlsPosition'],
     emits: ['update:modelValue', 'change'],
     template:
-      '<input type="range" :value="modelValue" :min="min" :max="max" :step="step" @input="$emit(\'update:modelValue\', Number($event.target.value))" @change="$emit(\'change\', Number($event.target.value))" />',
+      '<input type="number" :value="modelValue" :min="min" :max="max" :step="step" @input="$emit(\'update:modelValue\', Number($event.target.value))" @change="$emit(\'change\', Number($event.target.value))" />',
   },
   'el-select': {
     props: ['modelValue', 'size', 'clearable', 'placeholder'],
@@ -68,13 +68,13 @@ describe('SceneProperties — handleUpdate 防抖', () => {
     })
     await flushPromises()
 
-    const sliders = wrapper.findAll('input[type="range"]')
-    await sliders[0].setValue(10)
-    await sliders[0].trigger('change')
-    await sliders[1].setValue(20)
-    await sliders[1].trigger('change')
-    await sliders[2].setValue(90)
-    await sliders[2].trigger('change')
+    const inputs = wrapper.findAll('input[type="number"]')
+    await inputs[0].setValue(10)
+    await inputs[0].trigger('change')
+    await inputs[1].setValue(20)
+    await inputs[1].trigger('change')
+    await inputs[2].setValue(90)
+    await inputs[2].trigger('change')
 
     // 防抖窗口内不应触发
     expect(vmMock.updateSceneView).not.toHaveBeenCalled()
@@ -93,16 +93,16 @@ describe('SceneProperties — handleUpdate 防抖', () => {
     })
     await flushPromises()
 
-    const sliders = wrapper.findAll('input[type="range"]')
-    await sliders[0].setValue(10)
-    await sliders[0].trigger('change')
+    const inputs = wrapper.findAll('input[type="number"]')
+    await inputs[0].setValue(10)
+    await inputs[0].trigger('change')
 
     vi.advanceTimersByTime(200)
     await flushPromises()
     expect(vmMock.updateSceneView).not.toHaveBeenCalled()
 
-    await sliders[1].setValue(20)
-    await sliders[1].trigger('change')
+    await inputs[1].setValue(20)
+    await inputs[1].trigger('change')
 
     vi.advanceTimersByTime(200)
     await flushPromises()

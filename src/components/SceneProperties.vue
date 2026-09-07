@@ -35,33 +35,27 @@
       <div class="section-title">初始视角</div>
       <div class="prop-row">
         <label>水平视角 (Yaw)</label>
-        <el-slider v-model="form.yaw" :min="-180" :max="180" :step="1" size="small" @input="handlePreviewView" @change="handleUpdate" />
-        <span class="prop-value">{{ form.yaw }}°</span>
+        <el-input-number v-model="form.yaw" :min="-180" :max="180" :step="1" :precision="2" size="small" controls-position="right" @change="handleViewChange" />
       </div>
       <div class="prop-row">
         <label>垂直视角 (Pitch)</label>
-        <el-slider v-model="form.pitch" :min="-90" :max="90" :step="1" size="small" @input="handlePreviewView" @change="handleUpdate" />
-        <span class="prop-value">{{ form.pitch }}°</span>
+        <el-input-number v-model="form.pitch" :min="-90" :max="90" :step="1" :precision="2" size="small" controls-position="right" @change="handleViewChange" />
       </div>
       <div class="prop-row">
         <label>视场角 (HFOV)</label>
-        <el-slider v-model="form.hfov" :min="30" :max="150" :step="1" size="small" @input="handlePreviewView" @change="handleUpdate" />
-        <span class="prop-value">{{ form.hfov }}°</span>
+        <el-input-number v-model="form.hfov" :min="30" :max="150" :step="1" :precision="2" size="small" controls-position="right" @change="handleViewChange" />
       </div>
       <div class="prop-row">
         <label>最小视场角</label>
-        <el-slider v-model="form.fovMin" :min="10" :max="90" :step="1" size="small" @change="handleUpdate" />
-        <span class="prop-value">{{ form.fovMin }}°</span>
+        <el-input-number v-model="form.fovMin" :min="10" :max="90" :step="1" :precision="1" size="small" controls-position="right" @change="handleUpdate" />
       </div>
       <div class="prop-row">
         <label>最大视场角</label>
-        <el-slider v-model="form.fovMax" :min="90" :max="170" :step="1" size="small" @change="handleUpdate" />
-        <span class="prop-value">{{ form.fovMax }}°</span>
+        <el-input-number v-model="form.fovMax" :min="90" :max="170" :step="1" :precision="1" size="small" controls-position="right" @change="handleUpdate" />
       </div>
       <div class="prop-row">
         <label>最大像素缩放</label>
-        <el-slider v-model="form.maxPixelZoom" :min="1" :max="4" :step="0.1" size="small" @change="handleUpdate" />
-        <span class="prop-value">{{ form.maxPixelZoom }}x</span>
+        <el-input-number v-model="form.maxPixelZoom" :min="1" :max="4" :step="0.1" :precision="2" size="small" controls-position="right" @change="handleUpdate" />
       </div>
       <div class="prop-row">
         <el-button
@@ -251,8 +245,7 @@ function handleUpdate() {
 }
 
 /**
- * 滑块拖动时实时预览相机视角（不触发 API 保存）。
- * @input 事件在拖动过程中持续触发，实现即时反馈。
+ * 用表单中的 yaw/pitch/hfov 实时预览相机视角（不触发 API 保存）。
  */
 function handlePreviewView() {
   const adapter = editorStore.engineAdapter
@@ -263,6 +256,15 @@ function handlePreviewView() {
     hfov: form.hfov,
     fovtype: form.fovType,
   })
+}
+
+/**
+ * 数字输入框变更：先即时预览相机视角，再走防抖保存。
+ * el-input-number 仅在值改变时触发 change（键入、步进按钮、失焦均会触发）。
+ */
+function handleViewChange() {
+  handlePreviewView()
+  handleUpdate()
 }
 
 /**
@@ -364,15 +366,9 @@ onBeforeUnmount(() => {
   flex-shrink: 0;
 }
 
-.prop-row .el-slider {
+.prop-row .el-input-number {
   flex: 1;
-}
-
-.prop-value {
-  font-size: 11px;
-  color: var(--text-muted);
-  min-width: 40px;
-  text-align: right;
+  width: auto;
 }
 
 </style>
