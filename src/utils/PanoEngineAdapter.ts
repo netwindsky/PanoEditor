@@ -526,6 +526,15 @@ export class PanoEngineAdapter {
     this.engine.enableControls()
   }
 
+  /**
+   * 设置 web 热点内 iframe 的 pointer-events（编辑器模式）。
+   * editable=true 时 iframe 禁用 pointer-events，点击穿透到 hotspot div，
+   * 使 canvas-viewport 的 handlePointerDown 能捕获选中/拖拽事件。
+   */
+  public setWebIframesEditable(editable: boolean): void {
+    this.engine.hotspotsManager.setWebIframesEditable(editable)
+  }
+
   // ==================== 后期处理 ====================
 
   /**

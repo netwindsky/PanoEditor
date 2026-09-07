@@ -49,6 +49,21 @@ export function isQuadLike(type: HotspotType | string | undefined): boolean {
   return type === 'quad' || type === 'video' || type === 'web'
 }
 
+/**
+ * 判断热点在【引擎层】是否由 3D mesh 几何体承载（quad / video）。
+ *
+ * 与 isQuadLike 的区别：web 热点在【数据层】也有 4 顶点（isQuadLike('web')=true，
+ * 用于中心点/points 一致性维护），但在引擎层是 DOM iframe / CSS3DObject 的【单点定位】
+ * （创建时不传 points，WebHotspot.points=null），没有可更新的 mesh 几何。
+ *
+ * 因此引擎调用路由必须用本函数：
+ * - mesh 几何（quad/video）→ engine.updateQuadGeometry（更新 BufferGeometry 顶点）
+ * - 单点（web/info/image/model/scene）→ engine.moveHotspotTo（updateHotspotPosition）
+ */
+export function isMeshQuad(type: HotspotType | string | undefined): boolean {
+  return type === 'quad' || type === 'video'
+}
+
 /** 判断 url 是否指向视频资源（容忍 query 串），用于阻止图片热点误选视频。 */
 export function isVideoUrl(url: string | undefined | null): boolean {
   if (!url) return false

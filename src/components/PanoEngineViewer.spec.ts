@@ -18,6 +18,7 @@ vi.mock('@/utils/PanoEngineAdapter', () => {
     dispose = vi.fn()
     isDraggingMode = vi.fn(() => false)
     setDraggingMode = vi.fn()
+    setWebIframesEditable = vi.fn()
     preloadScenes = vi.fn(() => Promise.resolve())
     switchScene = vi.fn(() => Promise.resolve())
     constructor(_container: HTMLElement) {

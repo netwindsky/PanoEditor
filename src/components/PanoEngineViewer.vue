@@ -105,6 +105,9 @@ function syncHotspotsIfChanged(engine: PanoEngineAdapter, hotspots: Hotspot[]) {
   lastHotspotsSnapshot = snapshot
   perf.mark('viewer-sync-hotspots', { count: hotspots.length })
   engine.syncHotspots(hotspots)
+  // 编辑模式：禁用 web 热点 iframe 的 pointer-events，
+  // 使点击穿透到 hotspot div，触发 canvas-viewport 的选中/拖拽
+  engine.setWebIframesEditable(true)
 }
 
 watch(

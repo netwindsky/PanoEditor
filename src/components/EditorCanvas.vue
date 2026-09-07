@@ -43,7 +43,7 @@ import type { EditorViewModel } from '@/viewmodels/EditorViewModel'
 import type { PanoEngineAdapter } from '@/utils/PanoEngineAdapter'
 import type { HotspotToolType } from '@/types'
 import { buildHotspotParams } from '@/utils/hotspotFactory'
-import { parsePoints, serializePoints, isQuadLike } from '@/utils/quadPoints'
+import { parsePoints, serializePoints, isQuadLike, isMeshQuad, centerOfPoints } from '@/utils/quadPoints'
 import { useEditorStore } from '@/stores/editor'
 
 const props = defineProps<{
@@ -332,8 +332,15 @@ function handlePointerMove(e: PointerEvent) {
       pts[selectedPointIndex.value].ath = coords.ath
       pts[selectedPointIndex.value].atv = coords.atv
       hotspot.points = serializePoints(pts)
-      // 轻量级更新：只刷新 mesh 顶点，不销毁+重建 video/texture
-      engine.updateQuadGeometry(hotspot.id, hotspot.points)
+      if (isMeshQuad(hotspot.type)) {
+        // quad/video（3D mesh）：轻量级更新 mesh 顶点，避免重建 video 元素导致卡顿
+        engine.updateQuadGeometry(hotspot.id, hotspot.points)
+      } else {
+        // web（DOM iframe / CSS3DObject）：引擎层为单点定位，无 mesh 几何，
+        // 用 points 中心点重定位（centerOfPoints 与 VM 不变量保持一致）
+        const center = centerOfPoints(pts)
+        if (center) engine.moveHotspotTo(hotspot.id, center.ath, center.atv)
+      }
     }
     return
   }
@@ -346,14 +353,14 @@ function handlePointerMove(e: PointerEvent) {
     vm.hotspotViewModel.updateDragToCoords(coords.ath, coords.atv)
 
     const hotspot = vm.hotspotViewModel.hotspots.value.find((h) => h.id === id)
-    if (hotspot && isQuadLike(hotspot.type)) {
-      // 四边形/视频热点：轻量级更新顶点几何体，避免重建 video 元素导致卡顿
+    if (hotspot && isMeshQuad(hotspot.type)) {
+      // quad/video（3D mesh）：轻量级更新顶点几何体，避免重建 video 元素导致卡顿
       engine.updateQuadGeometry(hotspot.id, hotspot.points)
     } else if (hotspot) {
-      // 非 quad 热点（info/image/model/scene）：必须用 ViewModel 修正后的
-      // 坐标（鼠标 - 点击偏移），与 endDrag 提交值保持一致；
-      // 直接传鼠标原始坐标会绕过 dragOffset，导致点击模型边缘拖动时
-      // 首帧跳变、松手回弹。
+      // 非 mesh 热点（web/info/image/model/scene）：web 在引擎层为单点定位
+      // （DOM iframe / CSS3DObject，无 mesh 几何），必须用 moveHotspotTo；
+      // 同时用 ViewModel 修正后的坐标（鼠标 - 点击偏移），与 endDrag 提交值一致，
+      // 避免直接传鼠标原始坐标绕过 dragOffset 导致首帧跳变、松手回弹。
       engine.moveHotspotTo(id, hotspot.ath, hotspot.atv)
     }
   }
