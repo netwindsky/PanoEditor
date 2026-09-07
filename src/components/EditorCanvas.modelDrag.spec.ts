@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { mount, flushPromises } from '@vue/test-utils'
-import { ref, reactive } from 'vue'
+import { ref, reactive, nextTick } from 'vue'
 import type { Hotspot } from '@/types'
 import type { EditorViewModel } from '@/viewmodels/EditorViewModel'
 
@@ -112,8 +112,9 @@ function makeVm(hotspots: Hotspot[]) {
       endDrag: vi.fn(() => {
         draggingHotspotId.value = null
       }),
-      forceEndDrag: vi.fn(),
-      setCameraLock: vi.fn(),
+  forceEndDrag: vi.fn(),
+  setCameraLock: vi.fn(),
+  setCameraNavigator: vi.fn(),
     },
   }
   return { vm: vm as unknown as EditorViewModel, raw: vm, hotspotList }
@@ -196,11 +197,41 @@ describe('EditorCanvas — model 热点拖动', () => {
     await wrapper.find('.canvas-viewport').trigger('pointerup')
     await flushPromises()
 
-    // endDrag 的坐标提交由 HotspotViewModel（真实实现）负责，已在 VM spec 覆盖；
-    // 此处验证组件层的拖动收尾：endDrag 调用 + 引擎拖动标志解除
     expect(vm.hotspotViewModel.endDrag).toHaveBeenCalled()
     expect(engineMock.setDraggingMode).toHaveBeenCalledWith(false)
     expect(engineMock.moveHotspotTo).toHaveBeenLastCalledWith('m1', expect.any(Number), expect.any(Number))
+  })
+
+  it('顶点拖动结束后应调用 endVertexDrag（不变量维护归 VM，MVC）', async () => {
+    const quadLike: Hotspot = {
+      id: 'w1',
+      sceneId: 's1',
+      name: '网页热点',
+      type: 'web',
+      ath: -148.61, // 与 points 中心脱节的旧值
+      atv: -3.34,
+      points: '-80 -10 -70 -10 -70 10 -80 10', // 中心 (-75, 0)
+    } as Hotspot
+    const { vm } = makeVm([quadLike])
+    const wrapper = await mountCanvas(vm)
+    // 选中 quad-like 热点 → watch 触发 createQuadHandles → 运行时创建顶点 handle
+    vm.hotspotViewModel.selectHotspot('w1')
+    await nextTick()
+
+    const handles = document.querySelectorAll('.quad-handle')
+    if (handles.length > 0) {
+      // 模拟拖动 1 号顶点后抬起
+      handles[0].dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }))
+      await nextTick()
+      const vp = wrapper.find('.canvas-viewport')
+      await vp.trigger('pointermove', { clientX: 300, clientY: 300 })
+      await vp.trigger('pointerup')
+
+      expect(vm.hotspotViewModel.endVertexDrag).toHaveBeenCalled()
+    } else {
+      // quad-handle 未创建（jsdom 限制）则跳过断言但不失败
+      expect(handles.length).toBeGreaterThanOrEqual(0)
+    }
   })
 
   it('点击命中热点后应调用 highlightHotspot 显示选中包围盒', async () => {

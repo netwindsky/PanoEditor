@@ -368,11 +368,8 @@ function handlePointerUp() {
     // 解除拖动 flag，恢复 syncHotspots 正常工作
     engine?.setDraggingMode(false)
 
-    // 保存到后端
-    const hotspot = vm.hotspotViewModel.selectedHotspot.value
-    if (hotspot) {
-      vm.updateHotspot(hotspot.id, { points: hotspot.points })
-    }
+    // MVC：不变量维护（ath/atv = points 中心）与提交都由 VM 负责
+    vm.hotspotViewModel.endVertexDrag()
     return
   }
 
@@ -407,6 +404,10 @@ function onEngineReady(adapter: PanoEngineAdapter) {
   vm.hotspotViewModel.setCameraLock({
     lock: () => engine?.disableControls(),
     unlock: () => engine?.enableControls(),
+  })
+  // 注入相机导航器：VM 的 focusHotspot 通过它驱动相机（MVC：VM 不依赖引擎实现）
+  vm.hotspotViewModel.setCameraNavigator({
+    animateToView: (view) => adapter.animateToView(view),
   })
   // 引擎首次就绪时做一次全量同步，把已有热点绘制到场景
   if (vm.hotspotViewModel.hotspots.value.length > 0) {

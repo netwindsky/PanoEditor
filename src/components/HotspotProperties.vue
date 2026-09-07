@@ -795,25 +795,8 @@ watch(
 )
 
 function handleSelect(hotspotId: string) {
-  vm.hotspotViewModel.selectHotspot(hotspotId)
-
-  // 除了选中，还要把相机旋转到该热点朝向（把热点摆到画面中央）。
-  //
-  // 坐标推导：
-  //   引擎把 (ath, atv) 的热点放到方向 D_hs = (-cos(atv)sin(ath), -sin(atv), cos(atv)cos(ath))。
-  //   相机通过 Euler(-vlookat, -hlookat, 0, 'YXZ') 转动，forward 变为
-  //   D_cam = (cos(v)sin(h), -sin(v), -cos(v)cos(h))。令 D_cam=D_hs 解得：
-  //       vlookat = atv,   hlookat = ath + 180°
-  //   animateToView 的 { yaw, pitch } 就是 { hlookat, vlookat }，所以：
-  //       yaw = ath + 180 (归一化到 (-180, 180]),  pitch = atv
-  const hotspot = vm.hotspotViewModel.hotspots.value.find((h) => h.id === hotspotId)
-  const adapter = editorStore?.engineAdapter
-  if (hotspot && adapter) {
-    // 归一化：ath ∈ [-180, 180] 时，ath+180 ∈ [0, 360]，减去 360 落到 (-180, 180]
-    const rawYaw = hotspot.ath + 180
-    const yaw = rawYaw > 180 ? rawYaw - 360 : rawYaw
-    adapter.animateToView({ yaw, pitch: hotspot.atv })
-  }
+  // MVC：选中 + 相机聚焦全部由 VM 负责，View 不做坐标换算
+  vm.hotspotViewModel.focusHotspot(hotspotId)
 }
 
 // 添加热点：用工厂补齐 quad/image/model 必需的默认值；

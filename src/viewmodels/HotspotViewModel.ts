@@ -1,6 +1,6 @@
 import { ref, computed } from 'vue'
 import type { Hotspot, CreateHotspotParams, UpdateHotspotParams, HotspotService } from '@/models'
-import { parsePoints, serializePoints, isQuadLike } from '@/utils/quadPoints'
+import { parsePoints, serializePoints, isQuadLike, centerOfPoints } from '@/utils/quadPoints'
 
 /**
  * 相机锁定器接口
@@ -19,6 +19,18 @@ const NoopCameraLock: CameraLock = {
 }
 
 /**
+ * 相机导航器接口：抽象「把相机动画到指定视角」的能力。
+ * 由组件层用 PanoEngineAdapter 实现并注入，VM 不依赖具体渲染引擎。
+ */
+export interface CameraNavigator {
+  animateToView(view: { yaw: number; pitch: number; duration?: number }): void
+}
+
+const NoopNavigator: CameraNavigator = {
+  animateToView: () => {},
+}
+
+/**
  * 热点 ViewModel
  * 负责热点管理的所有业务逻辑和状态
  */
@@ -31,6 +43,9 @@ export class HotspotViewModel {
 
   /** 相机锁定器，默认空实现，由组件层在引擎就绪后注入 */
   private cameraLock: CameraLock = NoopCameraLock
+
+  /** 相机导航器（焦点跟随），默认空实现 */
+  private cameraNavigator: CameraNavigator = NoopNavigator
 
   /** 四边形热点整体拖拽时记录的初始状态 */
   private quadDragInitialCenter: { ath: number; atv: number } | null = null
@@ -48,6 +63,11 @@ export class HotspotViewModel {
   /** 注入相机锁定器（引擎异步就绪后由组件层调用） */
   setCameraLock(lock: CameraLock): void {
     this.cameraLock = lock
+  }
+
+  /** 注入相机导航器（引擎异步就绪后由组件层调用） */
+  setCameraNavigator(navigator: CameraNavigator): void {
+    this.cameraNavigator = navigator
   }
 
 
@@ -221,5 +241,70 @@ export class HotspotViewModel {
       this.dragOffset = null
       this.cameraLock.unlock()
     }
+  }
+
+  // === 焦点跟随与顶点拖拽不变量（MVC：几何与换算归 VM，View 只调用） ===
+
+  /**
+   * 计算某热点「画面中央」对应的相机视角。
+   *
+   * 坐标基准：quad/video/web 以 points（四顶点）渲染，ath/atv 仅创建时写入、
+   * 之后与 points 各自演化——有 points 的热点以 points 中心为准（与引擎
+   * 渲染锚点一致）；其余类型用 ath/atv。
+   *
+   * 坐标推导（引擎放置公式 D_hs = (-cos(atv)·sin(ath), -sin(atv), cos(atv)·cos(ath))）：
+   *   相机 forward 对准 D_hs 解得 vlookat = atv, hlookat = ath + 180°。
+   */
+  getFocusCoords(hotspotId: string): { yaw: number; pitch: number } | null {
+    const hotspot = this.hotspots.value.find((h) => h.id === hotspotId)
+    if (!hotspot) return null
+
+    let targetAth = hotspot.ath
+    let targetAtv = hotspot.atv
+    if (isQuadLike(hotspot.type) && hotspot.points) {
+      const center = centerOfPoints(parsePoints(hotspot.points))
+      if (center) {
+        targetAth = center.ath
+        targetAtv = center.atv
+      }
+    }
+
+    // yaw 归一化到 (-180, 180]
+    const rawYaw = targetAth + 180
+    const yaw = rawYaw > 180 ? rawYaw - 360 : rawYaw
+    return { yaw, pitch: targetAtv }
+  }
+
+  /**
+   * 选中热点并驱动相机把该热点摆到画面中央。
+   * View 只调用此方法，不做任何坐标换算。
+   */
+  focusHotspot(hotspotId: string): void {
+    this.selectHotspot(hotspotId)
+    const view = this.getFocusCoords(hotspotId)
+    if (view) {
+      this.cameraNavigator.animateToView(view)
+    }
+  }
+
+  /**
+   * 顶点拖拽结束：维护不变量「quad-like 热点的 ath/atv = points 中心」，
+   * 并把 points + 同步后的 ath/atv 一并提交后端。
+   * 无选中热点、无 points 时安全返回。
+   */
+  endVertexDrag(): void {
+    const hotspot = this.selectedHotspot.value
+    if (!hotspot || !hotspot.points) return
+
+    const center = centerOfPoints(parsePoints(hotspot.points))
+    if (!center) return
+    hotspot.ath = center.ath
+    hotspot.atv = center.atv
+
+    void this.updateHotspot(hotspot.id, {
+      points: hotspot.points,
+      ath: center.ath,
+      atv: center.atv,
+    })
   }
 }

@@ -54,3 +54,38 @@ export function isVideoUrl(url: string | undefined | null): boolean {
   if (!url) return false
   return /\.(mp4|webm|ogg|mov|m4v)(\?.*)?$/i.test(url.trim())
 }
+
+/**
+ * 计算 4 顶点的中心（球面坐标）。
+ *
+ * ath 不能直接算术平均：顶点横跨 ±180° 边界时（如 -170 与 170），
+ * 算术平均会得到错误的 0°。改用单位向量平均后再转回球面角：
+ * x = -cos(atv)·sin(ath), y = -sin(atv), z = cos(atv)·cos(ath)，
+ * 与引擎放置公式一致（HotspotManager.projectToScreen）。
+ *
+ * 反解注意符号：由 y = -sin(atv) 得 sin(atv) = -y，故 atv = asin(-y)；
+ * 由 x = -cos(atv)·sin(ath)、z = cos(atv)·cos(ath) 得 ath = atan2(-x, z)。
+ *
+ * @returns 中心 { ath, atv }（ath 归一化到 (-180, 180]）；顶点为空返回 null
+ */
+export function centerOfPoints(points: QuadPoint[]): { ath: number; atv: number } | null {
+  if (!points || points.length === 0) return null
+  let sumX = 0
+  let sumY = 0
+  let sumZ = 0
+  for (const p of points) {
+    const radAth = (p.ath * Math.PI) / 180
+    const radAtv = (p.atv * Math.PI) / 180
+    sumX += -Math.cos(radAtv) * Math.sin(radAth)
+    sumY += -Math.sin(radAtv)
+    sumZ += Math.cos(radAtv) * Math.cos(radAth)
+  }
+  const n = points.length
+  const x = sumX / n
+  const y = sumY / n
+  const z = sumZ / n
+  // y = -sin(atv) → atv = asin(-y)（负号不可省，否则中心俯仰方向与实际相反）
+  const atv = Math.asin(Math.max(-1, Math.min(1, -y))) * (180 / Math.PI)
+  const ath = Math.atan2(-x, z) * (180 / Math.PI)
+  return { ath, atv }
+}

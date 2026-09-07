@@ -80,6 +80,9 @@ function createMockViewModel(overrides: Partial<MockViewModel> = {}) {
       selectHotspot: vi.fn((id: string) => {
         selectedHotspot.value = hotspots.value.find(h => h.id === id) || null
       }),
+      focusHotspot: vi.fn((id: string) => {
+        selectedHotspot.value = hotspots.value.find(h => h.id === id) || null
+      }),
       deleteHotspot: vi.fn(),
       clearHotspots: vi.fn(),
       createHotspot: vi.fn(),
@@ -259,7 +262,8 @@ describe('HotspotProperties UI 重构', () => {
       const wrapper = mountComponent(vm)
       const items = wrapper.findAll('.list-item')
       await items[1].trigger('click')
-      expect(vm.hotspotViewModel.selectHotspot).toHaveBeenCalledWith('h2')
+      // MVC：View 调用 focusHotspot（内部包含 selectHotspot）
+      expect(vm.hotspotViewModel.focusHotspot).toHaveBeenCalledWith('h2')
     })
 
     it('空列表应显示提示', () => {

@@ -67,6 +67,10 @@ function createMockViewModel() {
       selectHotspot: vi.fn((id: string) => {
         selectedHotspot.value = hotspots.value.find((h) => h.id === id) || null
       }),
+      // MVC：View 只调用 focusHotspot，坐标换算在 VM（真实实现见 HotspotViewModel.focus.spec）
+      focusHotspot: vi.fn((id: string) => {
+        selectedHotspot.value = hotspots.value.find((h) => h.id === id) || null
+      }),
       deleteHotspot: vi.fn(),
       clearHotspots: vi.fn(),
       createHotspot: vi.fn(),
@@ -122,32 +126,27 @@ describe('HotspotProperties 相机跟随选中', () => {
     useEditorStoreMock.mockReturnValue({ engineAdapter })
   })
 
-  it('点击列表项应把该热点的 ath/atv 按公式 yaw=ath+180, pitch=atv 归一化后传给 engineAdapter.animateToView', async () => {
+  it('点击列表项应调用 focusHotspot（MVC：选中+相机跟随契约归 VM）', async () => {
     const { vm } = createMockViewModel()
     const wrapper = mountComponent(vm)
 
     const items = wrapper.findAll('.list-item')
-    // h2: ath=45, atv=10 -> yaw=45+180=225 -> 归一化 -135, pitch=10
+    // h2: ath=45, atv=10 -> yaw=45+180=225 -> 归一化 -135, pitch=10（换算在 VM spec 覆盖）
     await items[1].trigger('click')
 
-    expect(animateToView).toHaveBeenCalledTimes(1)
-    expect(animateToView).toHaveBeenCalledWith(
-      expect.objectContaining({ yaw: -135, pitch: 10 }),
-    )
+    expect(vm.hotspotViewModel.focusHotspot).toHaveBeenCalledTimes(1)
+    expect(vm.hotspotViewModel.focusHotspot).toHaveBeenCalledWith('h2')
   })
 
-  it('点击列表项在 selectHotspot 之外仍然会调用 animateToView（两者互不阻塞）', async () => {
+  it('点击列表项在选中之外仍会触发相机跟随（focusHotspot 内部包含两者）', async () => {
     const { vm } = createMockViewModel()
     const wrapper = mountComponent(vm)
 
     const items = wrapper.findAll('.list-item')
-    // h3: ath=-170, atv=5 -> yaw=-170+180=10, pitch=5
+    // h3: ath=-170, atv=5
     await items[2].trigger('click')
 
-    expect(vm.hotspotViewModel.selectHotspot).toHaveBeenCalledWith('h3')
-    expect(animateToView).toHaveBeenCalledWith(
-      expect.objectContaining({ yaw: 10, pitch: 5 }),
-    )
+    expect(vm.hotspotViewModel.focusHotspot).toHaveBeenCalledWith('h3')
   })
 
   it('已经选中同一热点时再次点击也应触发相机动画（用户希望"重新聚焦"）', async () => {
@@ -155,19 +154,13 @@ describe('HotspotProperties 相机跟随选中', () => {
     const wrapper = mountComponent(vm)
 
     const items = wrapper.findAll('.list-item')
-    // h1 是初始选中项: ath=71.24, atv=-19.49 -> yaw=71.24+180=251.24 -> 归一化 -108.76, pitch=-19.49
-    // 用 closeTo 容忍 IEEE 754 减法误差（71.24+180-360 ≈ -108.75999999999999）
+    // h1 是初始选中项
     await items[0].trigger('click')
 
-    expect(animateToView).toHaveBeenCalledWith(
-      expect.objectContaining({
-        yaw: expect.closeTo(-108.76, 5),
-        pitch: expect.closeTo(-19.49, 5),
-      }),
-    )
+    expect(vm.hotspotViewModel.focusHotspot).toHaveBeenCalledWith('h1')
   })
 
-  it('engineAdapter 尚未就绪（null）时不抛错、也不调用 animateToView', async () => {
+  it('engineAdapter 尚未就绪（null）时 focusHotspot 不抛错（坐标换算在 VM，与 adapter 无关）', async () => {
     useEditorStoreMock.mockReturnValue({ engineAdapter: null })
 
     const { vm } = createMockViewModel()
@@ -176,9 +169,49 @@ describe('HotspotProperties 相机跟随选中', () => {
     const items = wrapper.findAll('.list-item')
     await items[1].trigger('click')
 
-    // selectHotspot 仍应触发
-    expect(vm.hotspotViewModel.selectHotspot).toHaveBeenCalledWith('h2')
-    // animateToView 不应触发（不存在也不该抛错）
+    // focusHotspot 仍应触发（View 契约不因 adapter 缺失而改变）
+    expect(vm.hotspotViewModel.focusHotspot).toHaveBeenCalledWith('h2')
+    // animateToView 不应触发（VM 的 navigator 为空实现时安全降级）
     expect(animateToView).not.toHaveBeenCalled()
+  })
+
+  it('web 热点（带 points）点击同样走 focusHotspot（points 中心换算在 VM 内）', async () => {
+    const { vm } = createMockViewModel()
+    const webHotspot: Hotspot = {
+      id: 'w1',
+      sceneId: 's1',
+      name: '网页热点',
+      type: 'web',
+      ath: -148.61,
+      atv: -3.34, // 旧 ath/atv（与 points 中心脱节 70°+，正是线上 bug 现场）
+      points: '-80 -10 -70 -10 -70 10 -80 10', // 中心 ≈ (-75, 0)
+    } as unknown as Hotspot
+    vm.hotspotViewModel.hotspots.value.push(webHotspot)
+    const wrapper = mountComponent(vm)
+
+    const items = wrapper.findAll('.list-item')
+    await items[items.length - 1].trigger('click')
+
+    expect(vm.hotspotViewModel.focusHotspot).toHaveBeenCalledWith('w1')
+  })
+
+  it('quad 热点带 points 时同样走 focusHotspot', async () => {
+    const { vm } = createMockViewModel()
+    const quadHotspot: Hotspot = {
+      id: 'q1',
+      sceneId: 's1',
+      name: '矩形热点',
+      type: 'quad',
+      ath: 10,
+      atv: 5,
+      points: '40 -10 50 -10 50 10 40 10', // 中心 (45, 0)
+    } as unknown as Hotspot
+    vm.hotspotViewModel.hotspots.value.push(quadHotspot)
+    const wrapper = mountComponent(vm)
+
+    const items = wrapper.findAll('.list-item')
+    await items[items.length - 1].trigger('click')
+
+    expect(vm.hotspotViewModel.focusHotspot).toHaveBeenCalledWith('q1')
   })
 })
