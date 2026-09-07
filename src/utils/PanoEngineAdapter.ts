@@ -461,6 +461,58 @@ export class PanoEngineAdapter {
   }
 
   /**
+   * 模型热点「面向中心」：姿态重置为 lookAt 球心 + rotate
+   */
+  public orientModelToCenter(hotspotId: string): void {
+    this.engine.hotspotsManager.orientModelToCenter(hotspotId)
+  }
+
+  /**
+   * 读取模型热点当前实际渲染状态，供属性面板回显。
+   * 面板语义：relativeScale 为「相对默认尺寸的倍数」（1=默认，2=两倍大）；
+   * rotateX/Y/Z 为三轴旋转角（度），单值旧数据映射到 Y 轴。
+   * DB 的 scale 字段保持引擎绝对值（原始尺寸×绝对倍数），由本类双向换算。
+   * @returns { relativeScale, rotateX, rotateY, rotateZ }；热点不存在或模型未加载完成时返回 null
+   */
+  public getModelRuntime(hotspotId: string): {
+    relativeScale: number
+    rotateX: number
+    rotateY: number
+    rotateZ: number
+  } | null {
+    const model = this.engine.hotspotsManager.modelHotspots.get(hotspotId)
+    const obj = model?.getObject()
+    if (!model || !obj) return null
+    const rotateValues = typeof model.getRotateValues === 'function' ? model.getRotateValues() : []
+    const base = typeof model.getBaseScale === 'function' ? model.getBaseScale() : 1
+    const relative = base > 0 ? obj.scale.x / base : 1
+    // 与引擎 applyRotateValuesTo 的轴向语义对齐：
+    // [v] → 绕 Y 自转；[x,y] → X+Y；[x,y,z] → X+Y+Z
+    const rotateX = rotateValues.length >= 2 ? rotateValues[0] : 0
+    const rotateY = rotateValues.length >= 1 ? (rotateValues.length === 1 ? rotateValues[0] : rotateValues[1]) : 0
+    const rotateZ = rotateValues.length >= 3 ? rotateValues[2] : 0
+    return {
+      relativeScale: relative,
+      rotateX,
+      rotateY,
+      rotateZ,
+    }
+  }
+
+  /**
+   * 把面板的相对倍数（1=默认尺寸）应用到引擎，返回落库值（即相对倍数本身，
+   * DB scale 列 decimal(10,2) 存储的语义就是相对倍数）。
+   * 非法输入或热点不存在时返回 null（不应用）。
+   */
+  public setModelRelativeScale(hotspotId: string, relativeScale: number): number | null {
+    const model = this.engine.hotspotsManager.modelHotspots.get(hotspotId)
+    if (!model || !Number.isFinite(relativeScale) || relativeScale <= 0) return null
+    if (typeof model.setRelativeScale !== 'function') return null
+    model.setRelativeScale(relativeScale)
+    return relativeScale
+  }
+
+  /**
    * 禁用全景控制器（拖拽热点时使用）
    */
   public disableControls(): void {

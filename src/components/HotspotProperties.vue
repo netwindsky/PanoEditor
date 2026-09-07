@@ -68,11 +68,11 @@
           <p class="field-hint">分辨率决定 iframe 渲染大小与内容宽高比，实际屏幕尺寸由四个顶点位置决定。常用：1280×720（16:9）/ 1920×1080 / 375×667（手机页面）。</p>
         </template>
         <template v-else>
-          <div v-if="form.type !== 'info' && form.type !== 'scene'" class="prop-field">
+          <div v-if="!['info', 'scene', 'model'].includes(form.type)" class="prop-field">
             <label>宽度</label>
             <el-input-number v-model="form.width" size="small" :min="0" :step="1" controls-position="right" />
           </div>
-          <div v-if="form.type !== 'info' && form.type !== 'scene'" class="prop-field">
+          <div v-if="!['info', 'scene', 'model'].includes(form.type)" class="prop-field">
             <label>高度</label>
             <el-input-number v-model="form.height" size="small" :min="0" :step="1" controls-position="right" />
           </div>
@@ -81,7 +81,22 @@
           <label>缩放</label>
           <el-input-number v-model="form.scale" size="small" :min="0.001" :step="0.01" :precision="3" controls-position="right" />
         </div>
-        <div v-if="['image', 'model'].includes(form.type)" class="prop-field">
+        <!-- model 旋转为 X/Y/Z 三轴（引擎按 'x y z' 顺序解析，单位度）；单值旧数据映射到 Y 轴 -->
+        <template v-if="form.type === 'model'">
+          <div class="prop-field">
+            <label>旋转 X</label>
+            <el-input-number v-model="modelRotateX" size="small" :step="1" :precision="1" controls-position="right" />
+          </div>
+          <div class="prop-field">
+            <label>旋转 Y</label>
+            <el-input-number v-model="modelRotateY" size="small" :step="1" :precision="1" controls-position="right" />
+          </div>
+          <div class="prop-field">
+            <label>旋转 Z</label>
+            <el-input-number v-model="modelRotateZ" size="small" :step="1" :precision="1" controls-position="right" />
+          </div>
+        </template>
+        <div v-if="form.type === 'image'" class="prop-field">
           <label>旋转</label>
           <el-input-number v-model="form.rotate" size="small" :step="1" :precision="1" controls-position="right" />
         </div>
@@ -172,6 +187,35 @@
             <div class="image-preview">
               <img :src="form.url" :alt="form.name || '预览'" />
             </div>
+          </div>
+        </template>
+        <template v-if="form.type === 'model'">
+          <div class="prop-field">
+            <label>模型</label>
+            <div class="image-actions">
+              <el-button size="small" @click="triggerModelFilePicker">上传模型</el-button>
+              <el-button
+                size="small"
+                @click="assetFilterType = 'model'; openAssetDialog()"
+              >资源库</el-button>
+              <input
+                ref="modelFileInputRef"
+                type="file"
+                accept=".glb,.gltf,model/gltf-binary,model/gltf+json"
+                class="image-file-input"
+                @change="handleModelFileSelected"
+              />
+            </div>
+          </div>
+          <div class="prop-field">
+            <label>姿态</label>
+            <div class="image-actions">
+              <el-button size="small" :disabled="!editorStore?.engineAdapter" @click="handleOrientToCenter">面向中心</el-button>
+            </div>
+          </div>
+          <div class="prop-field hint-text">
+            <label>&nbsp;</label>
+            <span class="field-hint">面向中心：把模型姿态重置为朝向全景球心。支持 .glb / .gltf 模型文件，上传后自动填入 URL。</span>
           </div>
         </template>
         <template v-if="form.type === 'video'">
@@ -386,12 +430,13 @@ const scenes = computed(() => vm.sceneViewModel.scenes.value)
 
 const clearing = ref(false)
 const showAssetDialog = ref(false)
-const assetFilterType = ref<'image' | 'video'>('image')
+const assetFilterType = ref<'image' | 'video' | 'model'>('image')
 const eventPlaceholder = '{"click":"func()"}'
 
 // 资源库 / 上传相关状态
 const fileInputRef = ref<HTMLInputElement | null>(null)
 const videoFileInputRef = ref<HTMLInputElement | null>(null)
+const modelFileInputRef = ref<HTMLInputElement | null>(null)
 const assetList = computed(() => vm.assetViewModel.resources.value)
 const currentProjectId = computed(() => vm.sceneViewModel.currentScene.value?.projectId || '')
 
@@ -401,6 +446,54 @@ function triggerFilePicker() {
 
 function triggerVideoFilePicker() {
   videoFileInputRef.value?.click()
+}
+
+function triggerModelFilePicker() {
+  modelFileInputRef.value?.click()
+}
+
+/**
+ * 「面向中心」：把选中模型热点的姿态重置为朝向全景球心。
+ * 纯运行时操作（引擎侧重置姿态），不改变已保存的字段。
+ */
+function handleOrientToCenter() {
+  const hotspot = selectedHotspot.value
+  const adapter = editorStore?.engineAdapter
+  if (!hotspot || !adapter) return
+  adapter.orientModelToCenter(hotspot.id)
+}
+
+/** 模型文件扩展名校验（.glb/.gltf） */
+function isModelFile(name: string): boolean {
+  return /\.(glb|gltf)(\?.*)?$/i.test(name)
+}
+
+async function handleModelFileSelected(event: Event) {
+  const input = event.target as HTMLInputElement
+  const file = input.files?.[0]
+  input.value = ''
+  if (!file) return
+  // 模型热点：拦截非模型文件，避免把图片/视频塞进模型 URL 导致引擎无法加载
+  if (!isModelFile(file.name)) {
+    ElMessage.error('模型热点仅支持 .glb / .gltf 文件')
+    return
+  }
+  const projectId = currentProjectId.value
+  if (!projectId) {
+    ElMessage.error('项目信息缺失，无法上传')
+    return
+  }
+  const before = assetList.value.length
+  try {
+    await vm.uploadResource(projectId, file, 'model')
+    if (assetList.value.length > before) {
+      const newResource = assetList.value[assetList.value.length - 1]
+      form.url = newResource.url
+    }
+    ElMessage.success('上传成功')
+  } catch (err) {
+    ElMessage.error('上传失败，请重试')
+  }
 }
 
 async function handleFileSelected(event: Event) {
@@ -468,6 +561,11 @@ function selectAsset(resource: Resource) {
   // 图片/四边形热点拒绝视频资源；视频类型放行
   if (isImageLikeType(form.type) && isVideoUrl(resource.url)) {
     ElMessage.error('图片/四边形热点不支持视频资源，请选择图片')
+    return
+  }
+  // 模型热点只接受 .glb/.gltf 资源
+  if (form.type === 'model' && !isModelFile(resource.url)) {
+    ElMessage.error('模型热点仅支持 .glb / .gltf 资源，请先上传模型文件')
     return
   }
   form.url = resource.url
@@ -544,6 +642,39 @@ const quadPoints = computed<QuadPoint[]>({
 
 const quadPointLabels = ['左上', '右上', '右下', '左下']
 
+/**
+ * model 热点三轴旋转（度）与 form.rotate（'x y z' 字符串或旧单值数字）的双向绑定。
+ * 旧数据兼容：单值数字（如 45）映射到 Y 轴（与引擎 rotateY 单值语义一致），X/Z 视为 0。
+ */
+function parseModelRotate(raw: unknown): { x: number; y: number; z: number } {
+  if (raw == null || raw === '') return { x: 0, y: 0, z: 0 }
+  if (typeof raw === 'number') return { x: 0, y: raw, z: 0 }
+  const nums = String(raw).trim().split(/[\s,]+/).map(Number).filter((n) => Number.isFinite(n))
+  return { x: nums[0] ?? 0, y: nums[1] ?? 0, z: nums[2] ?? 0 }
+}
+
+const modelRotate = computed({
+  get() {
+    return parseModelRotate(form.rotate)
+  },
+  set(val: { x: number; y: number; z: number }) {
+    form.rotate = `${val.x} ${val.y} ${val.z}` as unknown as number
+  },
+})
+
+const modelRotateX = computed({
+  get: () => modelRotate.value.x,
+  set(v: number | undefined) { modelRotate.value = { ...modelRotate.value, x: v ?? 0 } },
+})
+const modelRotateY = computed({
+  get: () => modelRotate.value.y,
+  set(v: number | undefined) { modelRotate.value = { ...modelRotate.value, y: v ?? 0 } },
+})
+const modelRotateZ = computed({
+  get: () => modelRotate.value.z,
+  set(v: number | undefined) { modelRotate.value = { ...modelRotate.value, z: v ?? 0 } },
+})
+
 function updateQuadPoint(index: number, field: 'ath' | 'atv', value: number) {
   const pts = quadPoints.value
   if (pts.length === 4) {
@@ -615,7 +746,7 @@ watch(
     form.width = hotspot.width
     form.height = hotspot.height
     form.scale = hotspot.scale
-    form.rotate = hotspot.rotate
+    form.rotate = hotspot.rotate as unknown as number
     form.blendmode = hotspot.blendmode || ''
     form.linkedSceneId = hotspot.linkedSceneId || ''
     form.bgcolor = hotspot.bgcolor || ''
@@ -628,6 +759,20 @@ watch(
     form.shader = hotspot.shader || ''
     form.action = isSameHotspotRefresh ? previousAction : inferAction(hotspot)
     form.points = hotspot.points || ''
+
+    // model 热点：scale/rotate 落库为 NULL（创建时由引擎 autoScale 自动定标），
+    // 面板回填引擎当前实际值——缩放为「相对默认尺寸的倍数」（1=默认，2=两倍大）。
+    // 仅回显：不触发保存；用户一旦修改即走正常 updateHotspot 落库（保存时换算回绝对值）。
+    if (form.type === 'model' && editorStore?.engineAdapter) {
+      const runtime = editorStore.engineAdapter.getModelRuntime?.(hotspot.id)
+      if (runtime) {
+        if (form.scale == null) form.scale = Number(runtime.relativeScale.toFixed(3))
+        if (form.rotate == null) {
+          // 引擎无保存值：用引擎实际姿态回填三轴
+          form.rotate = `${Number(runtime.rotateX.toFixed(1))} ${Number(runtime.rotateY.toFixed(1))} ${Number(runtime.rotateZ.toFixed(1))}` as unknown as number
+        }
+      }
+    }
 
     if (hotspot.content) {
       try {
@@ -720,6 +865,15 @@ function doSave() {
     content: contentJson || undefined,
     points: form.points || undefined,
     shader: form.shader,
+  }
+
+  // model 热点：面板 scale 为「相对默认尺寸的倍数」（1=默认），直接落库（DB decimal(10,2)）；
+  // rotate 为 'x y z' 三轴字符串，原样落库（DB rotate 已改 varchar(32)）。
+  // 同时把相对倍数应用到引擎，画布即时生效。
+  if (form.type === 'model' && editorStore?.engineAdapter) {
+    if (form.scale != null) {
+      editorStore.engineAdapter.setModelRelativeScale?.(selectedHotspot.value.id, form.scale)
+    }
   }
 
   if (form.action === 'scene') {
