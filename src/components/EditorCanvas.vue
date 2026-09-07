@@ -90,6 +90,16 @@ const hotspotTypeLabel = computed(() =>
 
 // ===== 矩形热点控制点逻辑 =====
 
+// 选中态兜底：热点被删除/清空导致 selectedHotspot 变 null 时，移除引擎高亮（包围盒）
+watch(
+  () => vm.hotspotViewModel.selectedHotspot.value,
+  (hotspot, prev) => {
+    if (!hotspot && prev && engine) {
+      engine.unhighlightHotspot(prev.id)
+    }
+  },
+)
+
 watch(
   () => vm.hotspotViewModel.selectedHotspot.value,
   (hotspot) => {
@@ -282,7 +292,13 @@ function handlePointerDown(e: PointerEvent) {
   } else if (vm.activeTool.value === 'select' && engine) {
     const hotspotId = engine.getHitHotspot(e.clientX, e.clientY)
     if (hotspotId) {
+      // 切换选中态：旧热点取消高亮（包围盒消失），新热点高亮（模型显示包围盒）
+      const prevId = vm.hotspotViewModel.selectedHotspot.value?.id
+      if (prevId && prevId !== hotspotId) {
+        engine.unhighlightHotspot(prevId)
+      }
       vm.hotspotViewModel.selectHotspot(hotspotId)
+      engine.highlightHotspot(hotspotId)
       vm.setRightPanelSection('hotspot')
       // 传入点击时鼠标的球坐标，供 ViewModel 记录鼠标与热点中心的偏移，
       // 拖动时用鼠标减偏移得到新中心，避免首次 move 跳变。
@@ -290,10 +306,13 @@ function handlePointerDown(e: PointerEvent) {
       vm.hotspotViewModel.startDrag(hotspotId, coords.ath, coords.atv)
       // 同步设置拖动 flag，阻止 syncHotspots 全量重建
       engine.setDraggingMode(true)
-      // 同步设置拖动 flag，阻止 syncHotspots 全量重建
-      engine.setDraggingMode(true)
-      // 同步设置拖动 flag，阻止 syncHotspots 全量重建
-      engine.setDraggingMode(true)
+    } else {
+      // 点击空白：取消选中并移除高亮
+      const prevId = vm.hotspotViewModel.selectedHotspot.value?.id
+      if (prevId) {
+        engine.unhighlightHotspot(prevId)
+        vm.hotspotViewModel.selectHotspot(null)
+      }
     }
   }
 }
@@ -330,8 +349,12 @@ function handlePointerMove(e: PointerEvent) {
     if (hotspot && isQuadLike(hotspot.type)) {
       // 四边形/视频热点：轻量级更新顶点几何体，避免重建 video 元素导致卡顿
       engine.updateQuadGeometry(hotspot.id, hotspot.points)
-    } else {
-      engine.moveHotspotTo(id, coords.ath, coords.atv)
+    } else if (hotspot) {
+      // 非 quad 热点（info/image/model/scene）：必须用 ViewModel 修正后的
+      // 坐标（鼠标 - 点击偏移），与 endDrag 提交值保持一致；
+      // 直接传鼠标原始坐标会绕过 dragOffset，导致点击模型边缘拖动时
+      // 首帧跳变、松手回弹。
+      engine.moveHotspotTo(id, hotspot.ath, hotspot.atv)
     }
   }
 }
