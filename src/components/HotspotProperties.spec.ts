@@ -596,6 +596,166 @@ describe('HotspotProperties UI 重构', () => {
     })
   })
 
+  describe('14A. 模型热点 - 模型上传/资源库', () => {
+    function selectModelHotspot(mock: ReturnType<typeof createMockViewModel>) {
+      let modelHotspot = mock.hotspots.value.find(h => h.type === 'model')
+      if (!modelHotspot) {
+        modelHotspot = {
+          id: 'hm1',
+          sceneId: 's1',
+          name: '模型热点1',
+          type: 'model',
+          ath: 10,
+          atv: 5,
+          url: '/models/default-cube.glb',
+        }
+        mock.hotspots.value.push(modelHotspot)
+      }
+      mock.selectedHotspot.value = modelHotspot
+      return modelHotspot
+    }
+
+    function findModelField(wrapper: ReturnType<typeof mountComponent>) {
+      return wrapper.findAll('.prop-field').find(f => {
+        const label = f.find('label')
+        return label.exists() && label.text() === '模型'
+      })
+    }
+
+    it('model 类型应显示"上传模型"和"资源库"按钮', async () => {
+      const modelMock = createMockViewModel()
+      selectModelHotspot(modelMock)
+      const wrapper = mountComponent(modelMock.vm)
+      await nextTick()
+
+      const modelField = findModelField(wrapper)
+      expect(modelField).toBeDefined()
+
+      const labels = modelField!.findAll('button').map(b => b.text())
+      expect(labels).toContain('上传模型')
+      expect(labels).toContain('资源库')
+    })
+
+    it('非 model 类型不应显示"模型"字段', async () => {
+      const wrapper = mountComponent(vm) // 默认 info 类型
+      await nextTick()
+      expect(findModelField(wrapper)).toBeUndefined()
+    })
+
+    it('model 上传入口的文件选择器应只接受模型文件扩展名', async () => {
+      const modelMock = createMockViewModel()
+      selectModelHotspot(modelMock)
+      const wrapper = mountComponent(modelMock.vm)
+      await nextTick()
+
+      const modelField = findModelField(wrapper)
+      const fileInput = modelField!.find('input[type="file"]')
+      expect(fileInput.exists()).toBe(true)
+      const accept = fileInput.attributes('accept')
+      expect(accept).toContain('.glb')
+      expect(accept).toContain('.gltf')
+      expect(accept).not.toContain('image/*')
+    })
+
+    it('选择模型文件后应按 model 类型调用 uploadResource 并回填 URL', async () => {
+      const modelMock = createMockViewModel()
+      const modelHotspot = selectModelHotspot(modelMock)
+      const hotspotId = modelHotspot.id
+      modelMock.vm.uploadResource.mockClear()
+
+      const wrapper = mountComponent(modelMock.vm)
+      await nextTick()
+
+      const file = new File(['glb-bytes'], 'chair.glb', { type: 'model/gltf-binary' })
+      const modelField = findModelField(wrapper)
+      const fileInput = modelField!.find('input[type="file"]')
+      Object.defineProperty(fileInput.element, 'files', {
+        value: [file],
+        configurable: true,
+      })
+      await fileInput.trigger('change')
+      await flushPromises()
+      // 等待 debounce 自动保存触发
+      await new Promise(r => setTimeout(r, 600))
+      await nextTick()
+
+      expect(modelMock.vm.uploadResource).toHaveBeenCalledTimes(1)
+      const callArgs = modelMock.vm.uploadResource.mock.calls[0]
+      expect(callArgs[0]).toBe('p1')
+      expect(callArgs[1]).toBe(file)
+      expect(callArgs[2]).toBe('model')
+
+      const updated = modelMock.hotspots.value.find(h => h.id === hotspotId)
+      expect(updated?.url).toBe('https://example.com/uploads/chair.glb')
+    })
+
+    it('model 资源库打开时按 model 类型加载资源，选择后回填 URL', async () => {
+      const modelMock = createMockViewModel()
+      const modelHotspot = selectModelHotspot(modelMock)
+      const hotspotId = modelHotspot.id
+      // 资源库里放一个 model 资源
+      modelMock.resources.value.push({
+        id: 'r-model',
+        projectId: 'p1',
+        name: 'table.glb',
+        type: 'model',
+        mimeType: 'model/gltf-binary',
+        sizeBytes: 4096,
+        url: 'https://example.com/uploads/table.glb',
+        thumbUrl: '',
+        createdAt: '',
+      })
+      modelMock.vm.assetViewModel.loadResources.mockClear()
+
+      const wrapper = mountComponent(modelMock.vm)
+      await nextTick()
+
+      const modelField = findModelField(wrapper)
+      const libraryBtn = modelField!.findAll('button').find(b => b.text() === '资源库')
+      expect(libraryBtn).toBeDefined()
+      await libraryBtn!.trigger('click')
+      await nextTick()
+
+      expect(modelMock.vm.assetViewModel.loadResources).toHaveBeenCalled()
+      expect(modelMock.vm.assetViewModel.loadResources.mock.calls[0][1]).toBe('model')
+
+      // 点击 model 资源项
+      const item = wrapper.findAll('.asset-item').find(i => i.text().includes('table.glb'))
+      expect(item).toBeDefined()
+      await item!.trigger('click')
+      await new Promise(r => setTimeout(r, 600))
+      await nextTick()
+
+      const updated = modelMock.hotspots.value.find(h => h.id === hotspotId)
+      expect(updated?.url).toBe('https://example.com/uploads/table.glb')
+    })
+
+    it('图片类资源不应被 model 热点资源库选中', async () => {
+      const modelMock = createMockViewModel()
+      selectModelHotspot(modelMock)
+      // 默认 mock resources 都是 image 类型
+      const wrapper = mountComponent(modelMock.vm)
+      await nextTick()
+
+      const modelField = findModelField(wrapper)
+      const libraryBtn = modelField!.findAll('button').find(b => b.text() === '资源库')
+      await libraryBtn!.trigger('click')
+      await nextTick()
+
+      const firstItem = wrapper.find('.asset-item')
+      expect(firstItem.exists()).toBe(true)
+      await firstItem.trigger('click')
+      await nextTick()
+
+      // URL 不应被改为图片资源
+      const modelHotspot = modelMock.hotspots.value.find(h => h.type === 'model')
+      expect(modelHotspot?.url).toBe('/models/default-cube.glb')
+      // 且提示错误
+      const { ElMessage } = await import('element-plus')
+      expect(ElMessage.error).toHaveBeenCalled()
+    })
+  })
+
   describe('14. 图片热点 - 资源管理（上传/预览/资源库）', () => {
     // 选取当前 mock 中 image 类型的热点（默认 mock 里 h2 是 image 类型）
     function selectImageHotspot(mock: ReturnType<typeof createMockViewModel>) {
