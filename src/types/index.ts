@@ -297,7 +297,7 @@ export interface UpdateHotspotParams {
 }
 
 // ============ 资源 ============
-export type ResourceType = 'image' | 'video' | 'audio' | 'panorama'
+export type ResourceType = 'image' | 'video' | 'audio' | 'panorama' | 'model'
 
 export interface Resource {
   id: string

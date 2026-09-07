@@ -254,7 +254,7 @@ export class EditorViewModel {
   }
 
   // === 资源操作 ===
-  async uploadResource(projectId: string, file: File, type: 'panorama' | 'image' | 'video' | 'audio'): Promise<void> {
+  async uploadResource(projectId: string, file: File, type: 'panorama' | 'image' | 'video' | 'audio' | 'model'): Promise<void> {
     await this.assetViewModel.uploadResource(projectId, file, type)
     this.markDirty()
   }

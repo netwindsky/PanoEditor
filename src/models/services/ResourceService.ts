@@ -12,9 +12,10 @@ export class ResourceService {
     const resources = await this.repository.fetchResources(projectId, type)
     // 后端默认已只返回 image/video/audio 标注资源；此处保留防御性过滤，
     // 排除 panorama/document/other 等无意义资源以及 URL 为空的脏数据。
+    // model：模型热点资源，供模型热点从资源库选择 .glb/.gltf 文件。
     return resources.filter((r) => {
       const t = r.type?.toLowerCase()
-      return r.url && ['image', 'video', 'audio'].includes(t)
+      return r.url && ['image', 'video', 'audio', 'model'].includes(t)
     })
   }
 

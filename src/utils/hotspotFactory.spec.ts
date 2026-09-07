@@ -67,6 +67,15 @@ describe('buildHotspotParams', () => {
     expect(p.url).toBeTruthy()
   })
 
+  it('model 类型默认 url 是内置 glb 模型文件，而非图片占位 base64', () => {
+    const p = buildHotspotParams('model', 0, 0)
+    // 引擎 isModelUrl 要求 .glb/.gltf 后缀，GLTFLoader 才能加载
+    expect(p.url).toMatch(/\.(glb|gltf)$/i)
+    // 不能再用 quad 的 1x1 PNG 占位（GLTFLoader 无法加载图片，导致模型热点不可见）
+    expect(p.url).not.toBe(PLACEHOLDER_QUAD_URL)
+    expect(p.url.startsWith('data:')).toBe(false)
+  })
+
   it('video 类型与 quad 一样包含 points 和占位 url，使引擎能创建 mesh 热点', () => {
     const p = buildHotspotParams('video', 0, 0)
     expect(p.type).toBe('video')

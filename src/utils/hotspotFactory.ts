@@ -11,6 +11,9 @@ export const PLACEHOLDER_QUAD_URL =
 
 export const DEFAULT_IMAGE_HOTSPOT_URL = '/assets/images/image.jpg'
 
+/** 内置默认模型：新建 model 热点时使用（GLTFLoader 可加载的可见立方体） */
+export const DEFAULT_MODEL_HOTSPOT_URL = '/models/default-cube.glb'
+
 /** 各类型热点的默认名称 */
 const DEFAULT_NAMES: Record<HotspotToolType, string> = {
   info: '信息点',
@@ -89,8 +92,9 @@ export function buildHotspotParams(
   }
 
   if (type === 'model') {
-    // model 需要非空 url 才能被引擎渲染
-    return { ...base, url: PLACEHOLDER_QUAD_URL }
+    // model 需要非空且为 .glb/.gltf 的 url 才能被引擎渲染；
+    // 默认给内置可见立方体模型，用户后续可在属性面板上传/替换
+    return { ...base, url: DEFAULT_MODEL_HOTSPOT_URL }
   }
 
   if (type === 'info') {

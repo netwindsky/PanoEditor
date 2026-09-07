@@ -51,6 +51,22 @@ describe('ResourceService.fetchResources', () => {
     expect(result.map((r) => r.id)).toEqual(['1', '3', '5'])
   })
 
+  it('不传 type 时保留 model 类型资源（模型热点需从资源库选择模型文件）', async () => {
+    const repo = makeRepo()
+    const service = new ResourceService(repo)
+
+    const resources: Resource[] = [
+      makeResource({ id: '1', name: '椅子模型', type: 'model' }),
+      makeResource({ id: '2', name: '文档1', type: 'document' }),
+    ]
+    vi.mocked(repo.fetchResources).mockResolvedValue(resources)
+
+    const result = await service.fetchResources('p1')
+
+    expect(result).toHaveLength(1)
+    expect(result[0].id).toBe('1')
+  })
+
   it('指定 type 时（如图片），不过滤全景图（因为 API 已按 type 查询）', async () => {
     const repo = makeRepo()
     const service = new ResourceService(repo)
