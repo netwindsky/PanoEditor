@@ -28,7 +28,6 @@
 import { ref, shallowRef, watch, computed, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import { PanoEngineAdapter } from '@/utils/PanoEngineAdapter'
 import { perf } from '@/utils/performanceMonitor'
-import { getLighting, toSunConfig } from '@/api/lighting'
 import type { Hotspot } from '@/types'
 import type { SceneData } from '@panoview'
 
@@ -120,22 +119,9 @@ watch(
   { deep: true, immediate: true },
 )
 
-/**
- * 加载指定场景的光照配置并应用到引擎（HDR 环境贴图 + 太阳方向光）。
- * 场景首次加载与切换场景后都需调用，保证画布光照与后端配置一致。
- */
-async function applySceneLighting(engine: PanoEngineAdapter, sceneId?: string | null): Promise<void> {
-  if (!sceneId) return
-  try {
-    const res = await getLighting(sceneId)
-    const data = res.data.data
-    if (!data) return
-    await engine.setEnvironmentMap(data.envMapUrl)
-    engine.setSunLight(toSunConfig(data))
-  } catch (e) {
-    console.warn('Apply scene lighting failed:', e)
-  }
-}
+// 说明：场景光照（HDR 环境贴图 + 太阳方向光）的加载与应用由 LightingViewModel 统一负责
+// （watch 场景自动 loadForScene；引擎就绪由 EditorCanvas.onEngineReady 调 attachEngine）。
+// 本组件不再自行拉取光照，避免双通道竞态（后到的旧值覆盖）。
 
 /**
  * 预加载所有已就绪场景到引擎，并激活当前场景。
@@ -171,8 +157,6 @@ async function startPreload(): Promise<void> {
       // 必须强制重置快照以确保 syncHotspots 不被快照比对跳过
       lastHotspotsSnapshot = ''
       syncHotspotsIfChanged(engine, props.hotspots)
-      // 应用该场景的光照配置（环境贴图 + 太阳光）
-      await applySceneLighting(engine, props.sceneId)
       setTimeout(endTransitionOverlay, TRANSITION_HOLD_MS)
     }
   } catch (e) {
@@ -212,8 +196,7 @@ watch(
       // 必须强制重置快照以确保 syncHotspots 不被快照比对跳过
       lastHotspotsSnapshot = ''
       syncHotspotsIfChanged(engine, props.hotspots)
-      // 光照为引擎级单例，切场景后按新场景配置重新应用
-      await applySceneLighting(engine, newId)
+      // 光照由 LightingViewModel 在场景 watch 中自动重新加载应用（引擎级单例，VM 幂等推送）
     } catch (e) {
       console.warn('Switch scene failed, fallback to single-scene load:', e)
       if (props.sceneData) {
@@ -303,8 +286,7 @@ async function loadScene(sceneData: SceneData) {
     } else {
       syncHotspotsIfChanged(engine, props.hotspots)
     }
-    // 兼容（单场景加载）模式：场景加载完成后应用该场景光照
-    await applySceneLighting(engine, props.sceneId)
+    // 光照由 LightingViewModel 统一负责（attachEngine / 场景 watch），此处不再拉取
     emit('engine-ready', engine)
   } catch (e) {
     console.error('Failed to load scene config:', e)

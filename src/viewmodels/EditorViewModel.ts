@@ -5,6 +5,7 @@ import { perf } from '@/utils/performanceMonitor'
 import { SceneViewModel } from './SceneViewModel'
 import { HotspotViewModel } from './HotspotViewModel'
 import { AssetViewModel } from './AssetViewModel'
+import { LightingViewModel } from './LightingViewModel'
 import type { ProjectService, SceneService, HotspotService, ResourceService } from '@/models'
 import { exportToKrpanoXml } from '@/utils/xmlExport'
 import { downloadXml, downloadBlob } from '@/utils/downloadFile'
@@ -34,6 +35,7 @@ export class EditorViewModel {
   sceneViewModel: SceneViewModel
   hotspotViewModel: HotspotViewModel
   assetViewModel: AssetViewModel
+  lightingViewModel: LightingViewModel
 
   // === 服务引用（exportConfig 等跨场景操作需要） ===
   private hotspotService: HotspotService
@@ -51,6 +53,12 @@ export class EditorViewModel {
     this.sceneViewModel = new SceneViewModel(sceneService)
     this.hotspotViewModel = new HotspotViewModel(hotspotService)
     this.assetViewModel = new AssetViewModel(resourceService)
+    // 光照 Model：watch 场景 id 自动加载/切换配置；gizmo 与面板共享其状态
+    this.lightingViewModel = new LightingViewModel({
+      getSceneId: () => this.sceneViewModel.currentScene.value?.id ?? null,
+      getProjectId: () => this.currentProject.value?.id ?? null,
+      onDirty: () => this.markDirty(),
+    })
   }
 
   // === 项目加载 ===
@@ -261,6 +269,7 @@ export class EditorViewModel {
 
   // === 清理 ===
   dispose(): void {
+    this.lightingViewModel.dispose()
     this.sceneViewModel.dispose()
   }
 }

@@ -18,9 +18,6 @@ export const useEditorStore = defineStore('editor', () => {
   const isDirty = ref(false)
   const lastSavedAt = ref<string>('')
   const isSaving = ref(false)
-  // 太阳光照被画布 gizmo 等面板外部途径修改并持久化后自增，
-  // 供光照面板监听并重新拉取配置回填表单，避免面板旧值覆盖拖拽结果
-  const sunLightingTick = ref(0)
 
   /** 引擎适配器引用，由 EditorCanvas 在引擎就绪时注入 */
   const engineAdapter = shallowRef<PanoEngineAdapter | null>(null)
@@ -67,17 +64,10 @@ export const useEditorStore = defineStore('editor', () => {
     lastSavedAt.value = new Date().toLocaleTimeString('zh-CN')
   }
 
-  /** 太阳光照被面板外部（画布 gizmo 拖拽）修改并持久化后调用，通知面板重新拉取 */
-  function notifySunLightingChanged() {
-    sunLightingTick.value += 1
-  }
-
   return {
     activeTool, hotspotType, leftPanelTab, leftPanelVisible, rightPanelVisible,
     rightPanelSection, zoom, isDirty, lastSavedAt, isSaving, engineAdapter,
-    sunLightingTick,
     setActiveTool, setHotspotType, setLeftPanelTab, toggleLeftPanel, toggleRightPanel,
     setRightPanelSection, setEngineAdapter, setZoom, markDirty, markSaved,
-    notifySunLightingChanged,
   }
 })

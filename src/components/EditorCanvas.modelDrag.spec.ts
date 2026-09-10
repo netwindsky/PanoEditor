@@ -3,6 +3,7 @@ import { mount, flushPromises } from '@vue/test-utils'
 import { ref, reactive, nextTick } from 'vue'
 import type { Hotspot } from '@/types'
 import type { EditorViewModel } from '@/viewmodels/EditorViewModel'
+import { LightingViewModel } from '@/viewmodels/LightingViewModel'
 
 /**
  * 复现 bug：编辑模式下模型热点无法正常拖动。
@@ -31,6 +32,12 @@ const engineMock = {
   highlightHotspot: vi.fn(),
   unhighlightHotspot: vi.fn(),
   dispose: vi.fn(),
+  // 太阳 gizmo RAF 循环轮询的方法（缺失会在 jsdom 下抛未捕获错误）
+  projectSunToScreen: vi.fn(() => ({ x: 0, y: 0, visible: false })),
+  getSunLightConfig: vi.fn(() => null),
+  setSunLight: vi.fn(),
+  screenToSunDirection: vi.fn(() => ({ azimuth: 0, elevation: 0 })),
+  setEnvironmentMap: vi.fn(() => Promise.resolve()),
 }
 
 vi.mock('@/components/PanoEngineViewer.vue', () => ({
@@ -116,6 +123,12 @@ function makeVm(hotspots: Hotspot[]) {
   setCameraLock: vi.fn(),
   setCameraNavigator: vi.fn(),
     },
+    // 光照 Model：EngineCanvas.onEngineReady 会 attachEngine（真实 VM + stub 引擎）
+    lightingViewModel: new LightingViewModel({
+      getSceneId: () => 's1',
+      getProjectId: () => 'p1',
+      onDirty: vi.fn(),
+    }),
   }
   return { vm: vm as unknown as EditorViewModel, raw: vm, hotspotList }
 }

@@ -45,7 +45,6 @@ import type { HotspotToolType } from '@/types'
 import { buildHotspotParams } from '@/utils/hotspotFactory'
 import { parsePoints, serializePoints, isQuadLike, isMeshQuad, centerOfPoints } from '@/utils/quadPoints'
 import { useEditorStore } from '@/stores/editor'
-import { updateLighting } from '@/api/lighting'
 
 const props = defineProps<{
   vm: EditorViewModel
@@ -313,39 +312,24 @@ function onSunGizmoPointerDown(e: PointerEvent) {
   engine?.disableControls()
 }
 
-// 拖拽中：实时反算方位/仰角并下发引擎预览，其余太阳参数（强度/颜色/开关）保持不变
+// 拖拽中：实时反算方位/仰角，经 LightingViewModel 更新状态
+// （状态是唯一数据源 → 面板滑块自动跟随 + 引擎预览，负角由 VM/引擎归一化）
 function handleSunDragMove(e: PointerEvent) {
   if (!engine) return
-  const current = engine.getSunLightConfig()
-  if (!current) return
   const { azimuth, elevation } = engine.screenToSunDirection(e.clientX, e.clientY)
-  engine.setSunLight({ ...current, azimuth, elevation })
+  vm.lightingViewModel.setSunDirection(azimuth, elevation, { persist: false })
 }
 
-// 松手：解锁全景旋转，并把最终方位/仰角持久化一次（拖拽中不请求后端）
-async function handleSunDragEnd() {
-  if (!engine) {
-    isDraggingSun.value = false
-    return
-  }
+// 松手：解锁全景旋转，方位/仰角经 VM 立即持久化（拖拽中不请求后端）
+function handleSunDragEnd() {
   isDraggingSun.value = false
-  engine.enableControls()
+  engine?.enableControls()
 
+  if (!engine) return
   const config = engine.getSunLightConfig()
-  const sceneId = vm.sceneViewModel.currentScene.value?.id
-  if (config && sceneId) {
-    try {
-      await updateLighting(sceneId, {
-        sunAzimuth: config.azimuth,
-        sunElevation: config.elevation,
-      })
-      editorStore.markDirty()
-      // 通知光照面板重新拉取配置回填滑块，避免面板旧值回弹覆盖
-      editorStore.notifySunLightingChanged()
-    } catch (err) {
-      console.warn('太阳方向持久化失败:', err)
-    }
-  }
+  if (!config) return
+  // 方向已在拖拽中经 VM 更新；松手以引擎快照（含 [0,360) 归一化）触发持久化
+  vm.lightingViewModel.setSunDirection(config.azimuth, config.elevation, { persist: true })
 }
 
 // 指针取消/移出：解锁全景旋转，引擎预览保留但不持久化（与热点 forceEndDrag 语义一致）
@@ -529,7 +513,7 @@ function handlePointerMove(e: PointerEvent) {
 function handlePointerUp() {
   // 优先处理太阳 gizmo 拖拽结束（解锁旋转 + 持久化方位/仰角）
   if (isDraggingSun.value) {
-    void handleSunDragEnd()
+    handleSunDragEnd()
     return
   }
 
@@ -579,6 +563,8 @@ function handlePointerCancel() {
 function onEngineReady(adapter: PanoEngineAdapter) {
   engine = adapter
   editorStore.setEngineAdapter(adapter)
+  // 引擎就绪：把当前光照状态（env + sun）推给引擎（与场景配置加载顺序无关，VM 幂等）
+  vm.lightingViewModel.attachEngine(adapter)
   // 引擎就绪后挂载太阳 gizmo（等 viewer DOM 渲染完成）
   void nextTick(() => createSunGizmo())
   // 注入相机锁定器：拖拽热点时锁定全景旋转，结束时解锁
