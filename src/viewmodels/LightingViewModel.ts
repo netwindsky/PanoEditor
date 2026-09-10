@@ -50,6 +50,8 @@ export class LightingViewModel {
   readonly sunConfig = ref({ ...DEFAULT_SUN })
   /** 环境贴图地址（null = 默认 RoomEnvironment） */
   readonly envMapUrl = ref<string | null>(null)
+  /** 环境照明启用开关（false = 完全禁用环境照明，scene.environment = null） */
+  readonly envEnabled = ref(true)
   /** 环境贴图上传中（面板按钮 loading） */
   readonly uploadingEnv = ref(false)
 
@@ -97,10 +99,14 @@ export class LightingViewModel {
   private async applyToEngine(): Promise<void> {
     const adapter = this.adapter
     if (!adapter) return
-    try {
-      await adapter.setEnvironmentMap(this.envMapUrl.value)
-    } catch (e) {
-      console.warn('setEnvironmentMap failed:', e)
+    if (!this.envEnabled.value) {
+      adapter.disableEnvironment()
+    } else {
+      try {
+        await adapter.setEnvironmentMap(this.envMapUrl.value)
+      } catch (e) {
+        console.warn('setEnvironmentMap failed:', e)
+      }
     }
     adapter.setSunLight(toSunConfig(this.sunFields()))
   }
@@ -129,6 +135,7 @@ export class LightingViewModel {
   /** 后端配置 → VM 状态 */
   private applyLightingConfig(data: LightingConfig): void {
     this.envMapUrl.value = data.envMapUrl ?? null
+    this.envEnabled.value = data.envMapEnabled ?? true
     this.sunConfig.value = {
       enabled: data.sunEnabled ?? DEFAULT_SUN.enabled,
       azimuth: normalizeAzimuth(data.sunAzimuth ?? DEFAULT_SUN.azimuth),
@@ -140,6 +147,7 @@ export class LightingViewModel {
 
   private resetToDefaults(): void {
     this.envMapUrl.value = null
+    this.envEnabled.value = true
     this.sunConfig.value = { ...DEFAULT_SUN }
   }
 
@@ -253,6 +261,35 @@ export class LightingViewModel {
       this.options.onDirty()
     } catch (err) {
       console.warn('环境贴图持久化失败:', err)
+    }
+  }
+
+  /**
+   * 切换环境照明开关：更新状态 → 引擎即时预览 → 立即持久化。
+   * 关闭时引擎完全禁用环境照明（scene.environment = null）；
+   * 开启时根据当前 envMapUrl 恢复（HDR 或默认 RoomEnvironment）。
+   */
+  async setEnvEnabled(enabled: boolean): Promise<void> {
+    this.envEnabled.value = enabled
+    const adapter = this.adapter
+    if (adapter) {
+      if (!enabled) {
+        adapter.disableEnvironment()
+      } else {
+        try {
+          await adapter.setEnvironmentMap(this.envMapUrl.value)
+        } catch (e) {
+          console.warn('setEnvironmentMap failed:', e)
+        }
+      }
+    }
+    const sceneId = this.options.getSceneId()
+    if (!sceneId) return
+    try {
+      await updateLighting(sceneId, { envMapEnabled: enabled })
+      this.options.onDirty()
+    } catch (err) {
+      console.warn('环境照明开关持久化失败:', err)
     }
   }
 

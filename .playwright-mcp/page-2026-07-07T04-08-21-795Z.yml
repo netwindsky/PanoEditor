@@ -1,0 +1,236 @@
+- generic [ref=f10e3]:
+  - banner [ref=f10e4]:
+    - generic [ref=f10e5]:
+      - generic [ref=f10e6]:
+        - generic [ref=f10e7]: ◎
+        - generic [ref=f10e8]: PanoEditor
+      - navigation [ref=f10e9]:
+        - link "查看器" [ref=f10e10] [cursor=pointer]:
+          - /url: "#"
+        - link "编辑器" [ref=f10e11] [cursor=pointer]:
+          - /url: "#"
+        - link "后台管理" [ref=f10e12] [cursor=pointer]:
+          - /url: "#"
+    - generic [ref=f10e13]:
+      - button "项目" [ref=f10e14] [cursor=pointer]:
+        - generic [ref=f10e15]:
+          - img [ref=f10e17]
+          - text: 项目
+      - button "导出配置" [ref=f10e19] [cursor=pointer]:
+        - generic [ref=f10e20]:
+          - img [ref=f10e22]
+          - text: 导出配置
+      - button "静态化导出" [ref=f10e24] [cursor=pointer]:
+        - generic [ref=f10e25]:
+          - img [ref=f10e27]
+          - text: 静态化导出
+      - button "保存" [ref=f10e31] [cursor=pointer]:
+        - generic [ref=f10e32]:
+          - img [ref=f10e34]
+          - text: 保存
+      - button "预览" [ref=f10e36] [cursor=pointer]:
+        - generic [ref=f10e37]:
+          - img [ref=f10e39]
+          - text: 预览
+      - button "发布" [ref=f10e41] [cursor=pointer]:
+        - generic [ref=f10e42]:
+          - img [ref=f10e44]
+          - text: 发布
+  - generic [ref=f10e46]:
+    - complementary [ref=f10e47]:
+      - generic [ref=f10e49]:
+        - generic [ref=f10e50]:
+          - generic [ref=f10e51]: 场景列表
+          - button [ref=f10e52] [cursor=pointer]:
+            - img [ref=f10e55]
+        - generic [ref=f10e58]:
+          - generic [ref=f10e59] [cursor=pointer]:
+            - generic [ref=f10e61]:
+              - generic [ref=f10e62]: "01"
+              - generic [ref=f10e63]: 0 个热点
+            - button "..." [ref=f10e65]:
+              - generic [ref=f10e66]: ...
+          - generic [ref=f10e67] [cursor=pointer]:
+            - generic [ref=f10e69]:
+              - generic [ref=f10e70]: "02"
+              - generic [ref=f10e71]: 0 个热点
+            - button "..." [ref=f10e73]:
+              - generic [ref=f10e74]: ...
+          - generic [ref=f10e75] [cursor=pointer]:
+            - generic [ref=f10e77]:
+              - generic [ref=f10e78]: "03"
+              - generic [ref=f10e79]: 0 个热点
+            - button "..." [ref=f10e81]:
+              - generic [ref=f10e82]: ...
+          - generic [ref=f10e83] [cursor=pointer]:
+            - generic [ref=f10e85]:
+              - generic [ref=f10e86]: "04"
+              - generic [ref=f10e87]: 0 个热点
+            - button "..." [ref=f10e89]:
+              - generic [ref=f10e90]: ...
+    - generic [ref=f10e91]:
+      - generic [ref=f10e92]:
+        - generic [ref=f10e93]:
+          - button "选择" [ref=f10e94] [cursor=pointer]:
+            - img [ref=f10e96]
+          - button "添加热点" [ref=f10e98] [cursor=pointer]:
+            - img [ref=f10e100]
+          - button "平移" [ref=f10e103] [cursor=pointer]:
+            - img [ref=f10e105]
+          - button "缩放" [ref=f10e107] [cursor=pointer]:
+            - img [ref=f10e109]
+        - generic [ref=f10e111]:
+          - button "切换左面板" [ref=f10e113] [cursor=pointer]:
+            - img [ref=f10e115]
+          - button "切换右面板" [ref=f10e117] [cursor=pointer]:
+            - img [ref=f10e119]
+      - iframe [ref=f10e356] [cursor=pointer]:
+        - generic [ref=f19e2]:
+          - generic [ref=f19e7] [cursor=pointer]:
+            - img "图片热点"
+          - generic [ref=f19e10]: "01"
+          - button "⟳" [ref=f19e11] [cursor=pointer]
+          - generic [ref=f19e12]:
+            - generic [ref=f19e14] [cursor=pointer]: "01"
+            - generic [ref=f19e16] [cursor=pointer]: "02"
+            - generic [ref=f19e18] [cursor=pointer]: "03"
+            - generic [ref=f19e20] [cursor=pointer]: "04"
+          - generic:
+            - generic: 正在加载全景...
+      - generic [ref=f10e134]:
+        - generic [ref=f10e135]:
+          - generic [ref=f10e136]: 4 / 4
+          - generic [ref=f10e137]: "04"
+        - generic [ref=f10e138]:
+          - generic [ref=f10e139] [cursor=pointer]:
+            - generic [ref=f10e141]: "1"
+            - generic [ref=f10e142]: "01"
+          - generic [ref=f10e143] [cursor=pointer]:
+            - generic [ref=f10e145]: "2"
+            - generic [ref=f10e146]: "02"
+          - generic [ref=f10e147] [cursor=pointer]:
+            - generic [ref=f10e149]: "3"
+            - generic [ref=f10e150]: "03"
+          - generic [ref=f10e151] [cursor=pointer]:
+            - generic [ref=f10e153]: "4"
+            - generic [ref=f10e154]: "04"
+    - complementary [ref=f10e155]:
+      - generic [ref=f10e156]:
+        - generic [ref=f10e157]:
+          - generic [ref=f10e158] [cursor=pointer]:
+            - img [ref=f10e160]
+            - generic [ref=f10e163]: 场景
+          - generic [ref=f10e164] [cursor=pointer]:
+            - img [ref=f10e166]
+            - generic [ref=f10e168]: 标注
+          - generic [ref=f10e169] [cursor=pointer]:
+            - img [ref=f10e171]
+            - generic [ref=f10e173]: 音频
+          - generic [ref=f10e174] [cursor=pointer]:
+            - img [ref=f10e176]
+            - generic [ref=f10e178]: 后期
+        - button [ref=f10e179] [cursor=pointer]:
+          - img [ref=f10e182]
+      - generic [ref=f10e185]:
+        - generic [ref=f10e186]:
+          - generic [ref=f10e187]: 场景属性
+          - generic [ref=f10e188]:
+            - generic [ref=f10e189]: 名称
+            - textbox [ref=f10e192]: "04"
+          - generic [ref=f10e193]:
+            - generic [ref=f10e194]: 标题
+            - textbox [ref=f10e197]
+        - generic [ref=f10e198]:
+          - generic [ref=f10e199]: 缩略图
+          - img "缩略图" [ref=f10e201]
+          - generic [ref=f10e202]:
+            - generic [ref=f10e203]: 缩略图 URL
+            - textbox [ref=f10e206]: /uploads/projects/292a536858c9435875890f00ab5595a6/92539ab1b2844cde87f4a9bf65f329e2.jpg
+          - button "生成缩略图" [ref=f10e208] [cursor=pointer]:
+            - generic [ref=f10e209]: 生成缩略图
+        - generic [ref=f10e210]:
+          - generic [ref=f10e211]: 初始视角
+          - generic [ref=f10e212]:
+            - generic [ref=f10e213]: 水平视角 (Yaw)
+            - slider "slider between -180 and 180" [ref=f10e217] [cursor=pointer]
+            - generic [ref=f10e219]: 72.58498360903276°
+          - generic [ref=f10e220]:
+            - generic [ref=f10e221]: 垂直视角 (Pitch)
+            - slider "slider between -90 and 90" [ref=f10e225] [cursor=pointer]
+            - generic [ref=f10e227]: 2.867115760877696°
+          - generic [ref=f10e228]:
+            - generic [ref=f10e229]: 视场角 (HFOV)
+            - slider "slider between 30 and 150" [ref=f10e233] [cursor=pointer]
+            - generic [ref=f10e235]: 145.44248701459915°
+          - generic [ref=f10e236]:
+            - generic [ref=f10e237]: 最小视场角
+            - slider "slider between 10 and 90" [ref=f10e241] [cursor=pointer]
+            - generic [ref=f10e243]: 30°
+          - generic [ref=f10e244]:
+            - generic [ref=f10e245]: 最大视场角
+            - slider "slider between 90 and 170" [ref=f10e249] [cursor=pointer]
+            - generic [ref=f10e251]: 120°
+          - generic [ref=f10e252]:
+            - generic [ref=f10e253]: 最大像素缩放
+            - slider "slider between 1 and 4" [ref=f10e257] [cursor=pointer]
+            - generic [ref=f10e259]: 1x
+          - button "记录当前视角" [ref=f10e261] [cursor=pointer]:
+            - generic [ref=f10e262]: 记录当前视角
+        - generic [ref=f10e263]:
+          - generic [ref=f10e264]: 视角限制
+          - generic [ref=f10e265]:
+            - generic [ref=f10e266]: 限制模式
+            - generic [ref=f10e268] [cursor=pointer]:
+              - generic:
+                - combobox [ref=f10e270]
+                - generic [ref=f10e271]: 自动
+              - img [ref=f10e274]
+          - generic [ref=f10e276]:
+            - generic [ref=f10e277]: 视场角类型
+            - generic [ref=f10e279] [cursor=pointer]:
+              - generic:
+                - combobox [ref=f10e281]
+                - generic [ref=f10e282]: MFOV
+              - img [ref=f10e285]
+        - generic [ref=f10e287]:
+          - generic [ref=f10e288]: GPS 坐标
+          - generic [ref=f10e289]:
+            - generic [ref=f10e290]: 纬度 (Lat)
+            - generic [ref=f10e291]:
+              - button "decrease number" [ref=f10e292] [cursor=pointer]:
+                - img [ref=f10e294]
+              - button "increase number" [ref=f10e296] [cursor=pointer]:
+                - img [ref=f10e298]
+              - spinbutton [ref=f10e302]
+          - generic [ref=f10e303]:
+            - generic [ref=f10e304]: 经度 (Lng)
+            - generic [ref=f10e305]:
+              - button "decrease number" [ref=f10e306] [cursor=pointer]:
+                - img [ref=f10e308]
+              - button "increase number" [ref=f10e310] [cursor=pointer]:
+                - img [ref=f10e312]
+              - spinbutton [ref=f10e316]
+          - generic [ref=f10e317]:
+            - generic [ref=f10e318]: 朝向 (Heading)
+            - generic [ref=f10e319]:
+              - button "decrease number" [ref=f10e320] [cursor=pointer]:
+                - img [ref=f10e322]
+              - button "increase number" [ref=f10e324] [cursor=pointer]:
+                - img [ref=f10e326]
+              - spinbutton [ref=f10e330]
+        - generic [ref=f10e331]:
+          - generic [ref=f10e332]: 启动脚本 (onstart)
+          - textbox "如：loadscene(scene1);" [ref=f10e334]
+  - contentinfo [ref=f10e335]:
+    - generic [ref=f10e336]:
+      - generic [ref=f10e337]: 未打开项目
+      - generic [ref=f10e338]: "|"
+      - generic [ref=f10e339]: "场景: 4"
+      - generic [ref=f10e340]: "|"
+      - generic [ref=f10e341]: "热点: 2"
+    - generic [ref=f10e342]:
+      - generic [ref=f10e343]: "|"
+      - generic [ref=f10e344]:
+        - button "−" [ref=f10e345] [cursor=pointer]
+        - generic [ref=f10e346]: 100%
+        - button "+" [ref=f10e347] [cursor=pointer]

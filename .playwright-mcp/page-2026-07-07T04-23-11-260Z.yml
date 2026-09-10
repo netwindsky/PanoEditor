@@ -1,0 +1,161 @@
+- generic [ref=f26e3]:
+  - banner [ref=f26e4]:
+    - generic [ref=f26e5]:
+      - generic [ref=f26e6]:
+        - generic [ref=f26e7]: ◎
+        - generic [ref=f26e8]: PanoEditor
+      - navigation [ref=f26e9]:
+        - link "查看器" [ref=f26e10] [cursor=pointer]:
+          - /url: "#"
+        - link "编辑器" [ref=f26e11] [cursor=pointer]:
+          - /url: "#"
+        - link "后台管理" [ref=f26e12] [cursor=pointer]:
+          - /url: "#"
+    - generic [ref=f26e13]:
+      - button "项目" [ref=f26e14] [cursor=pointer]:
+        - generic [ref=f26e15]:
+          - img [ref=f26e17]
+          - text: 项目
+      - button "导出配置" [ref=f26e19] [cursor=pointer]:
+        - generic [ref=f26e20]:
+          - img [ref=f26e22]
+          - text: 导出配置
+      - button "静态化导出" [ref=f26e24] [cursor=pointer]:
+        - generic [ref=f26e25]:
+          - img [ref=f26e27]
+          - text: 静态化导出
+      - button "保存" [ref=f26e31] [cursor=pointer]:
+        - generic [ref=f26e32]:
+          - img [ref=f26e34]
+          - text: 保存
+      - button "预览" [ref=f26e36] [cursor=pointer]:
+        - generic [ref=f26e37]:
+          - img [ref=f26e39]
+          - text: 预览
+      - button "发布" [ref=f26e41] [cursor=pointer]:
+        - generic [ref=f26e42]:
+          - img [ref=f26e44]
+          - text: 发布
+  - generic [ref=f26e46]:
+    - complementary [ref=f26e47]:
+      - generic [ref=f26e49]:
+        - generic [ref=f26e50]:
+          - generic [ref=f26e51]: 场景列表
+          - button [ref=f26e52] [cursor=pointer]:
+            - img [ref=f26e55]
+        - generic [ref=f26e58]:
+          - generic [ref=f26e59] [cursor=pointer]:
+            - generic [ref=f26e61]:
+              - generic [ref=f26e62]: "01"
+              - generic [ref=f26e63]: 0 个热点
+            - button "..." [ref=f26e65]:
+              - generic [ref=f26e66]: ...
+          - generic [ref=f26e67] [cursor=pointer]:
+            - generic [ref=f26e69]:
+              - generic [ref=f26e70]: "02"
+              - generic [ref=f26e71]: 0 个热点
+            - button "..." [ref=f26e73]:
+              - generic [ref=f26e74]: ...
+          - generic [ref=f26e75] [cursor=pointer]:
+            - generic [ref=f26e77]:
+              - generic [ref=f26e78]: "03"
+              - generic [ref=f26e79]: 0 个热点
+            - button "..." [ref=f26e81]:
+              - generic [ref=f26e82]: ...
+          - generic [ref=f26e83] [cursor=pointer]:
+            - generic [ref=f26e85]:
+              - generic [ref=f26e86]: "04"
+              - generic [ref=f26e87]: 0 个热点
+            - button "..." [ref=f26e89]:
+              - generic [ref=f26e90]: ...
+    - generic [ref=f26e91]:
+      - generic [ref=f26e92]:
+        - generic [ref=f26e93]:
+          - button "选择" [ref=f26e94] [cursor=pointer]:
+            - img [ref=f26e96]
+          - button "添加热点" [ref=f26e98] [cursor=pointer]:
+            - img [ref=f26e100]
+          - button "平移" [ref=f26e103] [cursor=pointer]:
+            - img [ref=f26e105]
+          - button "缩放" [ref=f26e107] [cursor=pointer]:
+            - img [ref=f26e109]
+        - generic [ref=f26e111]:
+          - button "切换左面板" [ref=f26e113] [cursor=pointer]:
+            - img [ref=f26e115]
+          - button "切换右面板" [ref=f26e117] [cursor=pointer]:
+            - img [ref=f26e119]
+      - iframe [ref=f26e505] [cursor=pointer]:
+        - generic [ref=f34e2]:
+          - generic [ref=f34e7] [cursor=pointer]:
+            - img "图片热点"
+          - generic [ref=f34e10]: "01"
+          - button "⟳" [ref=f34e11] [cursor=pointer]
+          - generic [ref=f34e12]:
+            - generic [ref=f34e14] [cursor=pointer]: "01"
+            - generic [ref=f34e16] [cursor=pointer]: "02"
+            - generic [ref=f34e18] [cursor=pointer]: "03"
+            - generic [ref=f34e20] [cursor=pointer]: "04"
+          - generic:
+            - generic: 正在加载全景...
+      - generic [ref=f26e134]:
+        - generic [ref=f26e135]:
+          - generic [ref=f26e136]: 4 / 4
+          - generic [ref=f26e137]: "04"
+        - generic [ref=f26e138]:
+          - generic [ref=f26e139] [cursor=pointer]:
+            - generic [ref=f26e141]: "1"
+            - generic [ref=f26e142]: "01"
+          - generic [ref=f26e143] [cursor=pointer]:
+            - generic [ref=f26e145]: "2"
+            - generic [ref=f26e146]: "02"
+          - generic [ref=f26e147] [cursor=pointer]:
+            - generic [ref=f26e149]: "3"
+            - generic [ref=f26e150]: "03"
+          - generic [ref=f26e151] [cursor=pointer]:
+            - generic [ref=f26e153]: "4"
+            - generic [ref=f26e154]: "04"
+    - complementary [ref=f26e155]:
+      - generic [ref=f26e156]:
+        - generic [ref=f26e157]:
+          - generic [ref=f26e158] [cursor=pointer]:
+            - img [ref=f26e160]
+            - generic [ref=f26e163]: 场景
+          - generic [ref=f26e164] [cursor=pointer]:
+            - img [ref=f26e166]
+            - generic [ref=f26e168]: 标注
+          - generic [ref=f26e169] [cursor=pointer]:
+            - img [ref=f26e171]
+            - generic [ref=f26e173]: 音频
+          - generic [ref=f26e174] [cursor=pointer]:
+            - img [ref=f26e176]
+            - generic [ref=f26e178]: 后期
+        - button [ref=f26e179] [cursor=pointer]:
+          - img [ref=f26e182]
+      - generic [ref=f26e506]:
+        - generic [ref=f26e507]:
+          - generic [ref=f26e508] [cursor=pointer]:
+            - generic [ref=f26e509]: 网页热点
+            - generic [ref=f26e510]: 网页热点
+            - button "×" [ref=f26e511]:
+              - generic [ref=f26e512]: ×
+          - generic [ref=f26e513] [cursor=pointer]:
+            - generic [ref=f26e514]: 信息点
+            - generic [ref=f26e515]: 信息点
+            - button "×" [ref=f26e516]:
+              - generic [ref=f26e517]: ×
+        - button "一键清空" [ref=f26e519] [cursor=pointer]:
+          - generic [ref=f26e520]: 一键清空
+        - generic [ref=f26e521]: 请从上方列表选择或添加一个热点
+  - contentinfo [ref=f26e335]:
+    - generic [ref=f26e336]:
+      - generic [ref=f26e337]: 未打开项目
+      - generic [ref=f26e338]: "|"
+      - generic [ref=f26e339]: "场景: 4"
+      - generic [ref=f26e340]: "|"
+      - generic [ref=f26e341]: "热点: 2"
+    - generic [ref=f26e342]:
+      - generic [ref=f26e343]: "|"
+      - generic [ref=f26e344]:
+        - button "−" [ref=f26e345] [cursor=pointer]
+        - generic [ref=f26e346]: 100%
+        - button "+" [ref=f26e347] [cursor=pointer]

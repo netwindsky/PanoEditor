@@ -1,0 +1,72 @@
+- generic [ref=f8e3]:
+  - banner [ref=f8e4]:
+    - generic [ref=f8e5]:
+      - img [ref=f8e7]
+      - heading [level=1]
+    - generic [ref=f8e10]:
+      - link "编辑器" [ref=f8e11] [cursor=pointer]:
+        - /url: /editor
+        - img [ref=f8e12]
+        - text: 编辑器
+      - link "管理后台" [ref=f8e14] [cursor=pointer]:
+        - /url: /admin
+        - img [ref=f8e15]
+        - text: 管理后台
+      - button "分享" [ref=f8e17] [cursor=pointer]:
+        - img [ref=f8e18]
+        - text: 分享
+  - generic [ref=f8e20]:
+    - complementary [ref=f8e21]:
+      - generic [ref=f8e22]:
+        - generic [ref=f8e23]: 场景列表
+        - button [ref=f8e24] [cursor=pointer]:
+          - img [ref=f8e25]
+    - generic [ref=f8e28]:
+      - generic [ref=f8e31]:
+        - img [ref=f8e32]
+        - paragraph [ref=f8e35]: 请选择场景
+      - generic [ref=f8e37]: 小地图
+      - generic [ref=f8e40]:
+        - generic [ref=f8e41]: 场景信息
+        - button [ref=f8e42] [cursor=pointer]:
+          - img [ref=f8e43]
+  - generic [ref=f8e45]:
+    - generic [ref=f8e46]:
+      - generic [ref=f8e47]: 风格
+      - combobox [ref=f8e48] [cursor=pointer]:
+        - option "默认" [selected]
+    - generic [ref=f8e49]:
+      - generic [ref=f8e50]: LUT
+      - combobox [ref=f8e51] [cursor=pointer]:
+        - option "无" [selected]
+    - generic [ref=f8e52]:
+      - generic [ref=f8e53]: 曝光
+      - slider [ref=f8e54]: "1"
+      - generic [ref=f8e55]: "1.0"
+    - generic [ref=f8e56]:
+      - generic [ref=f8e57]: 对比度
+      - slider [ref=f8e58]: "1"
+      - generic [ref=f8e59]: "1.0"
+  - generic [ref=f8e61]:
+    - button "上一个场景" [ref=f8e62] [cursor=pointer]:
+      - img [ref=f8e63]
+    - button "全景" [ref=f8e65] [cursor=pointer]:
+      - img [ref=f8e66]
+      - generic [ref=f8e69]: 全景
+    - button "飞行" [ref=f8e70] [cursor=pointer]:
+      - img [ref=f8e71]
+      - generic [ref=f8e73]: 飞行
+    - button "旋转" [ref=f8e74] [cursor=pointer]:
+      - img [ref=f8e75]
+      - generic [ref=f8e78]: 旋转
+    - button "漫游" [ref=f8e79] [cursor=pointer]:
+      - img [ref=f8e80]
+      - generic [ref=f8e82]: 漫游
+    - button "VR" [ref=f8e83] [cursor=pointer]:
+      - img [ref=f8e84]
+      - generic [ref=f8e88]: VR
+    - button "全屏" [ref=f8e89] [cursor=pointer]:
+      - img [ref=f8e90]
+      - generic [ref=f8e92]: 全屏
+    - button "下一个场景" [ref=f8e93] [cursor=pointer]:
+      - img [ref=f8e94]

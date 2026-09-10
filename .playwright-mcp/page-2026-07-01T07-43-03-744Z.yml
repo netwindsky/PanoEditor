@@ -1,0 +1,13 @@
+- generic [ref=e4]:
+  - generic [ref=e5]:
+    - heading "全景编辑器" [level=1] [ref=e6]
+    - paragraph [ref=e7]: 登录以开始编辑
+  - generic [ref=e8]:
+    - generic [ref=e10]:
+      - textbox "邮箱" [ref=e14]: admin
+      - generic [ref=e30]: 请输入有效的邮箱地址
+    - generic [ref=e18]:
+      - textbox "密码" [ref=e20]: admin123
+      - img [ref=e27] [cursor=pointer]
+    - button "登录" [active] [ref=e23] [cursor=pointer]:
+      - generic [ref=e24]: 登录

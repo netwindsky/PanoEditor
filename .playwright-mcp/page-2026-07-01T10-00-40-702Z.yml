@@ -1,0 +1,72 @@
+- generic [ref=f17e3]:
+  - banner [ref=f17e4]:
+    - generic [ref=f17e5]:
+      - img [ref=f17e7]
+      - heading "全景测试项目" [level=1] [ref=f17e10]
+    - generic [ref=f17e11]:
+      - link "编辑器" [ref=f17e12] [cursor=pointer]:
+        - /url: /editor
+        - img [ref=f17e13]
+        - text: 编辑器
+      - link "管理后台" [ref=f17e15] [cursor=pointer]:
+        - /url: /admin
+        - img [ref=f17e16]
+        - text: 管理后台
+      - button "分享" [ref=f17e18] [cursor=pointer]:
+        - img [ref=f17e19]
+        - text: 分享
+  - generic [ref=f17e21]:
+    - complementary [ref=f17e22]:
+      - generic [ref=f17e23]:
+        - generic [ref=f17e24]: 场景列表
+        - button [ref=f17e25] [cursor=pointer]:
+          - img [ref=f17e26]
+    - generic [ref=f17e29]:
+      - generic [ref=f17e32]:
+        - img [ref=f17e33]
+        - paragraph [ref=f17e36]: 加载中...
+      - generic [ref=f17e38]: 小地图
+      - generic [ref=f17e41]:
+        - generic [ref=f17e42]: 场景信息
+        - button [ref=f17e43] [cursor=pointer]:
+          - img [ref=f17e44]
+  - generic [ref=f17e46]:
+    - generic [ref=f17e47]:
+      - generic [ref=f17e48]: 风格
+      - combobox [ref=f17e49] [cursor=pointer]:
+        - option "默认" [selected]
+    - generic [ref=f17e50]:
+      - generic [ref=f17e51]: LUT
+      - combobox [ref=f17e52] [cursor=pointer]:
+        - option "无" [selected]
+    - generic [ref=f17e53]:
+      - generic [ref=f17e54]: 曝光
+      - slider [ref=f17e55]: "1"
+      - generic [ref=f17e56]: "1.0"
+    - generic [ref=f17e57]:
+      - generic [ref=f17e58]: 对比度
+      - slider [ref=f17e59]: "1"
+      - generic [ref=f17e60]: "1.0"
+  - generic [ref=f17e62]:
+    - button "上一个场景" [ref=f17e63] [cursor=pointer]:
+      - img [ref=f17e64]
+    - button "全景" [ref=f17e66] [cursor=pointer]:
+      - img [ref=f17e67]
+      - generic [ref=f17e70]: 全景
+    - button "飞行" [ref=f17e71] [cursor=pointer]:
+      - img [ref=f17e72]
+      - generic [ref=f17e74]: 飞行
+    - button "旋转" [ref=f17e75] [cursor=pointer]:
+      - img [ref=f17e76]
+      - generic [ref=f17e79]: 旋转
+    - button "漫游" [ref=f17e80] [cursor=pointer]:
+      - img [ref=f17e81]
+      - generic [ref=f17e83]: 漫游
+    - button "VR" [ref=f17e84] [cursor=pointer]:
+      - img [ref=f17e85]
+      - generic [ref=f17e89]: VR
+    - button "全屏" [ref=f17e90] [cursor=pointer]:
+      - img [ref=f17e91]
+      - generic [ref=f17e93]: 全屏
+    - button "下一个场景" [ref=f17e94] [cursor=pointer]:
+      - img [ref=f17e95]

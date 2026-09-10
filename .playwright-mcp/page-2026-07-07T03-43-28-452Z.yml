@@ -1,0 +1,325 @@
+- generic [ref=f12e3]:
+  - banner [ref=f12e4]:
+    - generic [ref=f12e5]:
+      - generic [ref=f12e6]:
+        - generic [ref=f12e7]: ◎
+        - generic [ref=f12e8]: PanoEditor
+      - navigation [ref=f12e9]:
+        - link "查看器" [ref=f12e10] [cursor=pointer]:
+          - /url: "#"
+        - link "编辑器" [ref=f12e11] [cursor=pointer]:
+          - /url: "#"
+        - link "后台管理" [ref=f12e12] [cursor=pointer]:
+          - /url: "#"
+    - generic [ref=f12e13]:
+      - button "项目" [ref=f12e14] [cursor=pointer]:
+        - generic [ref=f12e15]:
+          - img [ref=f12e17]
+          - text: 项目
+      - button "导出配置" [ref=f12e19] [cursor=pointer]:
+        - generic [ref=f12e20]:
+          - img [ref=f12e22]
+          - text: 导出配置
+      - button "静态化导出" [ref=f12e24] [cursor=pointer]:
+        - generic [ref=f12e25]:
+          - img [ref=f12e27]
+          - text: 静态化导出
+      - button "保存" [ref=f12e31] [cursor=pointer]:
+        - generic [ref=f12e32]:
+          - img [ref=f12e34]
+          - text: 保存
+      - button "预览" [ref=f12e36] [cursor=pointer]:
+        - generic [ref=f12e37]:
+          - img [ref=f12e39]
+          - text: 预览
+      - button "发布" [ref=f12e41] [cursor=pointer]:
+        - generic [ref=f12e42]:
+          - img [ref=f12e44]
+          - text: 发布
+  - generic [ref=f12e46]:
+    - complementary [ref=f12e47]:
+      - generic [ref=f12e49]:
+        - generic [ref=f12e50]:
+          - generic [ref=f12e51]: 场景列表
+          - button [ref=f12e52] [cursor=pointer]:
+            - img [ref=f12e55]
+        - generic [ref=f12e58]:
+          - generic [ref=f12e59] [cursor=pointer]:
+            - generic [ref=f12e61]:
+              - generic [ref=f12e62]: "01"
+              - generic [ref=f12e63]: 0 个热点
+            - button "..." [ref=f12e65]:
+              - generic [ref=f12e66]: ...
+          - generic [ref=f12e67] [cursor=pointer]:
+            - generic [ref=f12e69]:
+              - generic [ref=f12e70]: "02"
+              - generic [ref=f12e71]: 0 个热点
+            - button "..." [ref=f12e73]:
+              - generic [ref=f12e74]: ...
+          - generic [ref=f12e75] [cursor=pointer]:
+            - generic [ref=f12e77]:
+              - generic [ref=f12e78]: "03"
+              - generic [ref=f12e79]: 0 个热点
+            - button "..." [ref=f12e81]:
+              - generic [ref=f12e82]: ...
+          - generic [ref=f12e83] [cursor=pointer]:
+            - generic [ref=f12e85]:
+              - generic [ref=f12e86]: "04"
+              - generic [ref=f12e87]: 0 个热点
+            - button "..." [ref=f12e89]:
+              - generic [ref=f12e90]: ...
+    - generic [ref=f12e91]:
+      - generic [ref=f12e92]:
+        - generic [ref=f12e93]:
+          - button "选择" [ref=f12e94] [cursor=pointer]:
+            - img [ref=f12e96]
+          - button "添加热点" [active] [ref=f12e98] [cursor=pointer]:
+            - img [ref=f12e100]
+          - button "平移" [ref=f12e103] [cursor=pointer]:
+            - img [ref=f12e105]
+          - button "缩放" [ref=f12e107] [cursor=pointer]:
+            - img [ref=f12e109]
+        - generic [ref=f12e111]:
+          - button "切换左面板" [ref=f12e113] [cursor=pointer]:
+            - img [ref=f12e115]
+          - button "切换右面板" [ref=f12e117] [cursor=pointer]:
+            - img [ref=f12e119]
+      - generic [ref=f12e124]:
+        - generic:
+          - iframe [ref=f12e402] [cursor=pointer]:
+            
+          - iframe [ref=f12e405] [cursor=pointer]:
+            - generic [ref=f25e2]:
+              - generic [ref=f25e7] [cursor=pointer]:
+                - img "图片热点"
+              - generic [ref=f25e10]: "01"
+              - button "⟳" [ref=f25e11] [cursor=pointer]
+              - generic [ref=f25e12]:
+                - generic [ref=f25e14] [cursor=pointer]: "01"
+                - generic [ref=f25e16] [cursor=pointer]: "02"
+                - generic [ref=f25e18] [cursor=pointer]: "03"
+                - generic [ref=f25e20] [cursor=pointer]: "04"
+              - generic:
+                - generic: 正在加载全景...
+          - iframe [ref=f12e408] [cursor=pointer]:
+            
+        - generic [ref=f12e409]:
+          - generic: "1"
+        - generic [ref=f12e410]:
+          - generic: "2"
+        - generic [ref=f12e411]:
+          - generic: "3"
+        - generic [ref=f12e412]:
+          - generic: "4"
+        - img
+      - generic [ref=f12e134]:
+        - generic [ref=f12e135]:
+          - generic [ref=f12e136]: 4 / 4
+          - generic [ref=f12e137]: "04"
+        - generic [ref=f12e138]:
+          - generic [ref=f12e139] [cursor=pointer]:
+            - generic [ref=f12e141]: "1"
+            - generic [ref=f12e142]: "01"
+          - generic [ref=f12e143] [cursor=pointer]:
+            - generic [ref=f12e145]: "2"
+            - generic [ref=f12e146]: "02"
+          - generic [ref=f12e147] [cursor=pointer]:
+            - generic [ref=f12e149]: "3"
+            - generic [ref=f12e150]: "03"
+          - generic [ref=f12e151] [cursor=pointer]:
+            - generic [ref=f12e153]: "4"
+            - generic [ref=f12e154]: "04"
+    - complementary [ref=f12e155]:
+      - generic [ref=f12e156]:
+        - generic [ref=f12e157]:
+          - generic [ref=f12e158] [cursor=pointer]:
+            - img [ref=f12e160]
+            - generic [ref=f12e163]: 场景
+          - generic [ref=f12e164] [cursor=pointer]:
+            - img [ref=f12e166]
+            - generic [ref=f12e168]: 标注
+          - generic [ref=f12e169] [cursor=pointer]:
+            - img [ref=f12e171]
+            - generic [ref=f12e173]: 音频
+          - generic [ref=f12e174] [cursor=pointer]:
+            - img [ref=f12e176]
+            - generic [ref=f12e178]: 后期
+        - button [ref=f12e179] [cursor=pointer]:
+          - img [ref=f12e182]
+      - generic [ref=f12e413]:
+        - generic [ref=f12e414]:
+          - generic [ref=f12e415] [cursor=pointer]:
+            - generic [ref=f12e416]: 网页热点
+            - generic [ref=f12e417]: 网页热点
+            - button "×" [ref=f12e418]:
+              - generic [ref=f12e419]: ×
+          - generic [ref=f12e420] [cursor=pointer]:
+            - generic [ref=f12e421]: 网页热点
+            - generic [ref=f12e422]: 网页热点
+            - button "×" [ref=f12e423]:
+              - generic [ref=f12e424]: ×
+          - generic [ref=f12e425] [cursor=pointer]:
+            - generic [ref=f12e426]: 信息点
+            - generic [ref=f12e427]: 信息点
+            - button "×" [ref=f12e428]:
+              - generic [ref=f12e429]: ×
+          - generic [ref=f12e430] [cursor=pointer]:
+            - generic [ref=f12e431]: 网页热点
+            - generic [ref=f12e432]: 网页热点
+            - button "×" [ref=f12e433]:
+              - generic [ref=f12e434]: ×
+        - button "一键清空" [ref=f12e436] [cursor=pointer]:
+          - generic [ref=f12e437]: 一键清空
+        - generic [ref=f12e438]:
+          - generic [ref=f12e439]: 基本信息
+          - generic [ref=f12e440]:
+            - generic [ref=f12e441]: 名称
+            - textbox [ref=f12e444]: 网页热点
+          - generic [ref=f12e445]:
+            - generic [ref=f12e446]: 类型
+            - textbox [disabled] [ref=f12e449]: web
+          - generic [ref=f12e450]:
+            - generic [ref=f12e451]: ATH
+            - generic [ref=f12e452]:
+              - button "decrease number" [ref=f12e453] [cursor=pointer]:
+                - img [ref=f12e455]
+              - button "increase number" [ref=f12e457] [cursor=pointer]:
+                - img [ref=f12e459]
+              - spinbutton [ref=f12e463]: "-107.42"
+          - generic [ref=f12e464]:
+            - generic [ref=f12e465]: ATV
+            - generic [ref=f12e466]:
+              - button "decrease number" [ref=f12e467] [cursor=pointer]:
+                - img [ref=f12e469]
+              - button "increase number" [ref=f12e471] [cursor=pointer]:
+                - img [ref=f12e473]
+              - spinbutton [ref=f12e477]: "2.84"
+        - generic [ref=f12e478]:
+          - generic [ref=f12e479]: 尺寸变换
+          - generic [ref=f12e480]:
+            - generic [ref=f12e481]: 分辨率宽 (px)
+            - generic [ref=f12e482]:
+              - button "decrease number" [ref=f12e483] [cursor=pointer]:
+                - img [ref=f12e485]
+              - button "increase number" [ref=f12e487] [cursor=pointer]:
+                - img [ref=f12e489]
+              - spinbutton [ref=f12e493]: "640"
+          - generic [ref=f12e494]:
+            - generic [ref=f12e495]: 分辨率高 (px)
+            - generic [ref=f12e496]:
+              - button "decrease number" [ref=f12e497] [cursor=pointer]:
+                - img [ref=f12e499]
+              - button "increase number" [ref=f12e501] [cursor=pointer]:
+                - img [ref=f12e503]
+              - spinbutton [ref=f12e507]: "360"
+          - paragraph [ref=f12e508]: 分辨率决定 iframe 渲染大小与内容宽高比，实际屏幕尺寸由四个顶点位置决定。常用：1280×720（16:9）/ 1920×1080 / 375×667（手机页面）。
+        - generic [ref=f12e509]:
+          - generic [ref=f12e510]: 顶点坐标
+          - generic [ref=f12e511]:
+            - generic [ref=f12e512]: 左上
+            - generic [ref=f12e513]:
+              - generic [ref=f12e514]:
+                - button "decrease number" [ref=f12e515] [cursor=pointer]:
+                  - img [ref=f12e517]
+                - button "increase number" [ref=f12e519] [cursor=pointer]:
+                  - img [ref=f12e521]
+                - spinbutton "ATH" [ref=f12e525]: "-115.42"
+              - generic [ref=f12e526]:
+                - button "decrease number" [ref=f12e527] [cursor=pointer]:
+                  - img [ref=f12e529]
+                - button "increase number" [ref=f12e531] [cursor=pointer]:
+                  - img [ref=f12e533]
+                - spinbutton "ATV" [ref=f12e537]: "-5.16"
+          - generic [ref=f12e538]:
+            - generic [ref=f12e539]: 右上
+            - generic [ref=f12e540]:
+              - generic [ref=f12e541]:
+                - button "decrease number" [ref=f12e542] [cursor=pointer]:
+                  - img [ref=f12e544]
+                - button "increase number" [ref=f12e546] [cursor=pointer]:
+                  - img [ref=f12e548]
+                - spinbutton "ATH" [ref=f12e552]: "-99.42"
+              - generic [ref=f12e553]:
+                - button "decrease number" [ref=f12e554] [cursor=pointer]:
+                  - img [ref=f12e556]
+                - button "increase number" [ref=f12e558] [cursor=pointer]:
+                  - img [ref=f12e560]
+                - spinbutton "ATV" [ref=f12e564]: "-5.16"
+          - generic [ref=f12e565]:
+            - generic [ref=f12e566]: 右下
+            - generic [ref=f12e567]:
+              - generic [ref=f12e568]:
+                - button "decrease number" [ref=f12e569] [cursor=pointer]:
+                  - img [ref=f12e571]
+                - button "increase number" [ref=f12e573] [cursor=pointer]:
+                  - img [ref=f12e575]
+                - spinbutton "ATH" [ref=f12e579]: "-99.42"
+              - generic [ref=f12e580]:
+                - button "decrease number" [ref=f12e581] [cursor=pointer]:
+                  - img [ref=f12e583]
+                - button "increase number" [ref=f12e585] [cursor=pointer]:
+                  - img [ref=f12e587]
+                - spinbutton "ATV" [ref=f12e591]: "10.84"
+          - generic [ref=f12e592]:
+            - generic [ref=f12e593]: 左下
+            - generic [ref=f12e594]:
+              - generic [ref=f12e595]:
+                - button "decrease number" [ref=f12e596] [cursor=pointer]:
+                  - img [ref=f12e598]
+                - button "increase number" [ref=f12e600] [cursor=pointer]:
+                  - img [ref=f12e602]
+                - spinbutton "ATH" [ref=f12e606]: "-115.42"
+              - generic [ref=f12e607]:
+                - button "decrease number" [ref=f12e608] [cursor=pointer]:
+                  - img [ref=f12e610]
+                - button "increase number" [ref=f12e612] [cursor=pointer]:
+                  - img [ref=f12e614]
+                - spinbutton "ATV" [ref=f12e618]: "10.84"
+        - generic [ref=f12e619]:
+          - generic [ref=f12e620]: 外观样式
+          - generic [ref=f12e621]:
+            - generic [ref=f12e622]: 网页地址
+            - textbox "https://example.com" [ref=f12e625]: about:blank
+          - generic [ref=f12e628]: 输入以 http(s):// 开头的完整 URL；目标站点需允许 iframe 嵌入。
+          - generic [ref=f12e629]:
+            - generic [ref=f12e630]: 着色器
+            - generic [ref=f12e632] [cursor=pointer]:
+              - generic:
+                - combobox [ref=f12e634]
+                - generic [ref=f12e635]: 无
+              - img [ref=f12e638]
+        - generic [ref=f12e640]:
+          - generic [ref=f12e641]: 交互设置
+          - generic [ref=f12e642]:
+            - generic [ref=f12e643]: 动作
+            - generic [ref=f12e645]:
+              - generic:
+                - combobox [disabled] [ref=f12e647]
+                - generic [ref=f12e648]: link
+              - generic:
+                - generic:
+                  - img
+        - generic [ref=f12e649]:
+          - generic [ref=f12e650]: 事件脚本 (events)
+          - generic [ref=f12e651]:
+            - generic [ref=f12e652]: 事件 JSON
+            - 'textbox "{\"click\":\"func()\",\"hover\":\"showTip()\"}" [ref=f12e654]'
+        - button "Delete" [ref=f12e656] [cursor=pointer]:
+          - generic [ref=f12e657]: Delete
+        - button "Export XML to Console" [ref=f12e659] [cursor=pointer]:
+          - generic [ref=f12e660]: Export XML to Console
+        - generic [ref=f12e661]: "ATH: -107.42, ATV: 2.84"
+  - contentinfo [ref=f12e335]:
+    - generic [ref=f12e336]:
+      - generic [ref=f12e337]: 未打开项目
+      - generic [ref=f12e338]: "|"
+      - generic [ref=f12e339]: "场景: 4"
+      - generic [ref=f12e340]: "|"
+      - generic [ref=f12e341]: "热点: 4"
+    - generic [ref=f12e342]:
+      - generic [ref=f12e662]: 未保存
+      - generic [ref=f12e343]: "|"
+      - generic [ref=f12e344]:
+        - button "−" [ref=f12e345] [cursor=pointer]
+        - generic [ref=f12e346]: 100%
+        - button "+" [ref=f12e347] [cursor=pointer]

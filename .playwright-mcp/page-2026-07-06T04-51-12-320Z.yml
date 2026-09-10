@@ -1,0 +1,11 @@
+- generic [ref=f2e2]:
+  - generic [ref=f2e7] [cursor=pointer]:
+    - img "图片热点"
+  - generic [ref=f2e10]: "01"
+  - button "⟳" [ref=f2e11] [cursor=pointer]
+  - generic [ref=f2e12]:
+    - generic [ref=f2e14] [cursor=pointer]: "01"
+    - generic [ref=f2e16] [cursor=pointer]: "02"
+    - generic [ref=f2e18] [cursor=pointer]: "03"
+  - generic:
+    - generic: 正在加载全景...

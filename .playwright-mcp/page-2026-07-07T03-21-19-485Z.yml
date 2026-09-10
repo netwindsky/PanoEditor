@@ -1,0 +1,992 @@
+- generic [ref=e3]:
+  - banner [ref=e4]:
+    - generic [ref=e5]:
+      - generic [ref=e6]:
+        - generic [ref=e7]: ◎
+        - generic [ref=e8]: PanoEditor
+      - navigation [ref=e9]:
+        - link "查看器" [ref=e10] [cursor=pointer]:
+          - /url: "#"
+        - link "编辑器" [ref=e11] [cursor=pointer]:
+          - /url: "#"
+        - link "后台管理" [ref=e12] [cursor=pointer]:
+          - /url: "#"
+    - generic [ref=e13]:
+      - button "项目" [ref=e14] [cursor=pointer]:
+        - generic [ref=e15]:
+          - img [ref=e17]
+          - text: 项目
+      - button "导出配置" [ref=e19] [cursor=pointer]:
+        - generic [ref=e20]:
+          - img [ref=e22]
+          - text: 导出配置
+      - button "静态化导出" [ref=e24] [cursor=pointer]:
+        - generic [ref=e25]:
+          - img [ref=e27]
+          - text: 静态化导出
+      - button "保存" [ref=e31] [cursor=pointer]:
+        - generic [ref=e32]:
+          - img [ref=e34]
+          - text: 保存
+      - button "预览" [ref=e36] [cursor=pointer]:
+        - generic [ref=e37]:
+          - img [ref=e39]
+          - text: 预览
+      - button "发布" [ref=e41] [cursor=pointer]:
+        - generic [ref=e42]:
+          - img [ref=e44]
+          - text: 发布
+  - generic [ref=e46]:
+    - complementary [ref=e47]:
+      - generic [ref=e49]:
+        - generic [ref=e50]:
+          - generic [ref=e51]: 场景列表
+          - button [ref=e52] [cursor=pointer]:
+            - img [ref=e55]
+        - generic [ref=e313]:
+          - generic [ref=e314] [cursor=pointer]:
+            - generic [ref=e316]:
+              - generic [ref=e317]: "01"
+              - generic [ref=e318]: 0 个热点
+            - button "..." [ref=e320]:
+              - generic [ref=e321]: ...
+          - generic [ref=e322] [cursor=pointer]:
+            - generic [ref=e324]:
+              - generic [ref=e325]: "02"
+              - generic [ref=e326]: 0 个热点
+            - button "..." [ref=e328]:
+              - generic [ref=e329]: ...
+          - generic [ref=e330] [cursor=pointer]:
+            - generic [ref=e332]:
+              - generic [ref=e333]: "03"
+              - generic [ref=e334]: 0 个热点
+            - button "..." [ref=e336]:
+              - generic [ref=e337]: ...
+          - generic [ref=e338] [cursor=pointer]:
+            - generic [ref=e340]:
+              - generic [ref=e341]: "04"
+              - generic [ref=e342]: 0 个热点
+            - button "..." [ref=e344]:
+              - generic [ref=e345]: ...
+    - generic [ref=e59]:
+      - generic [ref=e60]:
+        - generic [ref=e61]:
+          - button "选择" [ref=e62] [cursor=pointer]:
+            - img [ref=e64]
+          - button "添加热点" [active] [ref=e66] [cursor=pointer]:
+            - img [ref=e68]
+          - button "平移" [ref=e71] [cursor=pointer]:
+            - img [ref=e73]
+          - button "缩放" [ref=e75] [cursor=pointer]:
+            - img [ref=e77]
+        - generic [ref=e79]:
+          - button "切换左面板" [ref=e81] [cursor=pointer]:
+            - img [ref=e83]
+          - button "切换右面板" [ref=e85] [cursor=pointer]:
+            - img [ref=e87]
+      - generic [ref=e347]:
+        - iframe [ref=e414] [cursor=pointer]:
+          - generic [ref=f7e2]:
+            - generic [ref=f7e135]:
+              - list [ref=f7e136]:
+                - listitem [ref=f7e137]:
+                  - link "首页" [ref=f7e138] [cursor=pointer]:
+                    - /url: //www.bilibili.com
+                    - img [ref=f7e139]
+                    - generic [ref=f7e141]:
+                      - generic [ref=f7e142]: 首页
+                      - img [ref=f7e143]
+                - listitem [ref=f7e146]:
+                  - link "番剧" [ref=f7e147] [cursor=pointer]:
+                    - /url: //www.bilibili.com/anime/
+                - listitem [ref=f7e148]:
+                  - link "直播" [ref=f7e149] [cursor=pointer]:
+                    - /url: //live.bilibili.com
+                - listitem [ref=f7e150]:
+                  - link "游戏中心" [ref=f7e151] [cursor=pointer]:
+                    - /url: //game.bilibili.com/platform
+                - listitem [ref=f7e152]:
+                  - link "会员购" [ref=f7e153] [cursor=pointer]:
+                    - /url: //show.bilibili.com/platform/home.html?msource=pc_web
+                - listitem [ref=f7e154]:
+                  - link "漫画" [ref=f7e155] [cursor=pointer]:
+                    - /url: //manga.bilibili.com?from=bill_top_mnav
+                - listitem [ref=f7e156]:
+                  - link "赛事" [ref=f7e157] [cursor=pointer]:
+                    - /url: //www.bilibili.com/match/home/
+                - listitem
+              - generic [ref=f7e160]:
+                - textbox "BILIBILIWORLD园长" [ref=f7e162]
+                - img [ref=f7e164] [cursor=pointer]
+              - list [ref=f7e166]:
+                - listitem [ref=f7e167] [cursor=pointer]:
+                  - listitem [ref=f7e168]:
+                    - generic [ref=f7e170]: 登录
+                - listitem [ref=f7e171] [cursor=pointer]:
+                  - listitem [ref=f7e173]:
+                    - link [ref=f7e174]:
+                      - /url: //account.bilibili.com/big
+                      - img [ref=f7e175]
+                - listitem [ref=f7e179] [cursor=pointer]:
+                  - img [ref=f7e181]
+                - listitem [ref=f7e184] [cursor=pointer]:
+                  - img [ref=f7e186]
+                - listitem [ref=f7e192] [cursor=pointer]:
+                  - img [ref=f7e194]
+                - listitem [ref=f7e197] [cursor=pointer]:
+                  - img [ref=f7e199]
+                - listitem [ref=f7e201] [cursor=pointer]:
+                  - img [ref=f7e203]
+                - listitem [ref=f7e207] [cursor=pointer]:
+                  - listitem [ref=f7e208]:
+                    - img [ref=f7e211]
+            - generic [ref=f7e32]:
+              - generic [ref=f7e33]:
+                - generic [ref=f7e34]:
+                  - heading "超火AI编程工作流mattpocock-skills，保姆级教程详细讲解" [level=1] [ref=f7e37]
+                  - generic [ref=f7e39]:
+                    - generic [ref=f7e40]:
+                      - img [ref=f7e41]
+                      - generic [ref=f7e42]: "6142"
+                    - generic [ref=f7e43]:
+                      - img [ref=f7e44]
+                      - generic [ref=f7e45]: "1"
+                    - generic [ref=f7e47]: 2026-07-01 11:33:49
+                    - generic [ref=f7e49]:
+                      - img [ref=f7e50]
+                      - generic [ref=f7e51]: 个人观点，仅供参考
+                - generic "哔哩哔哩播放器" [ref=f7e61]:
+                  - generic [ref=f7e62]:
+                    - generic [ref=f7e224]:
+                      - generic [ref=f7e225] [cursor=pointer]:
+                        - img
+                      - generic [ref=f7e227]: 登录 免费享高清视频
+                      - generic [ref=f7e229] [cursor=pointer]: 试看30秒
+                    - generic [ref=f7e232]:
+                      - generic [ref=f7e233]:
+                        - button "上一个" [ref=f7e234]:
+                          - generic [ref=f7e236] [cursor=pointer]:
+                            - img
+                        - button "播放/暂停" [ref=f7e237]:
+                          - img [ref=f7e240] [cursor=pointer]
+                        - button "下一个" [ref=f7e250]:
+                          - generic [ref=f7e252] [cursor=pointer]:
+                            - img
+                        - generic [ref=f7e254]: 00:08 / 19:46
+                        - generic [ref=f7e257] [cursor=pointer]:
+                          - generic [ref=f7e258]: 章节 · 介绍与安装
+                          - generic [ref=f7e260]:
+                            - img
+                      - generic [ref=f7e261]:
+                        - button "清晰度" [ref=f7e262]:
+                          - generic [ref=f7e263] [cursor=pointer]: 自动
+                        - button "倍速" [ref=f7e264]:
+                          - generic [ref=f7e265] [cursor=pointer]: 倍速
+                        - generic "字幕" [ref=f7e266]:
+                          - generic [ref=f7e268] [cursor=pointer]: 字幕
+                        - button "音量" [ref=f7e269]:
+                          - img [ref=f7e272] [cursor=pointer]
+                        - button "设置" [ref=f7e284]:
+                          - img [ref=f7e287] [cursor=pointer]
+                        - button "画中画" [ref=f7e292]:
+                          - img [ref=f7e295] [cursor=pointer]
+                        - button "宽屏" [ref=f7e303]:
+                          - img [ref=f7e306] [cursor=pointer]
+                        - button "网页全屏" [ref=f7e311]:
+                          - img [ref=f7e314] [cursor=pointer]
+                        - button "全屏" [ref=f7e319]:
+                          - img [ref=f7e322] [cursor=pointer]
+                  - generic [ref=f7e68]:
+                    - generic [ref=f7e378]: 48人正在看
+                    - generic [ref=f7e379]:
+                      - generic "弹幕显示隐藏" [ref=f7e380] [cursor=pointer]:
+                        - generic [ref=f7e381]:
+                          - checkbox [checked] [ref=f7e382]
+                          - generic [ref=f7e384]:
+                            - img
+                      - generic [ref=f7e386] [cursor=pointer]:
+                        - img
+                      - generic [ref=f7e387]:
+                        - generic [ref=f7e388]:
+                          - generic [ref=f7e389]:
+                            - text: 请先
+                            - link "登录" [ref=f7e390] [cursor=pointer]:
+                              - /url: javascript:void(0);
+                            - text: 或
+                            - link "注册" [ref=f7e391] [cursor=pointer]:
+                              - /url: //passport.bilibili.com/login?register_page=1
+                          - link "弹幕礼仪" [ref=f7e393] [cursor=pointer]:
+                            - /url: //www.bilibili.com/blackboard/help.html#/?qid=359&pid=357
+                            - generic [ref=f7e394]: 弹幕礼仪
+                            - generic [ref=f7e395]:
+                              - img
+                        - generic [ref=f7e396]:
+                          - generic: 发送
+                - generic [ref=f7e71]:
+                  - generic [ref=f7e73]:
+                    - generic "点赞（Q）" [ref=f7e75] [cursor=pointer]:
+                      - img [ref=f7e76]
+                      - generic [ref=f7e78]: "276"
+                    - generic "投币（W）" [ref=f7e80] [cursor=pointer]:
+                      - img [ref=f7e81]
+                      - generic [ref=f7e83]: "139"
+                    - generic "收藏（E）" [ref=f7e85] [cursor=pointer]:
+                      - img [ref=f7e86]
+                      - generic [ref=f7e88]: "652"
+                    - generic [ref=f7e398] [cursor=pointer]:
+                      - img [ref=f7e399]
+                      - generic [ref=f7e402]: "108"
+                  - generic [ref=f7e95]:
+                    - generic [ref=f7e403] [cursor=pointer]:
+                      - img [ref=f7e404]
+                      - generic [ref=f7e408]: 稿件举报
+                    - generic [ref=f7e409] [cursor=pointer]:
+                      - generic [ref=f7e410]:
+                        - img [ref=f7e411]
+                        - generic [ref=f7e416]: 记笔记
+                      - text: 
+                    - img [ref=f7e418] [cursor=pointer]
+                - generic [ref=f7e99]:
+                  - generic [ref=f7e100]: 🔥 本期视频来实战一下最近 GitHub 上很火的 mattpocock-skills！ 很多人可能听过 Claude Code Skills，但真正用的时候会有一个问题： 这些技能到底应该放在 AI 编程流程的哪一步？🤔 这期我会用一个完整的「秒杀系统 Demo」带你跑一遍： ✅ 初始化项目 ✅ 需求访谈 ✅ 生成 PRD ✅ 页面原型设计 ✅ 进入开发流程 ✅ 代码 Review ✅ Bug 调试 ✅ 智能体交接 ✅ 生成交互式学习文档 我觉得这组 Skills 最大的特点不是复杂，而是简单、自由、好组合。 它不会强行规定你每一步必须怎么做，而是更像一套可以灵活插入开发流程里的 AI 编程工具箱 🧰 如果你正在用 Claude Code、Codex、OpenCode，或者正在研究 AI 编程工作流，这期视频应该会对你很有帮助。
+                  - generic [ref=f7e420]: 展开更多
+                - generic [ref=f7e102]:
+                  - link "AI工作流" [ref=f7e105] [cursor=pointer]:
+                    - /url: //search.bilibili.com/all?keyword=AI%E5%B7%A5%E4%BD%9C%E6%B5%81&from_source=video_tag
+                  - link "AI编程教程" [ref=f7e108] [cursor=pointer]:
+                    - /url: //search.bilibili.com/all?keyword=AI%E7%BC%96%E7%A8%8B%E6%95%99%E7%A8%8B&from_source=video_tag
+                  - link "mattpocock-skills" [ref=f7e111] [cursor=pointer]:
+                    - /url: //search.bilibili.com/all?keyword=mattpocock-skills&from_source=video_tag
+                  - link "AI编程" [ref=f7e114] [cursor=pointer]:
+                    - /url: //search.bilibili.com/all?keyword=AI%E7%BC%96%E7%A8%8B&from_source=video_tag
+                - generic [ref=f7e423]:
+                  - generic [ref=f7e424]: 评论
+                  - generic [ref=f7e426]:
+                    - img [ref=f7e427]
+                    - text: 正在玩命加载…
+              - generic:
+                - generic:
+                  - generic [ref=f7e116]:
+                    - link [ref=f7e119] [cursor=pointer]:
+                      - /url: //space.bilibili.com/481246113/?spm_id_from=333.788.upinfo.head.click
+                    - generic [ref=f7e120]:
+                      - generic [ref=f7e122]:
+                        - generic [ref=f7e123]:
+                          - link "AI随风随风" [ref=f7e124] [cursor=pointer]:
+                            - /url: //space.bilibili.com/481246113/?spm_id_from=333.788.upinfo.detail.click
+                          - link " 发消息" [ref=f7e125] [cursor=pointer]:
+                            - /url: //message.bilibili.com/?spm_id_from=333.788.upinfo.detail.click#whisper/mid481246113
+                            - generic [ref=f7e126]: 
+                            - text: 发消息
+                        - 'generic "我的星球：AI随风的AI编程实战营 V: AIzhiMeng66" [ref=f7e127]'
+                      - generic [ref=f7e129]:
+                        - generic [ref=f7e433] [cursor=pointer]: 充电
+                        - generic [ref=f7e435] [cursor=pointer]:
+                          - img [ref=f7e436]
+                          - text: 关注 3.8万
+                  - generic [ref=f7e443] [cursor=pointer]:
+                    - generic [ref=f7e446]:
+                      - img
+                    - generic [ref=f7e450]:
+                      - text: 弹幕列表
+                      - generic [ref=f7e451]:
+                        - img
+                  - generic [ref=f7e453]:
+                    - generic [ref=f7e454]:
+                      - generic [ref=f7e455]:
+                        - generic [ref=f7e456]:
+                          - generic [ref=f7e457]:
+                            - link "AI编程经验" [ref=f7e458] [cursor=pointer]:
+                              - /url: //space.bilibili.com/481246113/channel/collectiondetail?sid=6356165&spm_id_from=333.788.0.0
+                            - generic [ref=f7e459]: （17/18）
+                          - generic [ref=f7e463] [cursor=pointer]: 自动连播
+                        - generic [ref=f7e466]:
+                          - generic [ref=f7e467]:
+                            - generic [ref=f7e468]: 49.0万播放
+                            - generic [ref=f7e470] [cursor=pointer]:
+                              - img [ref=f7e471]
+                              - text: 简介
+                          - generic [ref=f7e475] [cursor=pointer]: 订阅合集
+                      - generic [ref=f7e477]:
+                        - generic [ref=f7e480] [cursor=pointer]:
+                          - generic "Claude4+GPT-5-Hight，AI编程最佳组合" [ref=f7e481]:
+                            - generic [ref=f7e482]: Claude4+GPT-5-Hight，AI编程最佳组合
+                          - generic [ref=f7e484]: 11:38
+                        - generic [ref=f7e487] [cursor=pointer]:
+                          - generic "AI编程必学，规范(spec)驱动编程入门与实战" [ref=f7e488]:
+                            - generic [ref=f7e489]: AI编程必学，规范(spec)驱动编程入门与实战
+                          - generic [ref=f7e491]: 21:38
+                        - generic [ref=f7e494] [cursor=pointer]:
+                          - generic "AI编程必学②，openspec原理及实战" [ref=f7e495]:
+                            - generic [ref=f7e496]: AI编程必学②，openspec原理及实战
+                          - generic [ref=f7e498]: 34:36
+                        - generic [ref=f7e501] [cursor=pointer]:
+                          - generic "AI编程2025 年总结 1️⃣：一起聊聊这十个问题" [ref=f7e502]:
+                            - generic [ref=f7e503]: AI编程2025 年总结 1️⃣：一起聊聊这十个问题
+                          - generic [ref=f7e505]: 19:53
+                        - generic [ref=f7e508] [cursor=pointer]:
+                          - generic "AI编程2025总结2️⃣：Cursor常用十个技巧" [ref=f7e509]:
+                            - generic [ref=f7e510]: AI编程2025总结2️⃣：Cursor常用十个技巧
+                          - generic [ref=f7e512]: 17:02
+                        - generic [ref=f7e515] [cursor=pointer]:
+                          - generic "AI编程20253️⃣：如何用AI编程工具从0到1做一个产品" [ref=f7e516]:
+                            - generic [ref=f7e517]: AI编程20253️⃣：如何用AI编程工具从0到1做一个产品
+                          - generic [ref=f7e519]: 21:07
+                        - generic [ref=f7e522] [cursor=pointer]:
+                          - generic "AI编程工具实战排名，谁是最好用的AI编程工具" [ref=f7e523]:
+                            - generic [ref=f7e524]: AI编程工具实战排名，谁是最好用的AI编程工具
+                          - generic [ref=f7e526]: 10:56
+                        - generic [ref=f7e529] [cursor=pointer]:
+                          - generic "截图变网页，AI 编程一键复制设计规范" [ref=f7e530]:
+                            - generic [ref=f7e531]: 截图变网页，AI 编程一键复制设计规范
+                          - generic [ref=f7e533]: 05:00
+                        - generic [ref=f7e536] [cursor=pointer]:
+                          - generic "什么是Agent Skills ？一看就会，保姆级教学" [ref=f7e537]:
+                            - generic [ref=f7e538]: 什么是Agent Skills ？一看就会，保姆级教学
+                          - generic [ref=f7e540]: 20:12
+                        - generic [ref=f7e543] [cursor=pointer]:
+                          - generic "AI编程核心概念梳理：Rules/Commands/Subagent/Mcp/Skills/Modes/Hooks 的区别是什么？" [ref=f7e544]:
+                            - generic [ref=f7e545]: AI编程核心概念梳理：Rules/Commands/Subagent/Mcp/Skills/Modes/Hooks 的区别是什么？
+                          - generic [ref=f7e547]: 18:28
+                        - generic [ref=f7e550] [cursor=pointer]:
+                          - generic "AI编程最佳配置，来自 Anthropic 黑客马拉松获胜者的 Claude Code 配置" [ref=f7e551]:
+                            - generic [ref=f7e552]: AI编程最佳配置，来自 Anthropic 黑客马拉松获胜者的 Claude Code 配置
+                          - generic [ref=f7e554]: 07:03
+                        - generic [ref=f7e557] [cursor=pointer]:
+                          - generic "Claude Code团队分享的10个内部AI编程技巧" [ref=f7e558]:
+                            - generic [ref=f7e559]: Claude Code团队分享的10个内部AI编程技巧
+                          - generic [ref=f7e561]: 16:46
+                        - generic [ref=f7e564] [cursor=pointer]:
+                          - generic "Trae增加 Spec 模式,如何区分和使用 AI 编程中的 Plan 和 Spec 模式" [ref=f7e565]:
+                            - generic [ref=f7e566]: Trae增加 Spec 模式,如何区分和使用 AI 编程中的 Plan 和 Spec 模式
+                          - generic [ref=f7e568]: 09:55
+                        - generic [ref=f7e571] [cursor=pointer]:
+                          - generic "AI编程最佳工作流GSD完全指南，解决你AI写代码越写越烂 问题" [ref=f7e572]:
+                            - generic [ref=f7e573]: AI编程最佳工作流GSD完全指南，解决你AI写代码越写越烂 问题
+                          - generic [ref=f7e575]: 14:30
+                        - generic [ref=f7e578] [cursor=pointer]:
+                          - generic "Codex 要验 Claude Code牌？在 Claude Code 中使用 Codex 插件 进行 Review，OpenAI 官方出品" [ref=f7e579]:
+                            - generic [ref=f7e580]: Codex 要验 Claude Code牌？在 Claude Code 中使用 Codex 插件 进行 Review，OpenAI 官方出品
+                          - generic [ref=f7e582]: 08:01
+                        - generic [ref=f7e585] [cursor=pointer]:
+                          - generic "MiniMax Token Plan 实战：从 0 制作专业营销落地页" [ref=f7e586]:
+                            - generic [ref=f7e587]: MiniMax Token Plan 实战：从 0 制作专业营销落地页
+                          - generic [ref=f7e589]: 08:34
+                        - generic [ref=f7e592] [cursor=pointer]:
+                          - generic "超火AI编程工作流mattpocock-skills，保姆级教程详细讲解" [ref=f7e593]:
+                            - generic [ref=f7e595]: 超火AI编程工作流mattpocock-skills，保姆级教程详细讲解
+                          - generic [ref=f7e597]: 19:46
+                        - generic [ref=f7e600] [cursor=pointer]:
+                          - generic "Loop Engineering 没那么复杂，简单易懂保姆级讲解" [ref=f7e601]:
+                            - generic [ref=f7e602]: Loop Engineering 没那么复杂，简单易懂保姆级讲解
+                          - generic [ref=f7e604]: 17:01
+                    - generic [ref=f7e605]:
+                      - generic [ref=f7e606]:
+                        - generic [ref=f7e608]:
+                          - generic [ref=f7e610]:
+                            - link "AI编程工作流实测排名：superpowers、gsd、openspec和gstack" [ref=f7e612] [cursor=pointer]:
+                              - /url: /video/BV1WddLBxEGU/?spm_id_from=333.788.recommend_more_video.0
+                              - img "AI编程工作流实测排名：superpowers、gsd、openspec和gstack" [ref=f7e614]
+                            - generic [ref=f7e615]: 04:06
+                          - generic [ref=f7e617]:
+                            - link "AI编程工作流实测排名：superpowers、gsd、openspec和gstack" [ref=f7e618] [cursor=pointer]:
+                              - /url: /video/BV1WddLBxEGU/?spm_id_from=333.788.recommend_more_video.0
+                              - paragraph [ref=f7e619]: AI编程工作流实测排名：superpowers、gsd、openspec和gstack
+                            - link "AI全文总结" [ref=f7e621] [cursor=pointer]:
+                              - /url: //space.bilibili.com/91394217/
+                              - img [ref=f7e622]
+                              - generic [ref=f7e626]: AI全文总结
+                            - generic [ref=f7e627]:
+                              - img [ref=f7e628]
+                              - text: 1.6万
+                              - img [ref=f7e631]
+                              - text: "2"
+                        - generic [ref=f7e638]:
+                          - generic [ref=f7e640]:
+                            - link "使用 Superpowers 规范 AI 编程的研发流程" [ref=f7e642] [cursor=pointer]:
+                              - /url: /video/BV14dRsBWEax/?spm_id_from=333.788.recommend_more_video.1
+                              - img "使用 Superpowers 规范 AI 编程的研发流程" [ref=f7e644]
+                            - generic [ref=f7e645]: 10:26
+                          - generic [ref=f7e647]:
+                            - link "使用 Superpowers 规范 AI 编程的研发流程" [ref=f7e648] [cursor=pointer]:
+                              - /url: /video/BV14dRsBWEax/?spm_id_from=333.788.recommend_more_video.1
+                              - paragraph [ref=f7e649]: 使用 Superpowers 规范 AI 编程的研发流程
+                            - link "双越AI_club" [ref=f7e651] [cursor=pointer]:
+                              - /url: //space.bilibili.com/697803545/
+                              - img [ref=f7e652]
+                              - generic [ref=f7e656]: 双越AI_club
+                            - generic [ref=f7e657]:
+                              - img [ref=f7e658]
+                              - text: "9328"
+                              - img [ref=f7e661]
+                              - text: "3"
+                        - generic [ref=f7e668]:
+                          - generic [ref=f7e670]:
+                            - link "我停止用 \"Grill Me\" 进行编码了 — 我现在用这个替代（更高效的 LLM skill）" [ref=f7e672] [cursor=pointer]:
+                              - /url: /video/BV1ko5b6oEG5/?spm_id_from=333.788.recommend_more_video.2
+                              - img "我停止用 \"Grill Me\" 进行编码了 — 我现在用这个替代（更高效的 LLM skill）" [ref=f7e674]
+                            - generic [ref=f7e675]: 15:17
+                          - generic [ref=f7e677]:
+                            - link "我停止用 \"Grill Me\" 进行编码了 — 我现在用这个替代（更高效的 LLM skill）" [ref=f7e678] [cursor=pointer]:
+                              - /url: /video/BV1ko5b6oEG5/?spm_id_from=333.788.recommend_more_video.2
+                              - paragraph [ref=f7e679]: 我停止用 "Grill Me" 进行编码了 — 我现在用这个替代（更高效的 LLM skill）
+                            - link "NixAI" [ref=f7e681] [cursor=pointer]:
+                              - /url: //space.bilibili.com/624446044/
+                              - img [ref=f7e682]
+                              - generic [ref=f7e686]: NixAI
+                            - generic [ref=f7e687]:
+                              - img [ref=f7e688]
+                              - text: 1.6万
+                              - img [ref=f7e691]
+                              - text: "0"
+                        - generic [ref=f7e698]:
+                          - generic [ref=f7e700]:
+                            - link "我蒸馏了17个大佬给我打工（开源免费）" [ref=f7e702] [cursor=pointer]:
+                              - /url: /video/BV1BXQABNE4y/?spm_id_from=333.788.recommend_more_video.3
+                              - img "我蒸馏了17个大佬给我打工（开源免费）" [ref=f7e704]
+                            - generic [ref=f7e705]: 18:27
+                          - generic [ref=f7e707]:
+                            - link "我蒸馏了17个大佬给我打工（开源免费）" [ref=f7e708] [cursor=pointer]:
+                              - /url: /video/BV1BXQABNE4y/?spm_id_from=333.788.recommend_more_video.3
+                              - paragraph [ref=f7e709]: 我蒸馏了17个大佬给我打工（开源免费）
+                            - link "花叔v" [ref=f7e711] [cursor=pointer]:
+                              - /url: //space.bilibili.com/14097567/
+                              - img [ref=f7e712]
+                              - generic [ref=f7e716]: 花叔v
+                            - generic [ref=f7e717]:
+                              - img [ref=f7e718]
+                              - text: 39.2万
+                              - img [ref=f7e721]
+                              - text: "780"
+                        - generic [ref=f7e728]:
+                          - generic [ref=f7e730]:
+                            - 'link "开源！Comet: 基于OpenSpec和Superpowers怎么做出更好用的自动Spec Skills" [ref=f7e732] [cursor=pointer]':
+                              - /url: /video/BV1y4Gi6CEo1/?spm_id_from=333.788.recommend_more_video.4
+                              - 'img "开源！Comet: 基于OpenSpec和Superpowers怎么做出更好用的自动Spec Skills" [ref=f7e734]'
+                            - generic [ref=f7e735]: 12:08
+                          - generic [ref=f7e737]:
+                            - 'link "开源！Comet: 基于OpenSpec和Superpowers怎么做出更好用的自动Spec Skills" [ref=f7e738] [cursor=pointer]':
+                              - /url: /video/BV1y4Gi6CEo1/?spm_id_from=333.788.recommend_more_video.4
+                              - paragraph [ref=f7e739]: "开源！Comet: 基于OpenSpec和Superpowers怎么做出更好用的自动Spec Skills"
+                            - link "将现在的你" [ref=f7e741] [cursor=pointer]:
+                              - /url: //space.bilibili.com/7692324/
+                              - img [ref=f7e742]
+                              - generic [ref=f7e746]: 将现在的你
+                            - generic [ref=f7e747]:
+                              - img [ref=f7e748]
+                              - text: 2.2万
+                              - img [ref=f7e751]
+                              - text: "1"
+                        - generic [ref=f7e758]:
+                          - generic [ref=f7e760]:
+                            - link "我每天必用的5个Claude Code Skills | Matt Pocock" [ref=f7e762] [cursor=pointer]:
+                              - /url: /video/BV1W6Gb6QEu8/?spm_id_from=333.788.recommend_more_video.5
+                              - img "我每天必用的5个Claude Code Skills | Matt Pocock" [ref=f7e764]
+                            - generic [ref=f7e765]: 16:42
+                          - generic [ref=f7e767]:
+                            - link "我每天必用的5个Claude Code Skills | Matt Pocock" [ref=f7e768] [cursor=pointer]:
+                              - /url: /video/BV1W6Gb6QEu8/?spm_id_from=333.788.recommend_more_video.5
+                              - paragraph [ref=f7e769]: 我每天必用的5个Claude Code Skills | Matt Pocock
+                            - link "地层世界" [ref=f7e771] [cursor=pointer]:
+                              - /url: //space.bilibili.com/1674460318/
+                              - img [ref=f7e772]
+                              - generic [ref=f7e776]: 地层世界
+                            - generic [ref=f7e777]:
+                              - img [ref=f7e778]
+                              - text: "2931"
+                              - img [ref=f7e781]
+                              - text: "0"
+                        - generic [ref=f7e788]:
+                          - generic [ref=f7e790]:
+                            - link "拒绝Vibe Coding！| AI编程的正确姿势 | TypeScript大神的AI秘籍" [ref=f7e792] [cursor=pointer]:
+                              - /url: /video/BV1ut5R6CEmn/?spm_id_from=333.788.recommend_more_video.6
+                              - img "拒绝Vibe Coding！| AI编程的正确姿势 | TypeScript大神的AI秘籍" [ref=f7e794]
+                            - generic [ref=f7e795]: 09:23
+                          - generic [ref=f7e797]:
+                            - link "拒绝Vibe Coding！| AI编程的正确姿势 | TypeScript大神的AI秘籍" [ref=f7e798] [cursor=pointer]:
+                              - /url: /video/BV1ut5R6CEmn/?spm_id_from=333.788.recommend_more_video.6
+                              - paragraph [ref=f7e799]: 拒绝Vibe Coding！| AI编程的正确姿势 | TypeScript大神的AI秘籍
+                            - link "为什么叫QQ" [ref=f7e801] [cursor=pointer]:
+                              - /url: //space.bilibili.com/280534030/
+                              - img [ref=f7e802]
+                              - generic [ref=f7e806]: 为什么叫QQ
+                            - generic [ref=f7e807]:
+                              - img [ref=f7e808]
+                              - text: 1.4万
+                              - img [ref=f7e811]
+                              - text: "9"
+                        - generic [ref=f7e818]:
+                          - generic [ref=f7e820]:
+                            - link "Agent Skill 从使用到原理，一次讲清" [ref=f7e822] [cursor=pointer]:
+                              - /url: /video/BV1cGigBQE6n/?spm_id_from=333.788.recommend_more_video.7
+                              - img "Agent Skill 从使用到原理，一次讲清" [ref=f7e824]
+                            - generic [ref=f7e825]: 17:42
+                          - generic [ref=f7e827]:
+                            - link "Agent Skill 从使用到原理，一次讲清" [ref=f7e828] [cursor=pointer]:
+                              - /url: /video/BV1cGigBQE6n/?spm_id_from=333.788.recommend_more_video.7
+                              - paragraph [ref=f7e829]: Agent Skill 从使用到原理，一次讲清
+                            - link "马克的技术工作坊" [ref=f7e831] [cursor=pointer]:
+                              - /url: //space.bilibili.com/1815948385/
+                              - img [ref=f7e832]
+                              - generic [ref=f7e836]: 马克的技术工作坊
+                            - generic [ref=f7e837]:
+                              - img [ref=f7e838]
+                              - text: 77.2万
+                              - img [ref=f7e841]
+                              - text: "805"
+                        - generic [ref=f7e848]:
+                          - generic [ref=f7e850]:
+                            - link "🚀告别Vibe Coding！用Superpowers让Claude Code写出工程级代码，一次通过零报错！遵循TDD最佳实践！支持Codex" [ref=f7e852] [cursor=pointer]:
+                              - /url: /video/BV11urFBrEc4/?spm_id_from=333.788.recommend_more_video.8
+                              - img "🚀告别Vibe Coding！用Superpowers让Claude Code写出工程级代码，一次通过零报错！遵循TDD最佳实践！支持Codex" [ref=f7e854]
+                            - generic [ref=f7e855]: 12:38
+                          - generic [ref=f7e857]:
+                            - link "🚀告别Vibe Coding！用Superpowers让Claude Code写出工程级代码，一次通过零报错！遵循TDD最佳实践！支持Codex" [ref=f7e858] [cursor=pointer]:
+                              - /url: /video/BV11urFBrEc4/?spm_id_from=333.788.recommend_more_video.8
+                              - paragraph [ref=f7e859]: 🚀告别Vibe Coding！用Superpowers让Claude Code写出工程级代码，一次通过零报错！遵循TDD最佳实践！支持Codex
+                            - link "AI超元域" [ref=f7e861] [cursor=pointer]:
+                              - /url: //space.bilibili.com/3493277319825652/
+                              - img [ref=f7e862]
+                              - generic [ref=f7e866]: AI超元域
+                            - generic [ref=f7e867]:
+                              - img [ref=f7e868]
+                              - text: 14.1万
+                              - img [ref=f7e871]
+                              - text: "52"
+                        - generic [ref=f7e878]:
+                          - generic [ref=f7e880]:
+                            - link "精讲OpenSpec，从操作到原理，吃透这个AI编程提效的神器" [ref=f7e882] [cursor=pointer]:
+                              - /url: /video/BV1eU5A6MERk/?spm_id_from=333.788.recommend_more_video.9
+                              - img "精讲OpenSpec，从操作到原理，吃透这个AI编程提效的神器" [ref=f7e884]
+                            - generic [ref=f7e885]: 14:26
+                          - generic [ref=f7e887]:
+                            - link "精讲OpenSpec，从操作到原理，吃透这个AI编程提效的神器" [ref=f7e888] [cursor=pointer]:
+                              - /url: /video/BV1eU5A6MERk/?spm_id_from=333.788.recommend_more_video.9
+                              - paragraph [ref=f7e889]: 精讲OpenSpec，从操作到原理，吃透这个AI编程提效的神器
+                            - link "费曼学徒冬瓜" [ref=f7e891] [cursor=pointer]:
+                              - /url: //space.bilibili.com/367678065/
+                              - img [ref=f7e892]
+                              - generic [ref=f7e896]: 费曼学徒冬瓜
+                            - generic [ref=f7e897]:
+                              - img [ref=f7e898]
+                              - text: 3.7万
+                              - img [ref=f7e901]
+                              - text: "18"
+                        - generic [ref=f7e908]:
+                          - generic [ref=f7e910]:
+                            - link "智谱发布AI编程工具ZCode，完美适配GLM 5.2，紧跟Codex APP" [ref=f7e912] [cursor=pointer]:
+                              - /url: /video/BV1EUJM63ERb/?spm_id_from=333.788.recommend_more_video.10
+                              - img "智谱发布AI编程工具ZCode，完美适配GLM 5.2，紧跟Codex APP" [ref=f7e914]
+                            - generic [ref=f7e915]: 08:23
+                          - generic [ref=f7e917]:
+                            - link "智谱发布AI编程工具ZCode，完美适配GLM 5.2，紧跟Codex APP" [ref=f7e918] [cursor=pointer]:
+                              - /url: /video/BV1EUJM63ERb/?spm_id_from=333.788.recommend_more_video.10
+                              - paragraph [ref=f7e919]: 智谱发布AI编程工具ZCode，完美适配GLM 5.2，紧跟Codex APP
+                            - link "AI随风随风" [ref=f7e921] [cursor=pointer]:
+                              - /url: //space.bilibili.com/481246113/
+                              - img [ref=f7e922]
+                              - generic [ref=f7e926]: AI随风随风
+                            - generic [ref=f7e927]:
+                              - img [ref=f7e928]
+                              - text: 1.5万
+                              - img [ref=f7e931]
+                              - text: "13"
+                        - generic [ref=f7e938]:
+                          - generic [ref=f7e940]:
+                            - link "OpenSpec、Superpowers、gstack三器合一：工程化AI编程实战，从需求到发布全流程自动化" [ref=f7e942] [cursor=pointer]:
+                              - /url: /video/BV1SG5d6kEMs/?spm_id_from=333.788.recommend_more_video.11
+                              - img "OpenSpec、Superpowers、gstack三器合一：工程化AI编程实战，从需求到发布全流程自动化" [ref=f7e944]
+                            - generic [ref=f7e945]: 03:23
+                          - generic [ref=f7e947]:
+                            - link "OpenSpec、Superpowers、gstack三器合一：工程化AI编程实战，从需求到发布全流程自动化" [ref=f7e948] [cursor=pointer]:
+                              - /url: /video/BV1SG5d6kEMs/?spm_id_from=333.788.recommend_more_video.11
+                              - paragraph [ref=f7e949]: OpenSpec、Superpowers、gstack三器合一：工程化AI编程实战，从需求到发布全流程自动化
+                            - link "Terminator-AI" [ref=f7e951] [cursor=pointer]:
+                              - /url: //space.bilibili.com/328381287/
+                              - img [ref=f7e952]
+                              - generic [ref=f7e956]: Terminator-AI
+                            - generic [ref=f7e957]:
+                              - img [ref=f7e958]
+                              - text: 1.5万
+                              - img [ref=f7e961]
+                              - text: "0"
+                        - generic [ref=f7e968]:
+                          - generic [ref=f7e970]:
+                            - link "mattpocock-skills:真实工程师常用技能库，github 超火开源AI编程技能组合" [ref=f7e972] [cursor=pointer]:
+                              - /url: /video/BV19M9aB1Euv/?spm_id_from=333.788.recommend_more_video.12
+                              - img "mattpocock-skills:真实工程师常用技能库，github 超火开源AI编程技能组合" [ref=f7e974]
+                            - generic [ref=f7e975]: 13:18
+                          - generic [ref=f7e977]:
+                            - link "mattpocock-skills:真实工程师常用技能库，github 超火开源AI编程技能组合" [ref=f7e978] [cursor=pointer]:
+                              - /url: /video/BV19M9aB1Euv/?spm_id_from=333.788.recommend_more_video.12
+                              - paragraph [ref=f7e979]: mattpocock-skills:真实工程师常用技能库，github 超火开源AI编程技能组合
+                            - link "AI随风随风" [ref=f7e981] [cursor=pointer]:
+                              - /url: //space.bilibili.com/481246113/
+                              - img [ref=f7e982]
+                              - generic [ref=f7e986]: AI随风随风
+                            - generic [ref=f7e987]:
+                              - img [ref=f7e988]
+                              - text: 2.5万
+                              - img [ref=f7e991]
+                              - text: "10"
+                        - generic [ref=f7e998]:
+                          - generic [ref=f7e1000]:
+                            - link "【Codex 生产级 Skills】从头脑风暴到代码审查：Superpowers 完整工作流" [ref=f7e1002] [cursor=pointer]:
+                              - /url: /video/BV1oNEF6yEdn/?spm_id_from=333.788.recommend_more_video.13
+                              - img "【Codex 生产级 Skills】从头脑风暴到代码审查：Superpowers 完整工作流" [ref=f7e1004]
+                            - generic [ref=f7e1005]: 16:28
+                          - generic [ref=f7e1007]:
+                            - link "【Codex 生产级 Skills】从头脑风暴到代码审查：Superpowers 完整工作流" [ref=f7e1008] [cursor=pointer]:
+                              - /url: /video/BV1oNEF6yEdn/?spm_id_from=333.788.recommend_more_video.13
+                              - paragraph [ref=f7e1009]: 【Codex 生产级 Skills】从头脑风暴到代码审查：Superpowers 完整工作流
+                            - link "iwenwiki" [ref=f7e1011] [cursor=pointer]:
+                              - /url: //space.bilibili.com/486793341/
+                              - img [ref=f7e1012]
+                              - generic [ref=f7e1016]: iwenwiki
+                            - generic [ref=f7e1017]:
+                              - img [ref=f7e1018]
+                              - text: 1.5万
+                              - img [ref=f7e1021]
+                              - text: "5"
+                        - generic [ref=f7e1028]:
+                          - generic [ref=f7e1030]:
+                            - link "🚀让Claude Code、Codex秒懂大型代码库：codebase-memory-mcp让代码秒变知识图谱！实测超越CodeGraph！帮你秒懂陌生项目！" [ref=f7e1032] [cursor=pointer]:
+                              - /url: /video/BV1Ma7T6jEnu/?spm_id_from=333.788.recommend_more_video.14
+                              - img "🚀让Claude Code、Codex秒懂大型代码库：codebase-memory-mcp让代码秒变知识图谱！实测超越CodeGraph！帮你秒懂陌生项目！" [ref=f7e1034]
+                            - generic [ref=f7e1035]: 11:09
+                          - generic [ref=f7e1037]:
+                            - link "🚀让Claude Code、Codex秒懂大型代码库：codebase-memory-mcp让代码秒变知识图谱！实测超越CodeGraph！帮你秒懂陌生项目！" [ref=f7e1038] [cursor=pointer]:
+                              - /url: /video/BV1Ma7T6jEnu/?spm_id_from=333.788.recommend_more_video.14
+                              - paragraph [ref=f7e1039]: 🚀让Claude Code、Codex秒懂大型代码库：codebase-memory-mcp让代码秒变知识图谱！实测超越CodeGraph！帮你秒懂陌生项目！
+                            - link "AI超元域" [ref=f7e1041] [cursor=pointer]:
+                              - /url: //space.bilibili.com/3493277319825652/
+                              - img [ref=f7e1042]
+                              - generic [ref=f7e1046]: AI超元域
+                            - generic [ref=f7e1047]:
+                              - img [ref=f7e1048]
+                              - text: 1.2万
+                              - img [ref=f7e1051]
+                              - text: "3"
+                        - generic [ref=f7e1058]:
+                          - generic [ref=f7e1060]:
+                            - link "🚀程序员必备设计神器！Claude Code原生支持Claude Design！一个/design命令，从UI原型到代码同步，全流程演示，AI设计到开发闭环" [ref=f7e1062] [cursor=pointer]:
+                              - /url: /video/BV1gk7L6rEU6/?spm_id_from=333.788.recommend_more_video.15
+                              - img "🚀程序员必备设计神器！Claude Code原生支持Claude Design！一个/design命令，从UI原型到代码同步，全流程演示，AI设计到开发闭环" [ref=f7e1064]
+                            - generic [ref=f7e1065]: 11:06
+                          - generic [ref=f7e1067]:
+                            - link "🚀程序员必备设计神器！Claude Code原生支持Claude Design！一个/design命令，从UI原型到代码同步，全流程演示，AI设计到开发闭环" [ref=f7e1068] [cursor=pointer]:
+                              - /url: /video/BV1gk7L6rEU6/?spm_id_from=333.788.recommend_more_video.15
+                              - paragraph [ref=f7e1069]: 🚀程序员必备设计神器！Claude Code原生支持Claude Design！一个/design命令，从UI原型到代码同步，全流程演示，AI设计到开发闭环
+                            - link "AI超元域" [ref=f7e1071] [cursor=pointer]:
+                              - /url: //space.bilibili.com/3493277319825652/
+                              - img [ref=f7e1072]
+                              - generic [ref=f7e1076]: AI超元域
+                            - generic [ref=f7e1077]:
+                              - img [ref=f7e1078]
+                              - text: "8655"
+                              - img [ref=f7e1081]
+                              - text: "0"
+                        - generic [ref=f7e1088]:
+                          - generic [ref=f7e1090]:
+                            - link "8 个必装Agent Skill，让你拥有顶级AI生产力" [ref=f7e1092] [cursor=pointer]:
+                              - /url: /video/BV1Fr7Z6GExz/?spm_id_from=333.788.recommend_more_video.16
+                              - img "8 个必装Agent Skill，让你拥有顶级AI生产力" [ref=f7e1094]
+                            - generic [ref=f7e1095]: 07:56
+                          - generic [ref=f7e1097]:
+                            - link "8 个必装Agent Skill，让你拥有顶级AI生产力" [ref=f7e1098] [cursor=pointer]:
+                              - /url: /video/BV1Fr7Z6GExz/?spm_id_from=333.788.recommend_more_video.16
+                              - paragraph [ref=f7e1099]: 8 个必装Agent Skill，让你拥有顶级AI生产力
+                            - link "阿西_出海" [ref=f7e1101] [cursor=pointer]:
+                              - /url: //space.bilibili.com/21807887/
+                              - img [ref=f7e1102]
+                              - generic [ref=f7e1106]: 阿西_出海
+                            - generic [ref=f7e1107]:
+                              - img [ref=f7e1108]
+                              - text: 4.5万
+                              - img [ref=f7e1111]
+                              - text: "10"
+                        - generic [ref=f7e1118]:
+                          - generic [ref=f7e1120]:
+                            - link "硬核实战！使用BDD+TDD让AI一轮对话写通代码" [ref=f7e1122] [cursor=pointer]:
+                              - /url: /video/BV1NpRmBLEbp/?spm_id_from=333.788.recommend_more_video.17
+                              - img "硬核实战！使用BDD+TDD让AI一轮对话写通代码" [ref=f7e1124]
+                            - generic [ref=f7e1125]: 04:51
+                          - generic [ref=f7e1127]:
+                            - link "硬核实战！使用BDD+TDD让AI一轮对话写通代码" [ref=f7e1128] [cursor=pointer]:
+                              - /url: /video/BV1NpRmBLEbp/?spm_id_from=333.788.recommend_more_video.17
+                              - paragraph [ref=f7e1129]: 硬核实战！使用BDD+TDD让AI一轮对话写通代码
+                            - link "硅基包工头" [ref=f7e1131] [cursor=pointer]:
+                              - /url: //space.bilibili.com/3422876/
+                              - img [ref=f7e1132]
+                              - generic [ref=f7e1136]: 硅基包工头
+                            - generic [ref=f7e1137]:
+                              - img [ref=f7e1138]
+                              - text: 3.0万
+                              - img [ref=f7e1141]
+                              - text: "18"
+                        - generic [ref=f7e1148]:
+                          - generic [ref=f7e1150]:
+                            - link "Claude Code Dynamic Workflows 保姆级教程：让 AI 自动编排上百个子代理干活" [ref=f7e1152] [cursor=pointer]:
+                              - /url: /video/BV1s6Vt6dEB1/?spm_id_from=333.788.recommend_more_video.18
+                              - img "Claude Code Dynamic Workflows 保姆级教程：让 AI 自动编排上百个子代理干活" [ref=f7e1154]
+                            - generic [ref=f7e1155]: 10:38
+                          - generic [ref=f7e1157]:
+                            - link "Claude Code Dynamic Workflows 保姆级教程：让 AI 自动编排上百个子代理干活" [ref=f7e1158] [cursor=pointer]:
+                              - /url: /video/BV1s6Vt6dEB1/?spm_id_from=333.788.recommend_more_video.18
+                              - paragraph [ref=f7e1159]: Claude Code Dynamic Workflows 保姆级教程：让 AI 自动编排上百个子代理干活
+                            - link "AI随风随风" [ref=f7e1161] [cursor=pointer]:
+                              - /url: //space.bilibili.com/481246113/
+                              - img [ref=f7e1162]
+                              - generic [ref=f7e1166]: AI随风随风
+                            - generic [ref=f7e1167]:
+                              - img [ref=f7e1168]
+                              - text: "7842"
+                              - img [ref=f7e1171]
+                              - text: "1"
+                        - generic [ref=f7e1178]:
+                          - generic [ref=f7e1180]:
+                            - link "18.6K 星的 pm-skills：给 Agent 用的产品经理 SOP，写 PRD 前先补判断" [ref=f7e1182] [cursor=pointer]:
+                              - /url: /video/BV1DCj368EQa/?spm_id_from=333.788.recommend_more_video.19
+                              - img "18.6K 星的 pm-skills：给 Agent 用的产品经理 SOP，写 PRD 前先补判断" [ref=f7e1184]
+                            - generic [ref=f7e1185]: 04:24
+                          - generic [ref=f7e1187]:
+                            - link "18.6K 星的 pm-skills：给 Agent 用的产品经理 SOP，写 PRD 前先补判断" [ref=f7e1188] [cursor=pointer]:
+                              - /url: /video/BV1DCj368EQa/?spm_id_from=333.788.recommend_more_video.19
+                              - paragraph [ref=f7e1189]: 18.6K 星的 pm-skills：给 Agent 用的产品经理 SOP，写 PRD 前先补判断
+                            - link "AIlazy俊" [ref=f7e1191] [cursor=pointer]:
+                              - /url: //space.bilibili.com/44153211/
+                              - img [ref=f7e1192]
+                              - generic [ref=f7e1196]: AIlazy俊
+                            - generic [ref=f7e1197]:
+                              - img [ref=f7e1198]
+                              - text: "4119"
+                              - img [ref=f7e1201]
+                              - text: "0"
+                      - generic [ref=f7e1207] [cursor=pointer]: 展开
+                    - link "年度千万曝光，寻找三农新星！" [ref=f7e1209] [cursor=pointer]:
+                      - /url: https://www.bilibili.com/blackboard/era/NJZzHALdV2N6Vjj1.html?auto_media_playback=1&spm_id_from=333.788.right_bottom.adfloor-3038.click
+                      - img [ref=f7e1211]
+                      - generic [ref=f7e1212]: 年度千万曝光，寻找三农新星！
+        - iframe [ref=e417] [cursor=pointer]:
+          
+        - generic [ref=e418]:
+          - generic: "1"
+        - generic [ref=e419]:
+          - generic: "2"
+        - generic [ref=e420]:
+          - generic: "3"
+        - generic [ref=e421]:
+          - generic: "4"
+        - img
+      - generic [ref=e93]:
+        - generic [ref=e94]:
+          - generic [ref=e95]: 4 / 4
+          - generic [ref=e96]: "04"
+        - generic [ref=e97]:
+          - generic [ref=e357] [cursor=pointer]:
+            - generic [ref=e359]: "1"
+            - generic [ref=e360]: "01"
+          - generic [ref=e361] [cursor=pointer]:
+            - generic [ref=e363]: "2"
+            - generic [ref=e364]: "02"
+          - generic [ref=e365] [cursor=pointer]:
+            - generic [ref=e367]: "3"
+            - generic [ref=e368]: "03"
+          - generic [ref=e369] [cursor=pointer]:
+            - generic [ref=e371]: "4"
+            - generic [ref=e372]: "04"
+    - complementary [ref=e98]:
+      - generic [ref=e99]:
+        - generic [ref=e100]:
+          - generic [ref=e101] [cursor=pointer]:
+            - img [ref=e103]
+            - generic [ref=e106]: 场景
+          - generic [ref=e107] [cursor=pointer]:
+            - img [ref=e109]
+            - generic [ref=e111]: 标注
+          - generic [ref=e112] [cursor=pointer]:
+            - img [ref=e114]
+            - generic [ref=e116]: 音频
+          - generic [ref=e117] [cursor=pointer]:
+            - img [ref=e119]
+            - generic [ref=e121]: 后期
+        - button [ref=e122] [cursor=pointer]:
+          - img [ref=e125]
+      - generic [ref=e422]:
+        - generic [ref=e423]:
+          - generic [ref=e424] [cursor=pointer]:
+            - generic [ref=e425]: 网页热点
+            - generic [ref=e426]: 网页热点
+            - button "×" [ref=e427]:
+              - generic [ref=e428]: ×
+          - generic [ref=e429] [cursor=pointer]:
+            - generic [ref=e430]: 信息点
+            - generic [ref=e431]: 信息点
+            - button "×" [ref=e432]:
+              - generic [ref=e433]: ×
+          - generic [ref=e434] [cursor=pointer]:
+            - generic [ref=e435]: 网页热点
+            - generic [ref=e436]: 网页热点
+            - button "×" [ref=e437]:
+              - generic [ref=e438]: ×
+        - button "一键清空" [ref=e440] [cursor=pointer]:
+          - generic [ref=e441]: 一键清空
+        - generic [ref=e442]:
+          - generic [ref=e443]: 基本信息
+          - generic [ref=e444]:
+            - generic [ref=e445]: 名称
+            - textbox [ref=e448]: 网页热点
+          - generic [ref=e449]:
+            - generic [ref=e450]: 类型
+            - textbox [disabled] [ref=e453]: web
+          - generic [ref=e454]:
+            - generic [ref=e455]: ATH
+            - generic [ref=e456]:
+              - button "decrease number" [ref=e457] [cursor=pointer]:
+                - img [ref=e459]
+              - button "increase number" [ref=e461] [cursor=pointer]:
+                - img [ref=e463]
+              - spinbutton [ref=e467]: "-107.42"
+          - generic [ref=e468]:
+            - generic [ref=e469]: ATV
+            - generic [ref=e470]:
+              - button "decrease number" [ref=e471] [cursor=pointer]:
+                - img [ref=e473]
+              - button "increase number" [ref=e475] [cursor=pointer]:
+                - img [ref=e477]
+              - spinbutton [ref=e481]: "2.84"
+        - generic [ref=e482]:
+          - generic [ref=e483]: 尺寸变换
+          - generic [ref=e484]:
+            - generic [ref=e485]: 宽度
+            - generic [ref=e486]:
+              - button "decrease number" [ref=e487] [cursor=pointer]:
+                - img [ref=e489]
+              - button "increase number" [ref=e491] [cursor=pointer]:
+                - img [ref=e493]
+              - spinbutton [ref=e497]: "640"
+          - generic [ref=e498]:
+            - generic [ref=e499]: 高度
+            - generic [ref=e500]:
+              - button "decrease number" [ref=e501] [cursor=pointer]:
+                - img [ref=e503]
+              - button "increase number" [ref=e505] [cursor=pointer]:
+                - img [ref=e507]
+              - spinbutton [ref=e511]: "360"
+          - generic [ref=e512]:
+            - generic [ref=e513]: 缩放
+            - generic [ref=e514]:
+              - button "decrease number" [ref=e515] [cursor=pointer]:
+                - img [ref=e517]
+              - button "increase number" [ref=e519] [cursor=pointer]:
+                - img [ref=e521]
+              - spinbutton [ref=e525]
+        - generic [ref=e526]:
+          - generic [ref=e527]: 顶点坐标
+          - generic [ref=e528]:
+            - generic [ref=e529]: 左上
+            - generic [ref=e530]:
+              - generic [ref=e531]:
+                - button "decrease number" [ref=e532] [cursor=pointer]:
+                  - img [ref=e534]
+                - button "increase number" [ref=e536] [cursor=pointer]:
+                  - img [ref=e538]
+                - spinbutton "ATH" [ref=e542]: "-115.42"
+              - generic [ref=e543]:
+                - button "decrease number" [ref=e544] [cursor=pointer]:
+                  - img [ref=e546]
+                - button "increase number" [ref=e548] [cursor=pointer]:
+                  - img [ref=e550]
+                - spinbutton "ATV" [ref=e554]: "-5.16"
+          - generic [ref=e555]:
+            - generic [ref=e556]: 右上
+            - generic [ref=e557]:
+              - generic [ref=e558]:
+                - button "decrease number" [ref=e559] [cursor=pointer]:
+                  - img [ref=e561]
+                - button "increase number" [ref=e563] [cursor=pointer]:
+                  - img [ref=e565]
+                - spinbutton "ATH" [ref=e569]: "-99.42"
+              - generic [ref=e570]:
+                - button "decrease number" [ref=e571] [cursor=pointer]:
+                  - img [ref=e573]
+                - button "increase number" [ref=e575] [cursor=pointer]:
+                  - img [ref=e577]
+                - spinbutton "ATV" [ref=e581]: "-5.16"
+          - generic [ref=e582]:
+            - generic [ref=e583]: 右下
+            - generic [ref=e584]:
+              - generic [ref=e585]:
+                - button "decrease number" [ref=e586] [cursor=pointer]:
+                  - img [ref=e588]
+                - button "increase number" [ref=e590] [cursor=pointer]:
+                  - img [ref=e592]
+                - spinbutton "ATH" [ref=e596]: "-99.42"
+              - generic [ref=e597]:
+                - button "decrease number" [ref=e598] [cursor=pointer]:
+                  - img [ref=e600]
+                - button "increase number" [ref=e602] [cursor=pointer]:
+                  - img [ref=e604]
+                - spinbutton "ATV" [ref=e608]: "10.84"
+          - generic [ref=e609]:
+            - generic [ref=e610]: 左下
+            - generic [ref=e611]:
+              - generic [ref=e612]:
+                - button "decrease number" [ref=e613] [cursor=pointer]:
+                  - img [ref=e615]
+                - button "increase number" [ref=e617] [cursor=pointer]:
+                  - img [ref=e619]
+                - spinbutton "ATH" [ref=e623]: "-115.42"
+              - generic [ref=e624]:
+                - button "decrease number" [ref=e625] [cursor=pointer]:
+                  - img [ref=e627]
+                - button "increase number" [ref=e629] [cursor=pointer]:
+                  - img [ref=e631]
+                - spinbutton "ATV" [ref=e635]: "10.84"
+        - generic [ref=e636]:
+          - generic [ref=e637]: 外观样式
+          - generic [ref=e638]:
+            - generic [ref=e639]: 网页地址
+            - textbox "https://example.com" [ref=e642]: about:blank
+          - generic [ref=e645]: 输入以 http(s):// 开头的完整 URL；目标站点需允许 iframe 嵌入。
+          - generic [ref=e646]:
+            - generic [ref=e647]: 着色器
+            - generic [ref=e649] [cursor=pointer]:
+              - generic:
+                - combobox [ref=e651]
+                - generic [ref=e652]: 无
+              - img [ref=e655]
+        - generic [ref=e657]:
+          - generic [ref=e658]: 交互设置
+          - generic [ref=e659]:
+            - generic [ref=e660]: 动作
+            - generic [ref=e662]:
+              - generic:
+                - combobox [disabled] [ref=e664]
+                - generic [ref=e665]: link
+              - generic:
+                - generic:
+                  - img
+        - generic [ref=e666]:
+          - generic [ref=e667]: 事件脚本 (events)
+          - generic [ref=e668]:
+            - generic [ref=e669]: 事件 JSON
+            - 'textbox "{\"click\":\"func()\",\"hover\":\"showTip()\"}" [ref=e671]'
+        - button "Delete" [ref=e673] [cursor=pointer]:
+          - generic [ref=e674]: Delete
+        - button "Export XML to Console" [ref=e676] [cursor=pointer]:
+          - generic [ref=e677]: Export XML to Console
+        - generic [ref=e678]: "ATH: -107.42, ATV: 2.84"
+  - contentinfo [ref=e278]:
+    - generic [ref=e279]:
+      - generic [ref=e280]: 未打开项目
+      - generic [ref=e281]: "|"
+      - generic [ref=e282]: "场景: 4"
+      - generic [ref=e283]: "|"
+      - generic [ref=e284]: "热点: 3"
+    - generic [ref=e285]:
+      - generic [ref=e679]: 未保存
+      - generic [ref=e286]: "|"
+      - generic [ref=e287]:
+        - button "−" [ref=e288] [cursor=pointer]
+        - generic [ref=e289]: 100%
+        - button "+" [ref=e290] [cursor=pointer]

@@ -4,31 +4,40 @@
     <div class="prop-section">
       <div class="section-title">
         <span>环境贴图（HDR）</span>
-      </div>
-      <el-upload
-        class="env-upload"
-        accept=".hdr"
-        :show-file-list="false"
-        :auto-upload="true"
-        :http-request="handleEnvUpload"
-      >
-        <el-button size="small" data-testid="upload-env-btn" :loading="lightingVm.uploadingEnv.value">
-          上传 .hdr 环境贴图
-        </el-button>
-      </el-upload>
-      <div v-if="lightingVm.envMapUrl.value" class="env-current">
-        <span class="env-name" data-testid="env-name" :title="lightingVm.envMapUrl.value">
-          {{ envFileName }}
-        </span>
-        <el-button
+        <el-switch
+          :model-value="envEnabled"
+          data-testid="env-enabled-switch"
           size="small"
-          text
-          type="danger"
-          data-testid="remove-env-btn"
-          @click="removeEnvMap"
-        >移除</el-button>
+          @update:model-value="onEnvEnabled"
+        />
       </div>
-      <div v-else class="env-hint">未设置，使用默认室内环境光</div>
+      <template v-if="envEnabled">
+        <el-upload
+          class="env-upload"
+          accept=".hdr"
+          :show-file-list="false"
+          :auto-upload="true"
+          :http-request="handleEnvUpload"
+        >
+          <el-button size="small" data-testid="upload-env-btn" :loading="lightingVm.uploadingEnv.value">
+            上传 .hdr 环境贴图
+          </el-button>
+        </el-upload>
+        <div v-if="lightingVm.envMapUrl.value" class="env-current">
+          <span class="env-name" data-testid="env-name" :title="lightingVm.envMapUrl.value">
+            {{ envFileName }}
+          </span>
+          <el-button
+            size="small"
+            text
+            type="danger"
+            data-testid="remove-env-btn"
+            @click="removeEnvMap"
+          >移除</el-button>
+        </div>
+        <div v-else class="env-hint">未设置，使用默认室内环境光</div>
+      </template>
+      <div v-else class="env-hint">环境照明已关闭</div>
     </div>
 
     <!-- 太阳光 -->
@@ -52,6 +61,20 @@
           @update:model-value="onSunColor"
         />
         <span class="prop-value">{{ sun.color }}</span>
+      </div>
+
+      <!-- 太阳光颜色预设：点击即应用 -->
+      <div class="sun-presets">
+        <div
+          v-for="preset in SUN_COLOR_PRESETS"
+          :key="preset.color"
+          class="sun-preset-chip"
+          :class="{ active: isCurrentSunColor(preset.color) }"
+          :style="{ backgroundColor: preset.color }"
+          :title="`${preset.label} ${preset.color}`"
+          :data-testid="`sun-preset-${preset.color}`"
+          @click="onSunColor(preset.color)"
+        />
       </div>
 
       <div class="slider-row">
@@ -123,9 +146,32 @@ const lightingVm: LightingViewModel = props.vm.lightingViewModel
 /** 当前太阳光状态快照（VM 状态变化时自动重渲染） */
 const sun = computed(() => lightingVm.sunConfig.value)
 const envFileName = computed(() => envMapFileName(lightingVm.envMapUrl.value))
+const envEnabled = computed(() => lightingVm.envEnabled.value)
+
+/** 太阳光颜色预设（按一天中的时段） */
+const SUN_COLOR_PRESETS = [
+  { label: '清晨', color: '#ffc4b8' },
+  { label: '早晨', color: '#ffd9a0' },
+  { label: '正午', color: '#ffffff' },
+  { label: '午后', color: '#fff2d9' },
+  { label: '黄昏', color: '#ff8c42' },
+  { label: '日落', color: '#ff6b35' },
+  { label: '夜晚', color: '#6a8cff' },
+  { label: '阴天', color: '#c8d0dc' },
+] as const
+
+/** 当前太阳光颜色（小写归一，用于预设高亮匹配） */
+const currentColor = computed(() => sun.value.color.toLowerCase())
+
+function isCurrentSunColor(color: string): boolean {
+  return currentColor.value === color.toLowerCase()
+}
 
 function onSunEnabled(v: boolean | string | number) {
   lightingVm.setSunFields({ enabled: Boolean(v) })
+}
+function onEnvEnabled(v: boolean | string | number) {
+  void lightingVm.setEnvEnabled(Boolean(v))
 }
 function onSunColor(v: string | null) {
   if (v) lightingVm.setSunFields({ color: v })
@@ -209,6 +255,34 @@ function removeEnvMap() {
   color: var(--text-muted);
   min-width: 42px;
   text-align: right;
+}
+
+.sun-presets {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  /* 与颜色选择器对齐：label 宽 50px + 行内 gap 8px */
+  margin: 2px 0 10px 58px;
+}
+
+.sun-preset-chip {
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  border-radius: 50%;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  box-sizing: border-box;
+  cursor: pointer;
+  transition: transform 0.12s ease;
+}
+
+.sun-preset-chip:hover {
+  transform: scale(1.15);
+}
+
+.sun-preset-chip.active {
+  border: 2px solid var(--accent);
 }
 
 .env-upload {

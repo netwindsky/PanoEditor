@@ -304,6 +304,8 @@ function onSunGizmoPointerDown(e: PointerEvent) {
   // 阻止冒泡：避免触发画布空白点击取消选中 / 热点放置
   e.stopPropagation()
   e.preventDefault()
+  // 点击太阳 gizmo 时右侧面板自动切到光照面板
+  vm.setRightPanelSection('lighting')
   isDraggingSun.value = true
   const viewport = canvasContainer.value?.querySelector('.canvas-viewport') as HTMLElement | null
   // 与 quad-handle 一致：指针捕获设在 viewport 上，保证移出 gizmo 仍能收到 move/up

@@ -1,0 +1,62 @@
+feat(export): 新增 krpano XML 配置导出功能
+
+## 更新内容
+
+### 新增功能
+- **配置导出按钮**：TopNav 新增「导出配置」按钮，点击生成并下载 krpano XML 文件
+- **EditorViewModel.exportConfig()**：汇总所有场景和热点数据，生成 krpano 兼容 XML
+  - 并行拉取所有场景的热点数据（不污染 hotspotViewModel 当前场景列表）
+  - 解析 Project.settings（JSON 字符串）为 TourSettings（容错）
+  - 自动清理文件名非法字符
+
+### krpano XML 导出增强（xmlExport.ts）
+- **krpano 根标签**：version="1.19"，title 属性
+- **skin include**：新增 `<include url="skin/vtourskin.xml" />`
+- **skin_settings 扩展**：新增 gyro、webvr、title、tooltips_buttons、tooltips_thumbs、tooltips_hotspots、deeplinking、loadscene_flags、loadscene_blend、design_bgcolor、design_bgalpha 等属性
+- **startup action**：autorun="onstart"，startscene 初始化，startactions 调用
+- **image 块重构**：
+  - 支持后端切片后的 multires JSON（多级分辨率）
+  - 按分辨率从大到小输出（L4→L1）
+  - 兼容简单字符串 cube url
+- **hotspot 属性扩展**：新增 width、height、scale、rotate、blendmode、bgcolor、followzoom、visible、tolerance、feather
+- **数值格式化**：formatNum() 保留 3 位小数，去尾随 0
+- **scene 属性**：onstart 为空时输出 `onstart=""`，lat/lng/heading 为空时输出空字符串
+
+### 文件下载工具（downloadFile.ts）
+- **downloadTextFile()**：Blob + 临时 `<a>` 标签触发浏览器下载，用完立即释放 URL 与 DOM
+- **downloadXml()**：krpano XML 导出便捷封装，自动追加 .xml 后缀
+
+### 左侧面板精简（LeftPanel.vue）
+- 移除 Tab 切换逻辑，直接渲染 SceneList
+- 移除 LayerPanel 组件引用
+
+### 场景属性面板优化（SceneProperties.vue）
+- 移除「记录当前视角」按钮
+
+### 类型定义（types/index.ts）
+- TourSettings 新增 loadsceneBlend 字段
+
+### 测试覆盖
+- **downloadFile.spec.ts**：验证 downloadTextFile 和 downloadXml 功能
+- **EditorViewModel.exportConfig.spec.ts**：验证 exportConfig 完整流程
+  - 项目不存在时抛错
+  - 并行拉取所有场景热点
+  - settings 解析容错
+  - 文件名清理
+- **xmlExport.spec.ts**：新增测试用例
+  - multires JSON 多级分辨率输出
+  - 简单字符串降级为 `<image><cube url="..."/></image>`
+  - hotspot 属性完整输出（url/width/height/scale/rotate/blendmode/bgcolor）
+  - scene onstart 为空时输出 `onstart=""`
+
+## 修改文件
+- `src/viewmodels/EditorViewModel.ts` (+53 行，exportConfig 方法)
+- `src/utils/xmlExport.ts` (+246 行，XML 导出增强)
+- `src/utils/downloadFile.ts` (新增，文件下载工具)
+- `src/components/TopNav.vue` (+23 行，导出按钮)
+- `src/utils/xmlExport.spec.ts` (+110 行，测试覆盖)
+- `src/viewmodels/EditorViewModel.exportConfig.spec.ts` (新增，测试覆盖)
+- `src/utils/downloadFile.spec.ts` (新增，测试覆盖)
+- `src/components/LeftPanel.vue` (-47 行，精简)
+- `src/components/SceneProperties.vue` (-13 行，移除按钮)
+- `src/types/index.ts` (+2 行，类型扩展)

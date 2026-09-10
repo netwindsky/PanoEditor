@@ -380,6 +380,8 @@ export interface LightingConfig {
   sceneId: string
   /** HDR 环境贴图地址（/uploads/...），null 表示使用默认 RoomEnvironment */
   envMapUrl: string | null
+  /** 环境贴图启用开关（true=启用/false=完全禁用环境照明），null 视为启用 */
+  envMapEnabled: boolean | null
   sunEnabled: boolean
   /** 方位角（度，0~360） */
   sunAzimuth: number
@@ -393,6 +395,8 @@ export interface LightingConfig {
 /** 场景光照更新参数（全部字段可选，envMapUrl 可置 null 恢复默认环境） */
 export interface UpdateLightingParams {
   envMapUrl?: string | null
+  /** 环境贴图启用开关（true=启用/false=完全禁用） */
+  envMapEnabled?: boolean
   sunEnabled?: boolean
   sunAzimuth?: number
   sunElevation?: number

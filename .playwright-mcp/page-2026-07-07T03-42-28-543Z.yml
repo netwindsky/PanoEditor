@@ -1,0 +1,804 @@
+- generic [ref=f12e3]:
+  - banner [ref=f12e4]:
+    - generic [ref=f12e5]:
+      - generic [ref=f12e6]:
+        - generic [ref=f12e7]: ◎
+        - generic [ref=f12e8]: PanoEditor
+      - navigation [ref=f12e9]:
+        - link "查看器" [ref=f12e10] [cursor=pointer]:
+          - /url: "#"
+        - link "编辑器" [ref=f12e11] [cursor=pointer]:
+          - /url: "#"
+        - link "后台管理" [ref=f12e12] [cursor=pointer]:
+          - /url: "#"
+    - generic [ref=f12e13]:
+      - button "项目" [ref=f12e14] [cursor=pointer]:
+        - generic [ref=f12e15]:
+          - img [ref=f12e17]
+          - text: 项目
+      - button "导出配置" [ref=f12e19] [cursor=pointer]:
+        - generic [ref=f12e20]:
+          - img [ref=f12e22]
+          - text: 导出配置
+      - button "静态化导出" [ref=f12e24] [cursor=pointer]:
+        - generic [ref=f12e25]:
+          - img [ref=f12e27]
+          - text: 静态化导出
+      - button "保存" [ref=f12e31] [cursor=pointer]:
+        - generic [ref=f12e32]:
+          - img [ref=f12e34]
+          - text: 保存
+      - button "预览" [ref=f12e36] [cursor=pointer]:
+        - generic [ref=f12e37]:
+          - img [ref=f12e39]
+          - text: 预览
+      - button "发布" [ref=f12e41] [cursor=pointer]:
+        - generic [ref=f12e42]:
+          - img [ref=f12e44]
+          - text: 发布
+  - generic [ref=f12e46]:
+    - complementary [ref=f12e47]:
+      - generic [ref=f12e49]:
+        - generic [ref=f12e50]:
+          - generic [ref=f12e51]: 场景列表
+          - button [ref=f12e52] [cursor=pointer]:
+            - img [ref=f12e55]
+        - generic [ref=f12e58]:
+          - generic [ref=f12e59] [cursor=pointer]:
+            - generic [ref=f12e61]:
+              - generic [ref=f12e62]: "01"
+              - generic [ref=f12e63]: 0 个热点
+            - button "..." [ref=f12e65]:
+              - generic [ref=f12e66]: ...
+          - generic [ref=f12e67] [cursor=pointer]:
+            - generic [ref=f12e69]:
+              - generic [ref=f12e70]: "02"
+              - generic [ref=f12e71]: 0 个热点
+            - button "..." [ref=f12e73]:
+              - generic [ref=f12e74]: ...
+          - generic [ref=f12e75] [cursor=pointer]:
+            - generic [ref=f12e77]:
+              - generic [ref=f12e78]: "03"
+              - generic [ref=f12e79]: 0 个热点
+            - button "..." [ref=f12e81]:
+              - generic [ref=f12e82]: ...
+          - generic [ref=f12e83] [cursor=pointer]:
+            - generic [ref=f12e85]:
+              - generic [ref=f12e86]: "04"
+              - generic [ref=f12e87]: 0 个热点
+            - button "..." [ref=f12e89]:
+              - generic [ref=f12e90]: ...
+    - generic [ref=f12e91]:
+      - generic [ref=f12e92]:
+        - generic [ref=f12e93]:
+          - button "选择" [ref=f12e94] [cursor=pointer]:
+            - img [ref=f12e96]
+          - button "添加热点" [ref=f12e98] [cursor=pointer]:
+            - img [ref=f12e100]
+          - button "平移" [ref=f12e103] [cursor=pointer]:
+            - img [ref=f12e105]
+          - button "缩放" [ref=f12e107] [cursor=pointer]:
+            - img [ref=f12e109]
+        - generic [ref=f12e111]:
+          - button "切换左面板" [ref=f12e113] [cursor=pointer]:
+            - img [ref=f12e115]
+          - button "切换右面板" [ref=f12e117] [cursor=pointer]:
+            - img [ref=f12e119]
+      - generic [ref=f12e124]:
+        - generic [ref=f12e128] [cursor=pointer]:
+          - img "7971728179948a4a3301ee2e9256b80d"
+        - iframe [ref=f12e131] [cursor=pointer]:
+          - generic [ref=f17e2]:
+            - generic [ref=f17e5]:
+              - list [ref=f17e6]:
+                - listitem [ref=f17e7]:
+                  - link "首页" [ref=f17e8] [cursor=pointer]:
+                    - /url: //www.bilibili.com
+                    - img [ref=f17e9]
+                    - generic [ref=f17e11]:
+                      - generic [ref=f17e12]: 首页
+                      - img [ref=f17e13]
+                - listitem [ref=f17e16]:
+                  - link "番剧" [ref=f17e17] [cursor=pointer]:
+                    - /url: //www.bilibili.com/anime/
+                - listitem [ref=f17e18]:
+                  - link "直播" [ref=f17e19] [cursor=pointer]:
+                    - /url: //live.bilibili.com
+                - listitem [ref=f17e20]:
+                  - link "游戏中心" [ref=f17e21] [cursor=pointer]:
+                    - /url: //game.bilibili.com/platform
+                - listitem [ref=f17e22]:
+                  - link "会员购" [ref=f17e23] [cursor=pointer]:
+                    - /url: //show.bilibili.com/platform/home.html?msource=pc_web
+                - listitem [ref=f17e24]:
+                  - link "漫画" [ref=f17e25] [cursor=pointer]:
+                    - /url: //manga.bilibili.com?from=bill_top_mnav
+                - listitem [ref=f17e26]:
+                  - link "赛事" [ref=f17e27] [cursor=pointer]:
+                    - /url: //www.bilibili.com/match/home/
+                - listitem
+              - generic [ref=f17e30]:
+                - textbox "伍佰演唱会唱错突然的陀螺" [ref=f17e32]
+                - img [ref=f17e34] [cursor=pointer]
+              - list [ref=f17e36]:
+                - listitem [ref=f17e37] [cursor=pointer]:
+                  - listitem [ref=f17e38]:
+                    - generic [ref=f17e40]: 登录
+                - listitem [ref=f17e41] [cursor=pointer]:
+                  - listitem [ref=f17e43]:
+                    - link [ref=f17e44]:
+                      - /url: //account.bilibili.com/big
+                      - img [ref=f17e45]
+                - listitem [ref=f17e49] [cursor=pointer]:
+                  - img [ref=f17e51]
+                - listitem [ref=f17e54] [cursor=pointer]:
+                  - img [ref=f17e56]
+                - listitem [ref=f17e62] [cursor=pointer]:
+                  - img [ref=f17e64]
+                - listitem [ref=f17e67] [cursor=pointer]:
+                  - img [ref=f17e69]
+                - listitem [ref=f17e71] [cursor=pointer]:
+                  - img [ref=f17e73]
+                - listitem [ref=f17e77] [cursor=pointer]:
+                  - listitem [ref=f17e78]:
+                    - img [ref=f17e81]
+            - generic [ref=f17e84]:
+              - generic [ref=f17e85]:
+                - generic [ref=f17e86]:
+                  - heading "外国网友不少人吐槽，比亚迪在海外已经快成移动豪车刺客了" [level=1] [ref=f17e89]
+                  - generic [ref=f17e91]:
+                    - generic [ref=f17e92]:
+                      - img [ref=f17e93]
+                      - generic [ref=f17e96]: 1.4万
+                    - generic [ref=f17e97]:
+                      - img [ref=f17e98]
+                      - generic [ref=f17e104]: "16"
+                    - generic [ref=f17e106]: 2026-03-29 13:17:58
+                - generic "哔哩哔哩播放器" [ref=f17e116]:
+                  - generic [ref=f17e117]:
+                    - generic [ref=f17e121]:
+                      - generic [ref=f17e122] [cursor=pointer]:
+                        - img
+                      - generic [ref=f17e124]: 登录 免费享高清视频
+                      - generic [ref=f17e126] [cursor=pointer]: 试看30秒
+                    - generic [ref=f17e129]:
+                      - generic [ref=f17e130]:
+                        - button "播放/暂停" [ref=f17e131]:
+                          - img [ref=f17e134] [cursor=pointer]
+                        - generic [ref=f17e145]: 00:05 / 03:02
+                      - generic [ref=f17e146]:
+                        - button "清晰度" [ref=f17e147]:
+                          - generic [ref=f17e148] [cursor=pointer]: 自动
+                        - button "倍速" [ref=f17e149]:
+                          - generic [ref=f17e150] [cursor=pointer]: 倍速
+                        - generic "字幕" [ref=f17e151]:
+                          - generic [ref=f17e153] [cursor=pointer]: 字幕
+                        - button "音量" [ref=f17e154]:
+                          - img [ref=f17e157] [cursor=pointer]
+                        - button "设置" [ref=f17e166]:
+                          - img [ref=f17e169] [cursor=pointer]
+                        - button "画中画" [ref=f17e174]:
+                          - img [ref=f17e177] [cursor=pointer]
+                        - button "宽屏" [ref=f17e185]:
+                          - img [ref=f17e188] [cursor=pointer]
+                        - button "网页全屏" [ref=f17e193]:
+                          - img [ref=f17e196] [cursor=pointer]
+                  - generic [ref=f17e207]:
+                    - generic [ref=f17e209]: 1人正在看
+                    - generic [ref=f17e210]:
+                      - generic "弹幕显示隐藏" [ref=f17e211] [cursor=pointer]:
+                        - generic [ref=f17e212]:
+                          - checkbox [checked] [ref=f17e213]
+                          - generic [ref=f17e215]:
+                            - img
+                      - generic [ref=f17e217] [cursor=pointer]:
+                        - img
+                      - generic [ref=f17e218]:
+                        - generic [ref=f17e219]:
+                          - generic [ref=f17e220]:
+                            - text: 请先
+                            - link "登录" [ref=f17e221] [cursor=pointer]:
+                              - /url: javascript:void(0);
+                            - text: 或
+                            - link "注册" [ref=f17e222] [cursor=pointer]:
+                              - /url: //passport.bilibili.com/login?register_page=1
+                          - link "弹幕礼仪" [ref=f17e224] [cursor=pointer]:
+                            - /url: //www.bilibili.com/blackboard/help.html#/?qid=359&pid=357
+                            - generic [ref=f17e225]: 弹幕礼仪
+                            - generic [ref=f17e226]:
+                              - img
+                        - generic [ref=f17e227]:
+                          - generic: 发送
+                - generic [ref=f17e228]:
+                  - generic [ref=f17e230]:
+                    - generic "点赞（Q）" [ref=f17e232] [cursor=pointer]:
+                      - img [ref=f17e233]
+                      - generic [ref=f17e235]: "210"
+                    - generic "投币（W）" [ref=f17e237] [cursor=pointer]:
+                      - img [ref=f17e238]
+                      - generic [ref=f17e240]: "4"
+                    - generic "收藏（E）" [ref=f17e242] [cursor=pointer]:
+                      - img [ref=f17e243]
+                      - generic [ref=f17e245]: "16"
+                    - generic [ref=f17e249] [cursor=pointer]:
+                      - img [ref=f17e250]
+                      - generic [ref=f17e253]: "4"
+                  - generic [ref=f17e254]:
+                    - generic [ref=f17e255] [cursor=pointer]:
+                      - img [ref=f17e256]
+                      - generic [ref=f17e260]: 稿件举报
+                    - generic [ref=f17e261] [cursor=pointer]:
+                      - generic [ref=f17e262]:
+                        - img [ref=f17e263]
+                        - generic [ref=f17e268]: 记笔记
+                      - text: 
+                    - img [ref=f17e271] [cursor=pointer]
+                - generic [ref=f17e274]: "-"
+                - generic [ref=f17e276]:
+                  - generic "发现《Warm Rock》" [ref=f17e279] [cursor=pointer]:
+                    - img [ref=f17e280]
+                    - generic [ref=f17e282]: 发现《Warm Rock》
+                    - img [ref=f17e283]
+                  - link "比亚迪" [ref=f17e287] [cursor=pointer]:
+                    - /url: //search.bilibili.com/all?keyword=%E6%AF%94%E4%BA%9A%E8%BF%AA&from_source=video_tag
+                  - link "新能源汽车" [ref=f17e290] [cursor=pointer]:
+                    - /url: //search.bilibili.com/all?keyword=%E6%96%B0%E8%83%BD%E6%BA%90%E6%B1%BD%E8%BD%A6&from_source=video_tag
+                  - link "网友" [ref=f17e293] [cursor=pointer]:
+                    - /url: //search.bilibili.com/all?keyword=%E7%BD%91%E5%8F%8B&from_source=video_tag
+                - generic [ref=f17e296]:
+                  - generic [ref=f17e297]: 评论
+                  - generic [ref=f17e299]:
+                    - img [ref=f17e300]
+                    - text: 正在玩命加载…
+              - generic:
+                - generic:
+                  - generic [ref=f17e304]:
+                    - link [ref=f17e307] [cursor=pointer]:
+                      - /url: //space.bilibili.com/3690974922410830/?spm_id_from=333.788.upinfo.head.click
+                    - generic [ref=f17e310]:
+                      - generic [ref=f17e313]:
+                        - link "佳佳学姐一起学" [ref=f17e314] [cursor=pointer]:
+                          - /url: //space.bilibili.com/3690974922410830/?spm_id_from=333.788.upinfo.detail.click
+                        - link " 发消息" [ref=f17e315] [cursor=pointer]:
+                          - /url: //message.bilibili.com/?spm_id_from=333.788.upinfo.detail.click#whisper/mid3690974922410830
+                          - generic [ref=f17e316]: 
+                          - text: 发消息
+                      - generic [ref=f17e320] [cursor=pointer]:
+                        - img [ref=f17e321]
+                        - text: 关注 5670
+                  - generic [ref=f17e330] [cursor=pointer]:
+                    - generic [ref=f17e333]:
+                      - img
+                    - generic [ref=f17e337]:
+                      - text: 弹幕列表
+                      - generic [ref=f17e338]:
+                        - img
+                  - generic [ref=f17e340]:
+                    - generic [ref=f17e341]:
+                      - generic [ref=f17e342]:
+                        - generic [ref=f17e343]:
+                          - generic [ref=f17e344]: 接下来播放
+                          - generic [ref=f17e346] [cursor=pointer]: 自动连播
+                        - generic [ref=f17e350]:
+                          - generic [ref=f17e352]:
+                            - link "比亚迪巨轮抵达阿根廷，5000辆汽车一落地，老外彻底破防了！" [ref=f17e354] [cursor=pointer]:
+                              - /url: /video/BV1GzzWBHE6w/?spm_id_from=333.788.recommend_more_video.-1
+                              - img "比亚迪巨轮抵达阿根廷，5000辆汽车一落地，老外彻底破防了！" [ref=f17e356]
+                            - generic [ref=f17e357]: 01:42
+                          - generic [ref=f17e359]:
+                            - link "比亚迪巨轮抵达阿根廷，5000辆汽车一落地，老外彻底破防了！" [ref=f17e360] [cursor=pointer]:
+                              - /url: /video/BV1GzzWBHE6w/?spm_id_from=333.788.recommend_more_video.-1
+                              - paragraph [ref=f17e361]: 比亚迪巨轮抵达阿根廷，5000辆汽车一落地，老外彻底破防了！
+                            - link "必发大财暴富" [ref=f17e363] [cursor=pointer]:
+                              - /url: //space.bilibili.com/446019397/
+                              - img [ref=f17e364]
+                              - generic [ref=f17e368]: 必发大财暴富
+                            - generic [ref=f17e369]:
+                              - img [ref=f17e370]
+                              - text: 24.9万
+                              - img [ref=f17e373]
+                              - text: "330"
+                      - generic [ref=f17e380]:
+                        - generic [ref=f17e382]:
+                          - generic [ref=f17e384]:
+                            - link "海外网友晒出BYD定制车牌，原来比亚迪在国外这么火！" [ref=f17e386] [cursor=pointer]:
+                              - /url: /video/BV1yMNqzgEox/?spm_id_from=333.788.recommend_more_video.0
+                              - img "海外网友晒出BYD定制车牌，原来比亚迪在国外这么火！" [ref=f17e388]
+                            - generic [ref=f17e389]: 01:38
+                          - generic [ref=f17e391]:
+                            - link "海外网友晒出BYD定制车牌，原来比亚迪在国外这么火！" [ref=f17e392] [cursor=pointer]:
+                              - /url: /video/BV1yMNqzgEox/?spm_id_from=333.788.recommend_more_video.0
+                              - paragraph [ref=f17e393]: 海外网友晒出BYD定制车牌，原来比亚迪在国外这么火！
+                            - link "好波同学" [ref=f17e395] [cursor=pointer]:
+                              - /url: //space.bilibili.com/403313071/
+                              - img [ref=f17e396]
+                              - generic [ref=f17e400]: 好波同学
+                            - generic [ref=f17e401]:
+                              - img [ref=f17e402]
+                              - text: 14.8万
+                              - img [ref=f17e405]
+                              - text: "229"
+                        - generic [ref=f17e412]:
+                          - generic [ref=f17e414]:
+                            - link "BYD已经让欧洲人冲动消费了？" [ref=f17e416] [cursor=pointer]:
+                              - /url: /video/BV1A29kB8EQe/?spm_id_from=333.788.recommend_more_video.1
+                              - img "BYD已经让欧洲人冲动消费了？" [ref=f17e418]
+                            - generic [ref=f17e419]: 01:28
+                          - generic [ref=f17e421]:
+                            - link "BYD已经让欧洲人冲动消费了？" [ref=f17e422] [cursor=pointer]:
+                              - /url: /video/BV1A29kB8EQe/?spm_id_from=333.788.recommend_more_video.1
+                              - paragraph [ref=f17e423]: BYD已经让欧洲人冲动消费了？
+                            - link "冷山驾道" [ref=f17e425] [cursor=pointer]:
+                              - /url: //space.bilibili.com/332532026/
+                              - img [ref=f17e426]
+                              - generic [ref=f17e430]: 冷山驾道
+                            - generic [ref=f17e431]:
+                              - img [ref=f17e432]
+                              - text: 6.2万
+                              - img [ref=f17e435]
+                              - text: "9"
+                        - generic [ref=f17e442]:
+                          - generic [ref=f17e444]:
+                            - link "比亚迪方程豹黑科技！爱尔兰网友：确实不错！" [ref=f17e446] [cursor=pointer]:
+                              - /url: /video/BV1UzLg6nEZP/?spm_id_from=333.788.recommend_more_video.2
+                              - img "比亚迪方程豹黑科技！爱尔兰网友：确实不错！" [ref=f17e448]
+                            - generic [ref=f17e449]: 03:14
+                          - generic [ref=f17e451]:
+                            - link "比亚迪方程豹黑科技！爱尔兰网友：确实不错！" [ref=f17e452] [cursor=pointer]:
+                              - /url: /video/BV1UzLg6nEZP/?spm_id_from=333.788.recommend_more_video.2
+                              - paragraph [ref=f17e453]: 比亚迪方程豹黑科技！爱尔兰网友：确实不错！
+                            - link "潇洒视界" [ref=f17e455] [cursor=pointer]:
+                              - /url: //space.bilibili.com/3706942904076874/
+                              - img [ref=f17e456]
+                              - generic [ref=f17e460]: 潇洒视界
+                            - generic [ref=f17e461]:
+                              - img [ref=f17e462]
+                              - text: 1.7万
+                              - img [ref=f17e465]
+                              - text: "17"
+                        - generic [ref=f17e472]:
+                          - generic [ref=f17e474]:
+                            - link "比亚迪在国外的广告，太会整活了哈哈哈哈" [ref=f17e476] [cursor=pointer]:
+                              - /url: /video/BV1HgCdBKE1r/?spm_id_from=333.788.recommend_more_video.3
+                              - img "比亚迪在国外的广告，太会整活了哈哈哈哈" [ref=f17e478]
+                            - generic [ref=f17e479]: 00:46
+                          - generic [ref=f17e481]:
+                            - link "比亚迪在国外的广告，太会整活了哈哈哈哈" [ref=f17e482] [cursor=pointer]:
+                              - /url: /video/BV1HgCdBKE1r/?spm_id_from=333.788.recommend_more_video.3
+                              - paragraph [ref=f17e483]: 比亚迪在国外的广告，太会整活了哈哈哈哈
+                            - link "4A广告提案网" [ref=f17e485] [cursor=pointer]:
+                              - /url: //space.bilibili.com/43707221/
+                              - img [ref=f17e486]
+                              - generic [ref=f17e490]: 4A广告提案网
+                            - generic [ref=f17e491]:
+                              - img [ref=f17e492]
+                              - text: 35.7万
+                              - img [ref=f17e495]
+                              - text: "161"
+                        - generic [ref=f17e502]:
+                          - generic [ref=f17e504]:
+                            - link "我是被人忽悠被骗到中国来的，听听俄罗斯美女是怎么说的" [ref=f17e506] [cursor=pointer]:
+                              - /url: /video/BV1jP2RBwELK/?spm_id_from=333.788.recommend_more_video.4
+                              - img "我是被人忽悠被骗到中国来的，听听俄罗斯美女是怎么说的" [ref=f17e508]
+                            - generic [ref=f17e509]: 03:07
+                          - generic [ref=f17e511]:
+                            - link "我是被人忽悠被骗到中国来的，听听俄罗斯美女是怎么说的" [ref=f17e512] [cursor=pointer]:
+                              - /url: /video/BV1jP2RBwELK/?spm_id_from=333.788.recommend_more_video.4
+                              - paragraph [ref=f17e513]: 我是被人忽悠被骗到中国来的，听听俄罗斯美女是怎么说的
+                            - link "佳佳学姐一起学" [ref=f17e515] [cursor=pointer]:
+                              - /url: //space.bilibili.com/3690974922410830/
+                              - img [ref=f17e516]
+                              - generic [ref=f17e520]: 佳佳学姐一起学
+                            - generic [ref=f17e521]:
+                              - img [ref=f17e522]
+                              - text: 17.1万
+                              - img [ref=f17e525]
+                              - text: "291"
+                        - generic [ref=f17e532]:
+                          - generic [ref=f17e534]:
+                            - link "外国网友买了比亚迪，忍不住向好友炫耀，老外直呼：科技感太强了" [ref=f17e536] [cursor=pointer]:
+                              - /url: /video/BV1KHDRBsEMC/?spm_id_from=333.788.recommend_more_video.5
+                              - img "外国网友买了比亚迪，忍不住向好友炫耀，老外直呼：科技感太强了" [ref=f17e538]
+                            - generic [ref=f17e539]: 05:31
+                          - generic [ref=f17e541]:
+                            - link "外国网友买了比亚迪，忍不住向好友炫耀，老外直呼：科技感太强了" [ref=f17e542] [cursor=pointer]:
+                              - /url: /video/BV1KHDRBsEMC/?spm_id_from=333.788.recommend_more_video.5
+                              - paragraph [ref=f17e543]: 外国网友买了比亚迪，忍不住向好友炫耀，老外直呼：科技感太强了
+                            - link "必发大财暴富" [ref=f17e545] [cursor=pointer]:
+                              - /url: //space.bilibili.com/446019397/
+                              - img [ref=f17e546]
+                              - generic [ref=f17e550]: 必发大财暴富
+                            - generic [ref=f17e551]:
+                              - img [ref=f17e552]
+                              - text: 11.9万
+                              - img [ref=f17e555]
+                              - text: "103"
+                        - generic [ref=f17e562]:
+                          - generic [ref=f17e564]:
+                            - link "老外试驾中国电动车后崩溃：把你的劳斯莱斯换了......" [ref=f17e566] [cursor=pointer]:
+                              - /url: /video/BV1htzLBoEJ5/?spm_id_from=333.788.recommend_more_video.6
+                              - img "老外试驾中国电动车后崩溃：把你的劳斯莱斯换了......" [ref=f17e568]
+                            - generic [ref=f17e569]: 07:46
+                          - generic [ref=f17e571]:
+                            - link "老外试驾中国电动车后崩溃：把你的劳斯莱斯换了......" [ref=f17e572] [cursor=pointer]:
+                              - /url: /video/BV1htzLBoEJ5/?spm_id_from=333.788.recommend_more_video.6
+                              - paragraph [ref=f17e573]: 老外试驾中国电动车后崩溃：把你的劳斯莱斯换了......
+                            - link "太阳之翼" [ref=f17e575] [cursor=pointer]:
+                              - /url: //space.bilibili.com/3546633889385290/
+                              - img [ref=f17e576]
+                              - generic [ref=f17e580]: 太阳之翼
+                            - generic [ref=f17e581]:
+                              - img [ref=f17e582]
+                              - text: 28.4万
+                              - img [ref=f17e585]
+                              - text: "189"
+                        - generic [ref=f17e592]:
+                          - generic [ref=f17e594]:
+                            - link "巴西🇧🇷改装的比亚迪海豹，这LOGO 有点大。" [ref=f17e596] [cursor=pointer]:
+                              - /url: /video/BV1jUYteSEUU/?spm_id_from=333.788.recommend_more_video.7
+                              - img "巴西🇧🇷改装的比亚迪海豹，这LOGO 有点大。" [ref=f17e598]
+                            - generic [ref=f17e599]: 00:16
+                          - generic [ref=f17e601]:
+                            - link "巴西🇧🇷改装的比亚迪海豹，这LOGO 有点大。" [ref=f17e602] [cursor=pointer]:
+                              - /url: /video/BV1jUYteSEUU/?spm_id_from=333.788.recommend_more_video.7
+                              - paragraph [ref=f17e603]: 巴西🇧🇷改装的比亚迪海豹，这LOGO 有点大。
+                            - link "中国电车在国外" [ref=f17e605] [cursor=pointer]:
+                              - /url: //space.bilibili.com/299148316/
+                              - img [ref=f17e606]
+                              - generic [ref=f17e610]: 中国电车在国外
+                            - generic [ref=f17e611]:
+                              - img [ref=f17e612]
+                              - text: 9.7万
+                              - img [ref=f17e615]
+                              - text: "49"
+                        - generic [ref=f17e622]:
+                          - generic [ref=f17e624]:
+                            - link "鲨鱼皮卡快被老美拆成分子形态了" [ref=f17e626] [cursor=pointer]:
+                              - /url: /video/BV19vdPB3ENh/?spm_id_from=333.788.recommend_more_video.8
+                              - img "鲨鱼皮卡快被老美拆成分子形态了" [ref=f17e628]
+                            - generic [ref=f17e629]: 01:29
+                          - generic [ref=f17e631]:
+                            - link "鲨鱼皮卡快被老美拆成分子形态了" [ref=f17e632] [cursor=pointer]:
+                              - /url: /video/BV19vdPB3ENh/?spm_id_from=333.788.recommend_more_video.8
+                              - paragraph [ref=f17e633]: 鲨鱼皮卡快被老美拆成分子形态了
+                            - link "冷山驾道" [ref=f17e635] [cursor=pointer]:
+                              - /url: //space.bilibili.com/332532026/
+                              - img [ref=f17e636]
+                              - generic [ref=f17e640]: 冷山驾道
+                            - generic [ref=f17e641]:
+                              - img [ref=f17e642]
+                              - text: 9.7万
+                              - img [ref=f17e645]
+                              - text: "56"
+                        - generic [ref=f17e652]:
+                          - generic [ref=f17e654]:
+                            - link "比亚迪在欧洲到底有多神？" [ref=f17e656] [cursor=pointer]:
+                              - /url: /video/BV1dqRsBiEq3/?spm_id_from=333.788.recommend_more_video.9
+                              - img "比亚迪在欧洲到底有多神？" [ref=f17e658]
+                            - generic [ref=f17e659]: 04:46
+                          - generic [ref=f17e661]:
+                            - link "比亚迪在欧洲到底有多神？" [ref=f17e662] [cursor=pointer]:
+                              - /url: /video/BV1dqRsBiEq3/?spm_id_from=333.788.recommend_more_video.9
+                              - paragraph [ref=f17e663]: 比亚迪在欧洲到底有多神？
+                            - link "定坤商业笔记" [ref=f17e665] [cursor=pointer]:
+                              - /url: //space.bilibili.com/3690985957624310/
+                              - img [ref=f17e666]
+                              - generic [ref=f17e670]: 定坤商业笔记
+                            - generic [ref=f17e671]:
+                              - img [ref=f17e672]
+                              - text: 22.5万
+                              - img [ref=f17e675]
+                              - text: "226"
+                        - generic [ref=f17e682]:
+                          - generic [ref=f17e684]:
+                            - link "巴西🇧🇷老外问比亚迪海豚怎么那么多屁股凹陷了😂" [ref=f17e686] [cursor=pointer]:
+                              - /url: /video/BV1Nr421w7ea/?spm_id_from=333.788.recommend_more_video.10
+                              - img "巴西🇧🇷老外问比亚迪海豚怎么那么多屁股凹陷了😂" [ref=f17e688]
+                            - generic [ref=f17e689]: 00:10
+                          - generic [ref=f17e691]:
+                            - link "巴西🇧🇷老外问比亚迪海豚怎么那么多屁股凹陷了😂" [ref=f17e692] [cursor=pointer]:
+                              - /url: /video/BV1Nr421w7ea/?spm_id_from=333.788.recommend_more_video.10
+                              - paragraph [ref=f17e693]: 巴西🇧🇷老外问比亚迪海豚怎么那么多屁股凹陷了😂
+                            - link "中国电车在国外" [ref=f17e695] [cursor=pointer]:
+                              - /url: //space.bilibili.com/299148316/
+                              - img [ref=f17e696]
+                              - generic [ref=f17e700]: 中国电车在国外
+                            - generic [ref=f17e701]:
+                              - img [ref=f17e702]
+                              - text: 25.8万
+                              - img [ref=f17e705]
+                              - text: "12"
+                        - generic [ref=f17e712]:
+                          - generic [ref=f17e714]:
+                            - link "著名歌星卡特琳娜•加西亚喜提元UP，比亚迪国际影响力与日俱增！" [ref=f17e716] [cursor=pointer]:
+                              - /url: /video/BV12G5vzwEd7/?spm_id_from=333.788.recommend_more_video.11
+                              - img "著名歌星卡特琳娜•加西亚喜提元UP，比亚迪国际影响力与日俱增！" [ref=f17e718]
+                            - generic [ref=f17e719]: 01:03
+                          - generic [ref=f17e721]:
+                            - link "著名歌星卡特琳娜•加西亚喜提元UP，比亚迪国际影响力与日俱增！" [ref=f17e722] [cursor=pointer]:
+                              - /url: /video/BV12G5vzwEd7/?spm_id_from=333.788.recommend_more_video.11
+                              - paragraph [ref=f17e723]: 著名歌星卡特琳娜•加西亚喜提元UP，比亚迪国际影响力与日俱增！
+                            - link "电车芝士" [ref=f17e725] [cursor=pointer]:
+                              - /url: //space.bilibili.com/338249145/
+                              - img [ref=f17e726]
+                              - generic [ref=f17e730]: 电车芝士
+                            - generic [ref=f17e731]:
+                              - img [ref=f17e732]
+                              - text: 25.0万
+                              - img [ref=f17e735]
+                              - text: "206"
+                        - generic [ref=f17e742]:
+                          - generic [ref=f17e744]:
+                            - link "超级显眼包！巴西大暴雨城市变汪洋，比亚迪再现封神名场面" [ref=f17e746] [cursor=pointer]:
+                              - /url: /video/BV12jR1B6EKH/?spm_id_from=333.788.recommend_more_video.12
+                              - img "超级显眼包！巴西大暴雨城市变汪洋，比亚迪再现封神名场面" [ref=f17e748]
+                            - generic [ref=f17e749]: 00:49
+                          - generic [ref=f17e751]:
+                            - link "超级显眼包！巴西大暴雨城市变汪洋，比亚迪再现封神名场面" [ref=f17e752] [cursor=pointer]:
+                              - /url: /video/BV12jR1B6EKH/?spm_id_from=333.788.recommend_more_video.12
+                              - paragraph [ref=f17e753]: 超级显眼包！巴西大暴雨城市变汪洋，比亚迪再现封神名场面
+                            - link "东哥汽车评论" [ref=f17e755] [cursor=pointer]:
+                              - /url: //space.bilibili.com/488033168/
+                              - img [ref=f17e756]
+                              - generic [ref=f17e760]: 东哥汽车评论
+                            - generic [ref=f17e761]:
+                              - img [ref=f17e762]
+                              - text: 32.4万
+                              - img [ref=f17e765]
+                              - text: "130"
+                        - generic [ref=f17e772]:
+                          - generic [ref=f17e774]:
+                            - link "外国女孩加入中国国籍，开心画面火遍全网，网友：欢迎回家！" [ref=f17e776] [cursor=pointer]:
+                              - /url: /video/BV1V5cVz5EAe/?spm_id_from=333.788.recommend_more_video.13
+                              - img "外国女孩加入中国国籍，开心画面火遍全网，网友：欢迎回家！" [ref=f17e778]
+                            - generic [ref=f17e779]: 03:54
+                          - generic [ref=f17e781]:
+                            - link "外国女孩加入中国国籍，开心画面火遍全网，网友：欢迎回家！" [ref=f17e782] [cursor=pointer]:
+                              - /url: /video/BV1V5cVz5EAe/?spm_id_from=333.788.recommend_more_video.13
+                              - paragraph [ref=f17e783]: 外国女孩加入中国国籍，开心画面火遍全网，网友：欢迎回家！
+                            - link "自南君" [ref=f17e785] [cursor=pointer]:
+                              - /url: //space.bilibili.com/25929954/
+                              - img [ref=f17e786]
+                              - generic [ref=f17e790]: 自南君
+                            - generic [ref=f17e791]:
+                              - img [ref=f17e792]
+                              - text: 16.2万
+                              - img [ref=f17e795]
+                              - text: "587"
+                        - generic [ref=f17e802]:
+                          - generic [ref=f17e804]:
+                            - link "保时捷车主与比亚迪海豹在街道上飙车，保时捷车主结果咆哮着追了一路，原来追了半天还要人松油门等你！！" [ref=f17e806] [cursor=pointer]:
+                              - /url: /video/BV14sbrzEEe9/?spm_id_from=333.788.recommend_more_video.14
+                              - img "保时捷车主与比亚迪海豹在街道上飙车，保时捷车主结果咆哮着追了一路，原来追了半天还要人松油门等你！！" [ref=f17e808]
+                            - generic [ref=f17e809]: 00:24
+                          - generic [ref=f17e811]:
+                            - link "保时捷车主与比亚迪海豹在街道上飙车，保时捷车主结果咆哮着追了一路，原来追了半天还要人松油门等你！！" [ref=f17e812] [cursor=pointer]:
+                              - /url: /video/BV14sbrzEEe9/?spm_id_from=333.788.recommend_more_video.14
+                              - paragraph [ref=f17e813]: 保时捷车主与比亚迪海豹在街道上飙车，保时捷车主结果咆哮着追了一路，原来追了半天还要人松油门等你！！
+                            - link "_掂过碌蔗丶" [ref=f17e815] [cursor=pointer]:
+                              - /url: //space.bilibili.com/519401076/
+                              - img [ref=f17e816]
+                              - generic [ref=f17e820]: _掂过碌蔗丶
+                            - generic [ref=f17e821]:
+                              - img [ref=f17e822]
+                              - text: 18.0万
+                              - img [ref=f17e825]
+                              - text: "99"
+                        - generic [ref=f17e832]:
+                          - generic [ref=f17e834]:
+                            - link "比亚迪巴西工厂爆单了！10万台订单！直接产能的三分之二！火速踩下扩产油门！" [ref=f17e836] [cursor=pointer]:
+                              - /url: /video/BV1ahApz3E2u/?spm_id_from=333.788.recommend_more_video.15
+                              - img "比亚迪巴西工厂爆单了！10万台订单！直接产能的三分之二！火速踩下扩产油门！" [ref=f17e838]
+                            - generic [ref=f17e839]: 01:55
+                          - generic [ref=f17e841]:
+                            - link "比亚迪巴西工厂爆单了！10万台订单！直接产能的三分之二！火速踩下扩产油门！" [ref=f17e842] [cursor=pointer]:
+                              - /url: /video/BV1ahApz3E2u/?spm_id_from=333.788.recommend_more_video.15
+                              - paragraph [ref=f17e843]: 比亚迪巴西工厂爆单了！10万台订单！直接产能的三分之二！火速踩下扩产油门！
+                            - link "小新说迪" [ref=f17e845] [cursor=pointer]:
+                              - /url: //space.bilibili.com/3546743094380662/
+                              - img [ref=f17e846]
+                              - generic [ref=f17e850]: 小新说迪
+                            - generic [ref=f17e851]:
+                              - img [ref=f17e852]
+                              - text: 11.3万
+                              - img [ref=f17e855]
+                              - text: "88"
+                        - generic [ref=f17e862]:
+                          - generic [ref=f17e864]:
+                            - link "比亚迪把国外打服了，从未见过如此跪舔，迪粉甘拜下风" [ref=f17e866] [cursor=pointer]:
+                              - /url: /video/BV1QNcXzXEDy/?spm_id_from=333.788.recommend_more_video.16
+                              - img "比亚迪把国外打服了，从未见过如此跪舔，迪粉甘拜下风" [ref=f17e868]
+                            - generic [ref=f17e869]: 02:16
+                          - generic [ref=f17e871]:
+                            - link "比亚迪把国外打服了，从未见过如此跪舔，迪粉甘拜下风" [ref=f17e872] [cursor=pointer]:
+                              - /url: /video/BV1QNcXzXEDy/?spm_id_from=333.788.recommend_more_video.16
+                              - paragraph [ref=f17e873]: 比亚迪把国外打服了，从未见过如此跪舔，迪粉甘拜下风
+                            - link "拿波灣" [ref=f17e875] [cursor=pointer]:
+                              - /url: //space.bilibili.com/3632310326922028/
+                              - img [ref=f17e876]
+                              - generic [ref=f17e880]: 拿波灣
+                            - generic [ref=f17e881]:
+                              - img [ref=f17e882]
+                              - text: 7.3万
+                              - img [ref=f17e885]
+                              - text: "52"
+                        - generic [ref=f17e892]:
+                          - generic [ref=f17e894]:
+                            - link "BYD在美剧中为何会让警察头疼" [ref=f17e896] [cursor=pointer]:
+                              - /url: /video/BV1E3HLz2Ebj/?spm_id_from=333.788.recommend_more_video.17
+                              - img "BYD在美剧中为何会让警察头疼" [ref=f17e898]
+                            - generic [ref=f17e899]: 04:13
+                          - generic [ref=f17e901]:
+                            - link "BYD在美剧中为何会让警察头疼" [ref=f17e902] [cursor=pointer]:
+                              - /url: /video/BV1E3HLz2Ebj/?spm_id_from=333.788.recommend_more_video.17
+                              - paragraph [ref=f17e903]: BYD在美剧中为何会让警察头疼
+                            - link "七星盖盖虫" [ref=f17e905] [cursor=pointer]:
+                              - /url: //space.bilibili.com/341935809/
+                              - img [ref=f17e906]
+                              - generic [ref=f17e910]: 七星盖盖虫
+                            - generic [ref=f17e911]:
+                              - img [ref=f17e912]
+                              - text: 20.1万
+                              - img [ref=f17e915]
+                              - text: "383"
+                        - generic [ref=f17e922]:
+                          - generic [ref=f17e924]:
+                            - link "外网看 中国女司机停车封神！美国网友：他们先进成这样了？" [ref=f17e926] [cursor=pointer]:
+                              - /url: /video/BV1UBmxBuEoW/?spm_id_from=333.788.recommend_more_video.18
+                              - img "外网看 中国女司机停车封神！美国网友：他们先进成这样了？" [ref=f17e928]
+                            - generic [ref=f17e929]: 01:08
+                          - generic [ref=f17e931]:
+                            - link "外网看 中国女司机停车封神！美国网友：他们先进成这样了？" [ref=f17e932] [cursor=pointer]:
+                              - /url: /video/BV1UBmxBuEoW/?spm_id_from=333.788.recommend_more_video.18
+                              - paragraph [ref=f17e933]: 外网看 中国女司机停车封神！美国网友：他们先进成这样了？
+                            - link "小敏外世界" [ref=f17e935] [cursor=pointer]:
+                              - /url: //space.bilibili.com/2073100786/
+                              - img [ref=f17e936]
+                              - generic [ref=f17e940]: 小敏外世界
+                            - generic [ref=f17e941]:
+                              - img [ref=f17e942]
+                              - text: 37.3万
+                              - img [ref=f17e945]
+                              - text: "164"
+                      - generic [ref=f17e951] [cursor=pointer]: 展开
+                    - link "万元大奖，助你守护生态！" [ref=f17e953] [cursor=pointer]:
+                      - /url: https://www.bilibili.com/blackboard/era/6bNzojX2NqdOCPv1.html?auto_media_playback=1&spm_id_from=333.788.right_bottom.adfloor-3038.click
+                      - img [ref=f17e955]
+                      - generic [ref=f17e956]: 万元大奖，助你守护生态！
+      - generic [ref=f12e134]:
+        - generic [ref=f12e135]:
+          - generic [ref=f12e136]: 1 / 4
+          - generic [ref=f12e137]: "01"
+        - generic [ref=f12e138]:
+          - generic [ref=f12e139] [cursor=pointer]:
+            - generic [ref=f12e141]: "1"
+            - generic [ref=f12e142]: "01"
+          - generic [ref=f12e143] [cursor=pointer]:
+            - generic [ref=f12e145]: "2"
+            - generic [ref=f12e146]: "02"
+          - generic [ref=f12e147] [cursor=pointer]:
+            - generic [ref=f12e149]: "3"
+            - generic [ref=f12e150]: "03"
+          - generic [ref=f12e151] [cursor=pointer]:
+            - generic [ref=f12e153]: "4"
+            - generic [ref=f12e154]: "04"
+    - complementary [ref=f12e155]:
+      - generic [ref=f12e156]:
+        - generic [ref=f12e157]:
+          - generic [ref=f12e158] [cursor=pointer]:
+            - img [ref=f12e160]
+            - generic [ref=f12e163]: 场景
+          - generic [ref=f12e164] [cursor=pointer]:
+            - img [ref=f12e166]
+            - generic [ref=f12e168]: 标注
+          - generic [ref=f12e169] [cursor=pointer]:
+            - img [ref=f12e171]
+            - generic [ref=f12e173]: 音频
+          - generic [ref=f12e174] [cursor=pointer]:
+            - img [ref=f12e176]
+            - generic [ref=f12e178]: 后期
+        - button [ref=f12e179] [cursor=pointer]:
+          - img [ref=f12e182]
+      - generic [ref=f12e185]:
+        - generic [ref=f12e186]:
+          - generic [ref=f12e187]: 场景属性
+          - generic [ref=f12e188]:
+            - generic [ref=f12e189]: 名称
+            - textbox [ref=f12e192]: "01"
+          - generic [ref=f12e193]:
+            - generic [ref=f12e194]: 标题
+            - textbox [ref=f12e197]
+        - generic [ref=f12e198]:
+          - generic [ref=f12e199]: 缩略图
+          - img "缩略图" [ref=f12e201]
+          - generic [ref=f12e202]:
+            - generic [ref=f12e203]: 缩略图 URL
+            - textbox [ref=f12e206]: /uploads/projects/292a536858c9435875890f00ab5595a6/36f5179690024d678eed983707673e9e.jpg
+          - button "生成缩略图" [ref=f12e208] [cursor=pointer]:
+            - generic [ref=f12e209]: 生成缩略图
+        - generic [ref=f12e210]:
+          - generic [ref=f12e211]: 初始视角
+          - generic [ref=f12e212]:
+            - generic [ref=f12e213]: 水平视角 (Yaw)
+            - slider "slider between -180 and 180" [ref=f12e217] [cursor=pointer]
+            - generic [ref=f12e219]: 24.879945276998637°
+          - generic [ref=f12e220]:
+            - generic [ref=f12e221]: 垂直视角 (Pitch)
+            - slider "slider between -90 and 90" [ref=f12e225] [cursor=pointer]
+            - generic [ref=f12e227]: "-4.976638925125936°"
+          - generic [ref=f12e228]:
+            - generic [ref=f12e229]: 视场角 (HFOV)
+            - slider "slider between 30 and 150" [ref=f12e233] [cursor=pointer]
+            - generic [ref=f12e235]: 57.95369755675381°
+          - generic [ref=f12e236]:
+            - generic [ref=f12e237]: 最小视场角
+            - slider "slider between 10 and 90" [ref=f12e241] [cursor=pointer]
+            - generic [ref=f12e243]: 70°
+          - generic [ref=f12e244]:
+            - generic [ref=f12e245]: 最大视场角
+            - slider "slider between 90 and 170" [ref=f12e249] [cursor=pointer]
+            - generic [ref=f12e251]: 140°
+          - generic [ref=f12e252]:
+            - generic [ref=f12e253]: 最大像素缩放
+            - slider "slider between 1 and 4" [ref=f12e257] [cursor=pointer]
+            - generic [ref=f12e259]: 2x
+          - button "记录当前视角" [ref=f12e261] [cursor=pointer]:
+            - generic [ref=f12e262]: 记录当前视角
+        - generic [ref=f12e263]:
+          - generic [ref=f12e264]: 视角限制
+          - generic [ref=f12e265]:
+            - generic [ref=f12e266]: 限制模式
+            - generic [ref=f12e268] [cursor=pointer]:
+              - generic:
+                - combobox [ref=f12e270]
+                - generic [ref=f12e271]: 自动
+              - img [ref=f12e274]
+          - generic [ref=f12e276]:
+            - generic [ref=f12e277]: 视场角类型
+            - generic [ref=f12e279] [cursor=pointer]:
+              - generic:
+                - combobox [ref=f12e281]
+                - generic [ref=f12e282]: MFOV
+              - img [ref=f12e285]
+        - generic [ref=f12e287]:
+          - generic [ref=f12e288]: GPS 坐标
+          - generic [ref=f12e289]:
+            - generic [ref=f12e290]: 纬度 (Lat)
+            - generic [ref=f12e291]:
+              - button "decrease number" [ref=f12e292] [cursor=pointer]:
+                - img [ref=f12e294]
+              - button "increase number" [ref=f12e296] [cursor=pointer]:
+                - img [ref=f12e298]
+              - spinbutton [ref=f12e302]
+          - generic [ref=f12e303]:
+            - generic [ref=f12e304]: 经度 (Lng)
+            - generic [ref=f12e305]:
+              - button "decrease number" [ref=f12e306] [cursor=pointer]:
+                - img [ref=f12e308]
+              - button "increase number" [ref=f12e310] [cursor=pointer]:
+                - img [ref=f12e312]
+              - spinbutton [ref=f12e316]
+          - generic [ref=f12e317]:
+            - generic [ref=f12e318]: 朝向 (Heading)
+            - generic [ref=f12e319]:
+              - button "decrease number" [ref=f12e320] [cursor=pointer]:
+                - img [ref=f12e322]
+              - button "increase number" [ref=f12e324] [cursor=pointer]:
+                - img [ref=f12e326]
+              - spinbutton [ref=f12e330]
+        - generic [ref=f12e331]:
+          - generic [ref=f12e332]: 启动脚本 (onstart)
+          - textbox "如：loadscene(scene1);" [ref=f12e334]
+  - contentinfo [ref=f12e335]:
+    - generic [ref=f12e336]:
+      - generic [ref=f12e337]: 未打开项目
+      - generic [ref=f12e338]: "|"
+      - generic [ref=f12e339]: "场景: 4"
+      - generic [ref=f12e340]: "|"
+      - generic [ref=f12e341]: "热点: 6"
+    - generic [ref=f12e342]:
+      - generic [ref=f12e343]: "|"
+      - generic [ref=f12e344]:
+        - button "−" [ref=f12e345] [cursor=pointer]
+        - generic [ref=f12e346]: 100%
+        - button "+" [ref=f12e347] [cursor=pointer]

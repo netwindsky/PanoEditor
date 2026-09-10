@@ -545,6 +545,11 @@ export class PanoEngineAdapter {
     await this.engine.setEnvironmentMap(url)
   }
 
+  /** 完全禁用场景环境照明（scene.environment = null），与 setEnvironmentMap(null) 语义不同 */
+  public disableEnvironment(): void {
+    this.engine.disableEnvironment()
+  }
+
   /** 配置太阳方向光（开关/方位角/仰角/强度/颜色） */
   public setSunLight(config: SunLightConfig): void {
     this.engine.setSunLight(config)

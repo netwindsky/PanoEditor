@@ -1,0 +1,7 @@
+- generic [ref=f15e2]:
+  - button "⟳" [ref=f15e9] [cursor=pointer]
+  - generic [ref=f15e10]:
+    - generic [ref=f15e12] [cursor=pointer]: "01"
+    - generic [ref=f15e14] [cursor=pointer]: "02"
+    - generic [ref=f15e16] [cursor=pointer]: "03"
+  - generic [ref=f15e19]: 正在加载全景...

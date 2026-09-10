@@ -1,0 +1,10 @@
+- generic [ref=f4e2]:
+  - img [ref=f4e21] [cursor=pointer]
+  - generic [ref=f4e8]: "01"
+  - button "⟳" [ref=f4e9] [cursor=pointer]
+  - generic [ref=f4e10]:
+    - generic [ref=f4e12] [cursor=pointer]: "01"
+    - generic [ref=f4e14] [cursor=pointer]: "02"
+    - generic [ref=f4e16] [cursor=pointer]: "03"
+  - generic:
+    - generic: 正在加载全景...

@@ -1,0 +1,229 @@
+- generic [ref=f10e3]:
+  - banner [ref=f10e4]:
+    - generic [ref=f10e5]:
+      - generic [ref=f10e6]:
+        - generic [ref=f10e7]: ◎
+        - generic [ref=f10e8]: PanoEditor
+      - navigation [ref=f10e9]:
+        - link "查看器" [ref=f10e10] [cursor=pointer]:
+          - /url: "#"
+        - link "编辑器" [ref=f10e11] [cursor=pointer]:
+          - /url: "#"
+        - link "后台管理" [ref=f10e12] [cursor=pointer]:
+          - /url: "#"
+    - generic [ref=f10e13]:
+      - button "项目" [ref=f10e14] [cursor=pointer]:
+        - generic [ref=f10e15]:
+          - img [ref=f10e17]
+          - text: 项目
+      - button "导出配置" [ref=f10e19] [cursor=pointer]:
+        - generic [ref=f10e20]:
+          - img [ref=f10e22]
+          - text: 导出配置
+      - button "静态化导出" [ref=f10e24] [cursor=pointer]:
+        - generic [ref=f10e25]:
+          - img [ref=f10e27]
+          - text: 静态化导出
+      - button "保存" [ref=f10e31] [cursor=pointer]:
+        - generic [ref=f10e32]:
+          - img [ref=f10e34]
+          - text: 保存
+      - button "预览" [ref=f10e36] [cursor=pointer]:
+        - generic [ref=f10e37]:
+          - img [ref=f10e39]
+          - text: 预览
+      - button "发布" [ref=f10e41] [cursor=pointer]:
+        - generic [ref=f10e42]:
+          - img [ref=f10e44]
+          - text: 发布
+  - generic [ref=f10e46]:
+    - complementary [ref=f10e47]:
+      - generic [ref=f10e49]:
+        - generic [ref=f10e50]:
+          - generic [ref=f10e51]: 场景列表
+          - button [ref=f10e52] [cursor=pointer]:
+            - img [ref=f10e55]
+        - generic [ref=f10e58]:
+          - generic [ref=f10e59] [cursor=pointer]:
+            - generic [ref=f10e61]:
+              - generic [ref=f10e62]: "01"
+              - generic [ref=f10e63]: 0 个热点
+            - button "..." [ref=f10e65]:
+              - generic [ref=f10e66]: ...
+          - generic [ref=f10e67] [cursor=pointer]:
+            - generic [ref=f10e69]:
+              - generic [ref=f10e70]: "02"
+              - generic [ref=f10e71]: 0 个热点
+            - button "..." [ref=f10e73]:
+              - generic [ref=f10e74]: ...
+          - generic [ref=f10e75] [cursor=pointer]:
+            - generic [ref=f10e77]:
+              - generic [ref=f10e78]: "03"
+              - generic [ref=f10e79]: 0 个热点
+            - button "..." [ref=f10e81]:
+              - generic [ref=f10e82]: ...
+          - generic [ref=f10e83] [cursor=pointer]:
+            - generic [ref=f10e85]:
+              - generic [ref=f10e86]: "04"
+              - generic [ref=f10e87]: 0 个热点
+            - button "..." [ref=f10e89]:
+              - generic [ref=f10e90]: ...
+    - generic [ref=f10e91]:
+      - generic [ref=f10e92]:
+        - generic [ref=f10e93]:
+          - button "选择" [ref=f10e94] [cursor=pointer]:
+            - img [ref=f10e96]
+          - button "添加热点" [ref=f10e98] [cursor=pointer]:
+            - img [ref=f10e100]
+          - button "平移" [ref=f10e103] [cursor=pointer]:
+            - img [ref=f10e105]
+          - button "缩放" [ref=f10e107] [cursor=pointer]:
+            - img [ref=f10e109]
+        - generic [ref=f10e111]:
+          - button "切换左面板" [ref=f10e113] [cursor=pointer]:
+            - img [ref=f10e115]
+          - button "切换右面板" [ref=f10e117] [cursor=pointer]:
+            - img [ref=f10e119]
+      - generic [ref=f10e373] [cursor=pointer]:
+        - generic [ref=f10e374]: 点击查看
+        - img
+      - generic [ref=f10e134]:
+        - generic [ref=f10e135]:
+          - generic [ref=f10e136]: 4 / 4
+          - generic [ref=f10e137]: "04"
+        - generic [ref=f10e138]:
+          - generic [ref=f10e139] [cursor=pointer]:
+            - generic [ref=f10e141]: "1"
+            - generic [ref=f10e142]: "01"
+          - generic [ref=f10e143] [cursor=pointer]:
+            - generic [ref=f10e145]: "2"
+            - generic [ref=f10e146]: "02"
+          - generic [ref=f10e147] [cursor=pointer]:
+            - generic [ref=f10e149]: "3"
+            - generic [ref=f10e150]: "03"
+          - generic [ref=f10e151] [cursor=pointer]:
+            - generic [ref=f10e153]: "4"
+            - generic [ref=f10e154]: "04"
+    - complementary [ref=f10e155]:
+      - generic [ref=f10e156]:
+        - generic [ref=f10e157]:
+          - generic [ref=f10e158] [cursor=pointer]:
+            - img [ref=f10e160]
+            - generic [ref=f10e163]: 场景
+          - generic [ref=f10e164] [cursor=pointer]:
+            - img [ref=f10e166]
+            - generic [ref=f10e168]: 标注
+          - generic [ref=f10e169] [cursor=pointer]:
+            - img [ref=f10e171]
+            - generic [ref=f10e173]: 音频
+          - generic [ref=f10e174] [cursor=pointer]:
+            - img [ref=f10e176]
+            - generic [ref=f10e178]: 后期
+        - button [ref=f10e179] [cursor=pointer]:
+          - img [ref=f10e182]
+      - generic [ref=f10e357]:
+        - generic [ref=f10e358]:
+          - generic [ref=f10e359] [cursor=pointer]:
+            - generic [ref=f10e360]: 网页热点
+            - generic [ref=f10e361]: 网页热点
+            - button "×" [ref=f10e362]:
+              - generic [ref=f10e363]: ×
+          - generic [ref=f10e364] [cursor=pointer]:
+            - generic [ref=f10e365]: 信息点
+            - generic [ref=f10e366]: 信息点
+            - button "×" [ref=f10e367]:
+              - generic [ref=f10e368]: ×
+        - button "一键清空" [ref=f10e370] [cursor=pointer]:
+          - generic [ref=f10e371]: 一键清空
+        - generic [ref=f10e376]:
+          - generic [ref=f10e377]: 基本信息
+          - generic [ref=f10e378]:
+            - generic [ref=f10e379]: 名称
+            - textbox [ref=f10e382]: 信息点
+          - generic [ref=f10e383]:
+            - generic [ref=f10e384]: 类型
+            - textbox [disabled] [ref=f10e387]: info
+          - generic [ref=f10e388]:
+            - generic [ref=f10e389]: ATH
+            - generic [ref=f10e390]:
+              - button "decrease number" [ref=f10e391] [cursor=pointer]:
+                - img [ref=f10e393]
+              - button "increase number" [ref=f10e395] [cursor=pointer]:
+                - img [ref=f10e397]
+              - spinbutton [ref=f10e401]: "1.76"
+          - generic [ref=f10e402]:
+            - generic [ref=f10e403]: ATV
+            - generic [ref=f10e404]:
+              - button "decrease number" [ref=f10e405] [cursor=pointer]:
+                - img [ref=f10e407]
+              - button "increase number" [ref=f10e409] [cursor=pointer]:
+                - img [ref=f10e411]
+              - spinbutton [ref=f10e415]: "27.04"
+        - generic [ref=f10e417]: 尺寸变换
+        - generic [ref=f10e418]:
+          - generic [ref=f10e419]: 外观样式
+          - generic [ref=f10e420]:
+            - generic [ref=f10e421]: 样式
+            - generic [ref=f10e423] [cursor=pointer]:
+              - generic:
+                - combobox [ref=f10e425]
+                - generic [ref=f10e426]: 毛玻璃面板
+              - img [ref=f10e429]
+          - generic [ref=f10e431]:
+            - generic [ref=f10e432]: 着色器
+            - generic [ref=f10e434] [cursor=pointer]:
+              - generic:
+                - combobox [ref=f10e436]
+                - generic [ref=f10e437]: 无
+              - img [ref=f10e440]
+        - generic [ref=f10e442]:
+          - generic [ref=f10e443]: 内容设置
+          - generic [ref=f10e444]:
+            - generic [ref=f10e445]: 标题
+            - textbox "信息点标题" [ref=f10e448]
+          - generic [ref=f10e449]:
+            - generic [ref=f10e450]: 描述
+            - textbox "详细描述" [ref=f10e452]
+          - generic [ref=f10e453]:
+            - generic [ref=f10e454]: 图片URL
+            - textbox "可选图片地址" [ref=f10e457]
+        - generic [ref=f10e458]:
+          - generic [ref=f10e459]: 交互设置
+          - generic [ref=f10e460]:
+            - generic [ref=f10e461]: 动作
+            - generic [ref=f10e463] [cursor=pointer]:
+              - generic:
+                - combobox [ref=f10e465]
+                - generic [ref=f10e466]: 跳转场景
+              - img [ref=f10e469]
+          - generic [ref=f10e471]:
+            - generic [ref=f10e472]: 目标场景
+            - generic [ref=f10e474] [cursor=pointer]:
+              - generic:
+                - combobox [ref=f10e476]
+                - generic [ref=f10e477]: "03"
+              - img [ref=f10e480]
+        - generic [ref=f10e482]:
+          - generic [ref=f10e483]: 事件脚本 (events)
+          - generic [ref=f10e484]:
+            - generic [ref=f10e485]: 事件 JSON
+            - 'textbox "{\"click\":\"func()\",\"hover\":\"showTip()\"}" [ref=f10e487]'
+        - button "Delete" [ref=f10e489] [cursor=pointer]:
+          - generic [ref=f10e490]: Delete
+        - button "Export XML to Console" [ref=f10e492] [cursor=pointer]:
+          - generic [ref=f10e493]: Export XML to Console
+        - generic [ref=f10e494]: "ATH: 1.76, ATV: 27.04"
+  - contentinfo [ref=f10e335]:
+    - generic [ref=f10e336]:
+      - generic [ref=f10e337]: 未打开项目
+      - generic [ref=f10e338]: "|"
+      - generic [ref=f10e339]: "场景: 4"
+      - generic [ref=f10e340]: "|"
+      - generic [ref=f10e341]: "热点: 2"
+    - generic [ref=f10e342]:
+      - generic [ref=f10e495]: 未保存
+      - generic [ref=f10e343]: "|"
+      - generic [ref=f10e344]:
+        - button "−" [ref=f10e345] [cursor=pointer]
+        - generic [ref=f10e346]: 100%
+        - button "+" [ref=f10e347] [cursor=pointer]

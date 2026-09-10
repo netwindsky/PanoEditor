@@ -1,0 +1,156 @@
+{
+  "version": "1.0.0",
+  "lastScanned": 1782808190765,
+  "projectRoot": "c:\\TmpForWork\\Aworkplace\\WebstormProjects\\PanoProject\\PanoEditor",
+  "techStack": {
+    "languages": [
+      {
+        "name": "JavaScript/TypeScript",
+        "version": null,
+        "confidence": "high",
+        "markers": [
+          "package.json"
+        ]
+      },
+      {
+        "name": "TypeScript",
+        "version": null,
+        "confidence": "high",
+        "markers": [
+          "tsconfig.json"
+        ]
+      }
+    ],
+    "frameworks": [
+      {
+        "name": "vue",
+        "version": "3.5.13",
+        "category": "frontend"
+      },
+      {
+        "name": "vite",
+        "version": "6.0.5",
+        "category": "build"
+      },
+      {
+        "name": "vitest",
+        "version": "3.2.6",
+        "category": "testing"
+      }
+    ],
+    "packageManager": "npm",
+    "runtime": null
+  },
+  "build": {
+    "buildCommand": "npm run build",
+    "testCommand": null,
+    "lintCommand": null,
+    "devCommand": "npm run dev",
+    "scripts": {
+      "dev": "vite",
+      "build": "vue-tsc -b && vite build",
+      "preview": "vite preview",
+      "typecheck": "vue-tsc --noEmit",
+      "test:unit": "vitest",
+      "test:run": "vitest run"
+    }
+  },
+  "conventions": {
+    "namingStyle": null,
+    "importStyle": "ES modules",
+    "testPattern": null,
+    "fileOrganization": "type-based"
+  },
+  "structure": {
+    "isMonorepo": false,
+    "workspaces": [],
+    "mainDirectories": [
+      "public",
+      "src"
+    ],
+    "gitBranches": null
+  },
+  "customNotes": [],
+  "directoryMap": {
+    "public": {
+      "path": "public",
+      "purpose": "Public files",
+      "fileCount": 0,
+      "lastAccessed": 1782808190747,
+      "keyFiles": []
+    },
+    "publish": {
+      "path": "publish",
+      "purpose": null,
+      "fileCount": 0,
+      "lastAccessed": 1782808190748,
+      "keyFiles": []
+    },
+    "src": {
+      "path": "src",
+      "purpose": "Source code",
+      "fileCount": 2,
+      "lastAccessed": 1782808190753,
+      "keyFiles": [
+        "App.vue",
+        "main.ts"
+      ]
+    },
+    "public\\assets": {
+      "path": "public\\assets",
+      "purpose": "Static assets",
+      "fileCount": 0,
+      "lastAccessed": 1782808190754,
+      "keyFiles": []
+    },
+    "publish\\assets": {
+      "path": "publish\\assets",
+      "purpose": "Static assets",
+      "fileCount": 0,
+      "lastAccessed": 1782808190755,
+      "keyFiles": []
+    },
+    "src\\api": {
+      "path": "src\\api",
+      "purpose": "API routes",
+      "fileCount": 7,
+      "lastAccessed": 1782808190755,
+      "keyFiles": [
+        "auth.ts",
+        "hotspot.ts",
+        "index.ts"
+      ]
+    },
+    "src\\components": {
+      "path": "src\\components",
+      "purpose": "UI components",
+      "fileCount": 20,
+      "lastAccessed": 1782808190755,
+      "keyFiles": [
+        "AssetGrid.vue",
+        "AssetLibrary.vue",
+        "AudioSettings.vue"
+      ]
+    },
+    "src\\models": {
+      "path": "src\\models",
+      "purpose": "Data models",
+      "fileCount": 1,
+      "lastAccessed": 1782808190756,
+      "keyFiles": [
+        "index.ts"
+      ]
+    },
+    "src\\types": {
+      "path": "src\\types",
+      "purpose": "Type definitions",
+      "fileCount": 1,
+      "lastAccessed": 1782808190756,
+      "keyFiles": [
+        "index.ts"
+      ]
+    }
+  },
+  "hotPaths": [],
+  "userDirectives": []
+}

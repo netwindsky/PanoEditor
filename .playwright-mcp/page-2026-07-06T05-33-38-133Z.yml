@@ -1,0 +1,5 @@
+- generic [ref=f2e2]:
+  - button "⟳" [ref=f2e9] [cursor=pointer]
+  - generic:
+    - generic: 正在加载配置...
+  - generic [ref=f2e11]: "加载失败: h is not defined"

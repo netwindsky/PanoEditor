@@ -1,0 +1,105 @@
+feat(static-export): 新增静态化导出功能，支持独立部署的全景漫游包
+
+## 核心功能
+
+### 静态化导出系统
+- **staticExport.ts**：纯数据转换层
+  - `buildSceneDataList()`：将编辑器 Project/Scene/Hotspot 模型转换为 PanoViewV2 SceneData[]
+  - `collectResourceUrls()`：收集所有需要下载的内部资源 URL（去重）
+  - `rewriteSceneDataUrls()`：将内部 URL 重写为 assets/ 相对路径
+  - `generateConfigJson()`：生成 config.json（包含 title、firstScene、tourSettings、scenes）
+  - `sanitizeAssetPath()`：路径清洗，防止路径遍历攻击
+  - `expandTileUrl()`：展开瓦片 URL 模板（支持 krpano 多分辨率格式 %s/%0v/%0h）
+  - `isInternalAssetUrl()`：判断是否为内部资源（排除 http/data/blob）
+
+- **staticPacker.ts**：IO 层打包器
+  - `createStaticPack()`：创建静态 ZIP 包
+    - 阶段 1：收集资源（枚举所有待下载 URL + 对应 zipPath）
+    - 阶段 2：并发下载（有界并发池，默认 6 个并发）
+    - 阶段 3：重写 URL + 写入 config.json
+    - 阶段 4：抓取预构建 viewer 产物并写入 zip
+  - `buildProjectZip()`：便捷入口，从编辑器模型直接构建 ZIP
+  - `defaultFetcher()`：浏览器默认 fetcher（fetch + Blob）
+  - 进度回调：`PackProgress`（phase/percent/completed/total/currentUrl）
+  - 容错机制：单资源下载失败时写入占位文件，不阻断整体打包
+
+### 独立 Viewer 应用
+- **static-viewer/**：独立的 three.js viewer（不依赖 Vue）
+  - `index.html`：入口 HTML（含 `__PROJECT_TITLE__` 占位符）
+  - `main.ts`：加载 config.json，初始化 PanoViewV2 引擎
+  - 支持纹理加载 worker（textureLoader.worker.js）
+
+- **vite.config.viewer.ts**：Viewer 独立构建配置
+  - 构建产物输出到 `public/static-viewer/`
+  - 文件名固定（无 hash），方便运行时枚举打入 zip
+  - 别名配置：`@panoview` → PanoViewV2/src/panoview
+
+### 编辑器集成
+- **TopNav.vue**：新增「静态化导出」按钮
+  - 图标：Box
+  - 加载状态：`vm.isStaticExporting.value`
+  - 提示：导出可独立部署的静态 ZIP 包（含 Viewer + 资源）
+
+- **EditorViewModel.ts**：新增 `exportStatic()` 方法
+  - 进度状态：`staticExportProgress`（PackProgress | null）
+  - 导出状态：`isStaticExporting`（防止重复导出）
+  - 流程：
+    1. 拉取所有场景的热点数据（并行）
+    2. 调用 `buildProjectZip()` 生成 ZIP
+    3. 调用 `downloadBlob()` 触发浏览器下载
+  - 错误处理：项目未打开/正在导出时抛出异常
+
+- **downloadFile.ts**：新增 `downloadBlob()` 方法
+  - 支持 Blob 数据下载（用于 ZIP 文件）
+  - 自动释放 Object URL
+
+### 构建配置
+- **package.json**：
+  - 新增依赖：`jszip@^3.10.1`
+  - 新增脚本：`build:viewer`（独立构建 viewer）
+  - 修改 `build`：先构建 viewer，再构建主应用
+
+- **.gitignore**：
+  - 新增 `publish/` 和 `.vite/` 忽略规则
+
+### 测试覆盖
+- **staticExport.spec.ts**：纯数据转换测试
+  - `sanitizeAssetPath()`：路径清洗（绝对路径、查询串、路径遍历）
+  - `buildSceneDataList()`：场景数据转换（热点 linkedscene 映射、onclick 自动补全）
+  - `expandTileUrl()`：瓦片 URL 展开（整面模板、krpano 多分辨率模板）
+  - `collectResourceUrls()`：资源 URL 收集（thumb/preview/tiles/hotspots）
+  - `rewriteSceneDataUrls()`：URL 重写（内部资源 → assets/ 相对路径）
+  - `generateConfigJson()`：config.json 生成（title/firstScene/tourSettings/scenes）
+
+- **staticPacker.spec.ts**：IO 层打包测试
+  - `createStaticPack()`：完整打包流程（mock fetcher）
+  - 并发控制：验证并发上限（默认 6）
+  - 进度回调：验证各阶段进度推送
+  - 容错机制：单资源下载失败时写入占位文件
+  - Viewer 资源缺失：抛出硬错误
+
+## 技术亮点
+1. **分层架构**：staticExport（纯数据）与 staticPacker（IO）分离，便于测试和维护
+2. **并发控制**：有界并发池（默认 6），避免打满浏览器连接池
+3. **容错机制**：单资源失败不阻断整体打包，用户拿到尽可能完整的包
+4. **路径安全**：sanitizeAssetPath 防止路径遍历攻击
+5. **URL 重写**：内部资源自动转换为 assets/ 相对路径，外链保持不变
+6. **进度反馈**：四阶段进度回调（collect/download/pack/done）
+7. **独立 Viewer**：不依赖 Vue，纯 three.js，体积更小加载更快
+
+## 文件清单
+### 新增文件（6 个）
+- `src/utils/staticExport.ts`：纯数据转换层
+- `src/utils/staticExport.spec.ts`：数据转换测试
+- `src/utils/staticPacker.ts`：IO 层打包器
+- `src/utils/staticPacker.spec.ts`：打包器测试
+- `static-viewer/index.html`：Viewer 入口
+- `static-viewer/main.ts`：Viewer 主逻辑
+- `vite.config.viewer.ts`：Viewer 构建配置
+
+### 修改文件（4 个）
+- `src/components/TopNav.vue`：新增静态化导出按钮
+- `src/viewmodels/EditorViewModel.ts`：新增 exportStatic 方法
+- `src/utils/downloadFile.ts`：新增 downloadBlob 方法
+- `package.json` / `package-lock.json`：新增 jszip 依赖和 build:viewer 脚本
+- `.gitignore`：新增 publish/ 和 .vite/ 忽略规则
