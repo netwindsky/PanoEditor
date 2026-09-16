@@ -171,6 +171,22 @@
         />
         <span class="prop-value">{{ form.bloomThreshold.toFixed(2) }}</span>
       </div>
+      <div class="prop-row">
+        <label>半径</label>
+        <el-input-number
+          v-model="form.bloomRadius"
+          data-testid="bloom-radius-input"
+          :min="0"
+          :max="1"
+          :step="0.1"
+          :precision="1"
+          :controls-position="'right'"
+          size="small"
+          class="num-input"
+          @change="handleUpdate"
+        />
+        <span class="prop-value">{{ form.bloomRadius.toFixed(1) }}</span>
+      </div>
     </div>
 
     <!-- 操作按钮 -->
@@ -182,18 +198,19 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, ref, watch, onBeforeUnmount, computed } from 'vue'
-import { useSceneStore } from '@/stores/scene'
+import { reactive, ref, watch, onMounted, onBeforeUnmount, computed } from 'vue'
 import { useEditorStore } from '@/stores/editor'
-import { useProjectStore } from '@/stores/project'
 import { ElMessage } from 'element-plus'
 import { getPostProcessing, updatePostProcessing } from '@/api/postprocessing'
-import { getLuts, uploadLut } from '@/api/lut'
+import { getAllLuts, uploadLutGlobal } from '@/api/lut'
+import type { EditorViewModel } from '@/viewmodels/EditorViewModel'
 import type { UpdatePostProcessingParams, LutResource } from '@/types'
 
-const sceneStore = useSceneStore()
+const props = defineProps<{ vm: EditorViewModel }>()
 const editorStore = useEditorStore()
-const projectStore = useProjectStore()
+
+/** 当前场景来自 EditorViewModel（编辑器已从 Pinia scene store 迁移到 MVC 架构） */
+const currentScene = computed(() => props.vm.sceneViewModel.currentScene.value)
 
 interface NumericField {
   key: keyof typeof form
@@ -210,6 +227,8 @@ const numericFields: NumericField[] = [
   { key: 'contrast', label: '对比度', min: 0, max: 2, step: 0.05, precision: 2 },
   { key: 'saturation', label: '饱和度', min: 0, max: 2, step: 0.05, precision: 2 },
   { key: 'colorTemperature', label: '色温', min: -100, max: 100, step: 1, precision: 0, isInt: true },
+  { key: 'vignette', label: '暗角范围', min: 0, max: 1, step: 0.05, precision: 2 },
+  { key: 'vignetteIntensity', label: '暗角明暗', min: 0, max: 1, step: 0.05, precision: 2 },
 ]
 
 const defaults = {
@@ -221,8 +240,11 @@ const defaults = {
   contrast: 1.0,
   saturation: 1.0,
   colorTemperature: 0,
+  vignette: 0,
+  vignetteIntensity: 1,
   bloomStrength: 0,
   bloomThreshold: 0.8,
+  bloomRadius: 0.5,
   enabled: true,
 }
 
@@ -235,6 +257,7 @@ const form = reactive({ ...defaults })
  *   contrast [0,2]    → 面板 contrast
  *   saturation [0,2]  → 面板 saturation
  *   temperature [-1,1]→ 面板 colorTemperature（映射到 [-100,100]）
+ *   vignette   [0,1]  → 面板 vignette（暗角）
  */
 interface BuiltinPreset {
   key: string
@@ -243,27 +266,34 @@ interface BuiltinPreset {
   contrast: number
   saturation: number
   temperature: number
+  vignette: number
+  vignetteIntensity?: number
 }
 
 const BUILTIN_PRESETS: BuiltinPreset[] = [
-  { key: 'original',     name: '原始',     brightness:  0.00, contrast: 1.0, saturation: 1.0, temperature:  0.0 },
-  { key: 'vivid',        name: '鲜艳',     brightness:  0.05, contrast: 1.3, saturation: 1.5, temperature:  0.0 },
-  { key: 'warm',         name: '暖色调',   brightness:  0.02, contrast: 1.1, saturation: 1.1, temperature:  0.5 },
-  { key: 'cool',         name: '冷色调',   brightness:  0.00, contrast: 1.1, saturation: 0.9, temperature: -0.5 },
-  { key: 'cinematic',    name: '电影感',   brightness: -0.05, contrast: 1.4, saturation: 0.85, temperature: 0.1 },
-  { key: 'vintage',      name: '复古',     brightness:  0.03, contrast: 0.9, saturation: 0.7, temperature:  0.2 },
-  { key: 'noir',         name: '黑白',     brightness:  0.00, contrast: 1.3, saturation: 0.0, temperature:  0.0 },
-  { key: 'sepia',        name: '棕褐色',   brightness:  0.02, contrast: 1.05, saturation: 0.0, temperature: 0.15 },
-  { key: 'dramatic',     name: '戏剧',     brightness: -0.08, contrast: 1.6, saturation: 1.2, temperature: 0.0 },
-  { key: 'dreamy',       name: '梦幻',     brightness:  0.10, contrast: 0.85, saturation: 0.8, temperature: 0.2 },
-  { key: 'crossProcess', name: '交叉冲洗', brightness:  0.02, contrast: 1.2, saturation: 1.3, temperature:  0.3 },
-  { key: 'fade',         name: '褪色',     brightness:  0.08, contrast: 0.8, saturation: 0.5, temperature:  0.1 },
+  { key: 'original',     name: '原始',     brightness:  0.00, contrast: 1.0, saturation: 1.0, temperature:  0.0, vignette: 0.0 },
+  { key: 'vivid',        name: '鲜艳',     brightness:  0.05, contrast: 1.3, saturation: 1.5, temperature:  0.0, vignette: 0.0 },
+  { key: 'warm',         name: '暖色调',   brightness:  0.02, contrast: 1.1, saturation: 1.1, temperature:  0.5, vignette: 0.2 },
+  { key: 'cool',         name: '冷色调',   brightness:  0.00, contrast: 1.1, saturation: 0.9, temperature: -0.5, vignette: 0.0 },
+  { key: 'cinematic',    name: '电影感',   brightness: -0.05, contrast: 1.4, saturation: 0.85, temperature: 0.1, vignette: 0.5 },
+  { key: 'vintage',      name: '复古',     brightness:  0.03, contrast: 0.9, saturation: 0.7, temperature:  0.2, vignette: 0.4 },
+  { key: 'noir',         name: '黑白',     brightness:  0.00, contrast: 1.3, saturation: 0.0, temperature:  0.0, vignette: 0.6 },
+  { key: 'sepia',        name: '棕褐色',   brightness:  0.02, contrast: 1.05, saturation: 0.0, temperature: 0.15, vignette: 0.3 },
+  { key: 'dramatic',     name: '戏剧',     brightness: -0.08, contrast: 1.6, saturation: 1.2, temperature:  0.0, vignette: 0.7 },
+  { key: 'dreamy',       name: '梦幻',     brightness:  0.10, contrast: 0.85, saturation: 0.8, temperature: 0.2, vignette: 0.3 },
+  { key: 'crossProcess', name: '交叉冲洗', brightness:  0.02, contrast: 1.2, saturation: 1.3, temperature:  0.3, vignette: 0.2 },
+  { key: 'fade',         name: '褪色',     brightness:  0.08, contrast: 0.8, saturation: 0.5, temperature:  0.1, vignette: 0.0 },
 ]
 
 /** 预设按钮列表（按 UI 4×3 网格排序，与 TestView 一致） */
 const presetOptions = computed(() => BUILTIN_PRESETS)
 
 const lutOptions = ref<LutResource[]>([])
+
+/** LUT 列表加载 Promise：syncToEngine 用它等待选项就绪，
+ * 防止「有 lutResourceId 但 lutOptions 未加载」时下发 null fileUrl → 引擎 removeLut() */
+let lutLoading: Promise<void> | null = null
+
 const uploadingLut = ref(false)
 const lutFileInput = ref<HTMLInputElement | null>(null)
 
@@ -279,12 +309,20 @@ const selectedLut = computed<LutResource | undefined>(() => {
 /**
  * 将当前表单状态实时同步到引擎（不经过防抖），
  * 以保证编辑参数时画布即时反馈；后端保存仍走 300ms 防抖。
+ *
+ * LUT 竞态保护：配置了 lutResourceId 但选项列表尚未加载完成时，
+ * 先等待加载再下发 —— 否则 selectedLut 查不到 → fileUrl=null →
+ * adapter 误判为「未选 LUT」执行 removeLut()，清掉画面已有效果。
  */
-function syncToEngine(): void {
+async function syncToEngine(): Promise<void> {
   const adapter = editorStore.engineAdapter
   if (!adapter || typeof adapter.applyPostConfig !== 'function') return
-  // 切场景后 engineAdapter 可能还是旧场景的 adapter，但 PostProcessingManager 是 per-engine 的，
-  // applyPostConfig 对当前激活场景的后处理生效，此处直接调用即可。
+
+  // 等待 LUT 列表就绪（已选中资源但选项还没加载完成）
+  if (form.lutResourceId && !selectedLut.value && lutLoading) {
+    await lutLoading
+  }
+
   try {
     adapter.applyPostConfig({
       enabled: form.enabled,
@@ -293,9 +331,14 @@ function syncToEngine(): void {
       contrast: form.contrast,
       saturation: form.saturation,
       colorTemperature: form.colorTemperature,
+      vignette: form.vignette,
+      vignetteIntensity: form.vignetteIntensity,
       lutResourceId: form.lutResourceId || null,
       lutFileUrl: selectedLut.value?.fileUrl || null,
       lutIntensity: form.lutIntensity,
+      bloomStrength: form.bloomStrength,
+      bloomThreshold: form.bloomThreshold,
+      bloomRadius: form.bloomRadius,
     })
   } catch (e) {
     console.warn('syncToEngine failed:', e)
@@ -312,7 +355,8 @@ function scheduleUpdate() {
 }
 
 async function doUpdate() {
-  if (!sceneStore.currentScene) return
+  if (!currentScene.value) return
+  const sceneId = currentScene.value.id
   const params: UpdatePostProcessingParams = {
     presetStyle: form.presetStyle,
     lutResourceId: form.lutResourceId || null,
@@ -322,12 +366,20 @@ async function doUpdate() {
     contrast: form.contrast,
     saturation: form.saturation,
     colorTemperature: form.colorTemperature,
+    vignette: form.vignette,
+    vignetteIntensity: form.vignetteIntensity,
     bloomStrength: form.bloomStrength,
     bloomThreshold: form.bloomThreshold,
+    bloomRadius: form.bloomRadius,
     enabled: form.enabled,
   }
-  await updatePostProcessing(sceneStore.currentScene.id, params)
-  editorStore.markDirty()
+  try {
+    await updatePostProcessing(sceneId, params)
+    editorStore.markDirty()
+  } catch (e) {
+    console.error('保存后期处理配置失败:', e)
+    ElMessage.error('保存后期处理配置失败，请检查后端服务与数据库')
+  }
 }
 
 async function handleUpdate() {
@@ -364,6 +416,13 @@ function applyPresetToForm(preset: BuiltinPreset) {
   form.saturation = preset.saturation
   // temperature [-1,1] -> colorTemperature [-100,100]
   form.colorTemperature = Math.round(preset.temperature * 100)
+  form.vignette = preset.vignette
+  if (preset.vignetteIntensity !== undefined) {
+    form.vignetteIntensity = preset.vignetteIntensity
+  } else {
+    // 旧预设默认使用全暗角明暗（兼容旧行为）
+    form.vignetteIntensity = 1
+  }
 }
 
 /** 选择预设：填充表单参数，立即保存 */
@@ -376,8 +435,11 @@ function selectPreset(key: string) {
       contrast: 1.0,
       saturation: 1.0,
       colorTemperature: 0,
+      vignette: 0,
+      vignetteIntensity: 1,
       bloomStrength: 0,
       bloomThreshold: 0.8,
+      bloomRadius: 0.5,
       toneMapping: 'none',
     })
   } else {
@@ -408,7 +470,7 @@ function onLutChange() {
 }
 
 function removeLut() {
-  form.lutResourceId = ''
+  form.lutResourceId = null as any
   form.lutIntensity = 1
   handleUpdate()
 }
@@ -422,14 +484,9 @@ async function onLutFileSelected(e: Event) {
   const file = input.files?.[0]
   if (!file) return
   input.value = ''
-  const projectId = projectStore.currentProject?.id
-  if (!projectId) {
-    ElMessage.warning('请先加载项目')
-    return
-  }
   uploadingLut.value = true
   try {
-    const res = await uploadLut(projectId, file, file.name)
+    const res = await uploadLutGlobal(file, file.name)
     const newLut = res.data.data
     lutOptions.value = [newLut, ...lutOptions.value]
     form.lutResourceId = newLut.id
@@ -445,7 +502,7 @@ async function onLutFileSelected(e: Event) {
 
 // 监听数值字段手动修改 → 标记为 custom（取消所有预设卡片高亮）
 watch(
-  () => [form.exposure, form.contrast, form.saturation, form.colorTemperature, form.bloomStrength, form.bloomThreshold, form.toneMapping],
+  () => [form.exposure, form.contrast, form.saturation, form.colorTemperature, form.vignette, form.vignetteIntensity, form.bloomStrength, form.bloomThreshold, form.bloomRadius, form.toneMapping],
   () => {
     if (applyingPreset) return
     markCustomIfPresetModified()
@@ -453,64 +510,68 @@ watch(
 )
 
 async function fetchLuts() {
-  const projectId = projectStore.currentProject?.id
-  if (!projectId) {
-    lutOptions.value = []
-    return
-  }
   try {
-    const res = await getLuts(projectId)
+    const res = await getAllLuts()
     lutOptions.value = Array.isArray(res.data.data) ? res.data.data : []
-  } catch {
+  } catch (e) {
+    console.warn('加载 LUT 列表失败:', e)
     lutOptions.value = []
+  } finally {
+    lutLoading = null
   }
 }
 
+function startFetchLuts(): void {
+  if (lutLoading) return
+  lutLoading = fetchLuts()
+}
+
 watch(
-  () => sceneStore.currentScene,
+  currentScene,
   async (scene) => {
-    if (scene) {
-      try {
-        const res = await getPostProcessing(scene.id)
-        const data = res.data.data
-        if (data) {
-          Object.assign(form, {
-            presetStyle: data.presetStyle || defaults.presetStyle,
-            lutResourceId: data.lutResourceId || defaults.lutResourceId,
-            lutIntensity: (data as any).lutIntensity ?? defaults.lutIntensity,
-            toneMapping: data.toneMapping || defaults.toneMapping,
-            exposure: data.exposure ?? defaults.exposure,
-            contrast: data.contrast ?? defaults.contrast,
-            saturation: data.saturation ?? defaults.saturation,
-            colorTemperature: data.colorTemperature ?? defaults.colorTemperature,
-            bloomStrength: data.bloomStrength ?? defaults.bloomStrength,
-            bloomThreshold: data.bloomThreshold ?? defaults.bloomThreshold,
-            enabled: data.enabled ?? defaults.enabled,
-          })
-        } else {
-          Object.assign(form, defaults)
-        }
-      } catch {
+    if (!scene) return
+    try {
+      const res = await getPostProcessing(scene.id)
+      const data = res.data.data
+      if (data) {
+        Object.assign(form, {
+          presetStyle: data.presetStyle || defaults.presetStyle,
+          lutResourceId: data.lutResourceId || defaults.lutResourceId,
+          lutIntensity: (data as any).lutIntensity ?? defaults.lutIntensity,
+          toneMapping: data.toneMapping || defaults.toneMapping,
+          exposure: data.exposure ?? defaults.exposure,
+          contrast: data.contrast ?? defaults.contrast,
+          saturation: data.saturation ?? defaults.saturation,
+          colorTemperature: data.colorTemperature ?? defaults.colorTemperature,
+          vignette: data.vignette ?? defaults.vignette,
+          vignetteIntensity: (data as any).vignetteIntensity ?? defaults.vignetteIntensity,
+          bloomStrength: data.bloomStrength ?? defaults.bloomStrength,
+          bloomThreshold: data.bloomThreshold ?? defaults.bloomThreshold,
+          bloomRadius: data.bloomRadius ?? defaults.bloomRadius,
+          enabled: data.enabled ?? defaults.enabled,
+        })
+      } else {
         Object.assign(form, defaults)
       }
+    } catch {
+      Object.assign(form, defaults)
     }
+    // 回填完成后必须再同步一次引擎：挂载时的即时同步早于本次异步 GET，
+    // 下发的是默认表单；否则会出现「输入框有值、画面零效果」。
+    syncToEngine()
   },
   { immediate: true },
 )
 
-watch(
-  () => projectStore.currentProject?.id,
-  () => {
-    fetchLuts()
-  },
-  { immediate: true },
-)
+onMounted(() => {
+  startFetchLuts()
+})
 
 // 引擎就绪后/切换场景时，把当前表单状态推送到引擎，保证画布与面板一致。
 watch(
-  () => [sceneStore.currentScene?.id, editorStore.engineAdapter],
+  () => [currentScene.value?.id, editorStore.engineAdapter],
   () => {
-    if (!sceneStore.currentScene || !editorStore.engineAdapter) return
+    if (!currentScene.value || !editorStore.engineAdapter) return
     // 等 DOM/表单数据刷新后再同步，避免用到上一个场景的残留值
     Promise.resolve().then(() => syncToEngine())
   },
@@ -518,7 +579,13 @@ watch(
 )
 
 onBeforeUnmount(() => {
-  if (debounceTimer) clearTimeout(debounceTimer)
+  if (debounceTimer) {
+    clearTimeout(debounceTimer)
+    debounceTimer = null
+    // 修改即保存：卸载（切换右侧面板分区）会丢弃防抖窗口内的最后一次修改，
+    // 立即补发一次保存，保证刷新后数值不回退
+    void doUpdate()
+  }
 })
 </script>
 

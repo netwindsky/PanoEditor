@@ -1,15 +1,18 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { mount, flushPromises } from '@vue/test-utils'
-import { reactive } from 'vue'
+import { reactive, ref } from 'vue'
 import PostProcessingPanel from '@/components/PostProcessingPanel.vue'
 import type { PostProcessing } from '@/types'
 
 // --- Mock stores ---
+// 真机事实：编辑器已迁移到 EditorViewModel 架构，Pinia scene store 在编辑器内
+// 无人写入，currentScene 恒为 null（见 useEditor.ts 之外再无 setCurrentScene 调用）。
+// 当前场景由 RightPanel 通过 :vm 下传的 vm.sceneViewModel.currentScene 提供。
 const { mockSceneStore, mockEditorStore, mockProjectStore } = vi.hoisted(() => {
   const { reactive, shallowRef } = require('vue') as typeof import('vue')
   return {
     mockSceneStore: reactive({
-      currentScene: { id: 'scene-1' } as { id: string } | null,
+      currentScene: null as { id: string } | null,
     }),
     mockEditorStore: reactive({
       markDirty: vi.fn(),
@@ -57,7 +60,9 @@ vi.mock('@/api/postprocessing', () => ({
 
 vi.mock('@/api/lut', () => ({
   getLuts: (...args: unknown[]) => mockGetLuts(...args),
+  getAllLuts: (...args: unknown[]) => mockGetLuts(...args),
   uploadLut: (...args: unknown[]) => mockUploadLut(...args),
+  uploadLutGlobal: (...args: unknown[]) => mockUploadLut(...args),
   getLut: vi.fn(),
   deleteLut: vi.fn(),
 }))
@@ -99,8 +104,11 @@ function makeConfig(overrides: Partial<PostProcessing> = {}): PostProcessing {
     contrast: 1.0,
     saturation: 1.0,
     colorTemperature: 0,
+    vignette: 0,
+    vignetteIntensity: 1,
     bloomStrength: 0,
     bloomThreshold: 0.8,
+    bloomRadius: 0.5,
     enabled: true,
     ...overrides,
   }
@@ -108,8 +116,12 @@ function makeConfig(overrides: Partial<PostProcessing> = {}): PostProcessing {
 
 let wrapper: ReturnType<typeof mount> | null = null
 
+// 当前场景来自 props.vm.sceneViewModel（与 SceneProperties/LightingPanel 同一模式）
+const currentSceneRef = ref<{ id: string } | null>({ id: 'scene-1' })
+const vm = { sceneViewModel: { currentScene: currentSceneRef } } as any
+
 function mountPanel() {
-  wrapper = mount(PostProcessingPanel, { global: { stubs } })
+  wrapper = mount(PostProcessingPanel, { props: { vm }, global: { stubs } })
   return wrapper
 }
 
@@ -118,7 +130,7 @@ describe('PostProcessingPanel — 重构后：预设 + 数值框 + LUT', () => {
   beforeEach(() => {
     vi.useFakeTimers()
     vi.clearAllMocks()
-    mockSceneStore.currentScene = { id: 'scene-1' }
+    currentSceneRef.value = { id: 'scene-1' }
     mockProjectStore.currentProject = { id: 'project-1' }
     mockApplyPostConfig = vi.fn()
     mockEditorStore.engineAdapter = { applyPostConfig: mockApplyPostConfig } as any
@@ -151,6 +163,18 @@ describe('PostProcessingPanel — 重构后：预设 + 数值框 + LUT', () => {
     const bloomInput = wrapper.find('[data-testid="bloom-strength-input"]')
     expect(bloomInput.exists()).toBe(true)
     expect(bloomInput.attributes('value')).toBe('0.3')
+  })
+
+  it('异步 GET 回填表单后把持久化配置同步到引擎（防止输入框有值、画面零效果）', async () => {
+    const config = makeConfig({ vignette: 0.5, vignetteIntensity: 0.4, bloomStrength: 0.3 })
+    mockGetPostProcessing.mockResolvedValue({ data: { data: config } })
+    const wrapper = mountPanel()
+    await flushPromises()
+
+    const engineCall = mockApplyPostConfig.mock.calls[mockApplyPostConfig.mock.calls.length - 1][0]
+    expect(engineCall.vignette).toBe(0.5)
+    expect(engineCall.vignetteIntensity).toBe(0.4)
+    expect(engineCall.bloomStrength).toBe(0.3)
   })
 
   it('修改 exposure 数值框触发 updatePostProcessing', async () => {
@@ -249,6 +273,27 @@ describe('PostProcessingPanel — 重构后：预设 + 数值框 + LUT', () => {
     expect(wrapper.find('[data-testid="colorTemperature-input"]').exists()).toBe(true)
   })
 
+  it('渲染 vignette 暗角输入框，修改后 payload 携带 vignette 并同步引擎', async () => {
+    const wrapper = mountPanel()
+    await flushPromises()
+
+    const vignetteInput = wrapper.find('[data-testid="vignette-input"]')
+    expect(vignetteInput.exists()).toBe(true)
+    await vignetteInput.setValue('0.5')
+    await vignetteInput.trigger('change')
+
+    // syncToEngine 不走防抖，立即下发引擎
+    const engineCall = mockApplyPostConfig.mock.calls[mockApplyPostConfig.mock.calls.length - 1]
+    expect(engineCall[0]).toHaveProperty('vignette', 0.5)
+
+    vi.advanceTimersByTime(300)
+    await flushPromises()
+
+    expect(mockUpdatePostProcessing).toHaveBeenCalled()
+    const lastCall = mockUpdatePostProcessing.mock.calls[mockUpdatePostProcessing.mock.calls.length - 1]
+    expect(lastCall[1]).toHaveProperty('vignette', 0.5)
+  })
+
   it('不渲染已废弃的 brightness/hue/blur/grayscale/sepia 字段', async () => {
     const wrapper = mountPanel()
     await flushPromises()
@@ -274,7 +319,7 @@ describe('PostProcessingPanel — 重构后：预设 + 数值框 + LUT', () => {
   })
 
   it('无当前场景时不调用API', async () => {
-    mockSceneStore.currentScene = null
+    currentSceneRef.value = null
     const wrapper = mountPanel()
     await flushPromises()
 
@@ -342,6 +387,40 @@ describe('PostProcessingPanel — 重构后：预设 + 数值框 + LUT', () => {
     // warm: temperature=0.5 → colorTemperature≈50
     expect(lastCall[1]).toHaveProperty('presetStyle', 'warm')
     expect(lastCall[1].colorTemperature).toBe(50)
+    // warm 预设自带暗角 0.2
+    expect(lastCall[1].vignette).toBeCloseTo(0.2, 2)
+    expect(lastCall[1].vignetteIntensity).toBeCloseTo(1, 2)
+  })
+
+  it('选择电影感预设后暗角映射为 0.5，明暗默认 1', async () => {
+    const wrapper = mountPanel()
+    await flushPromises()
+
+    const cards = wrapper.findAll('[data-testid="preset-card"]')
+    const cinematicCard = cards.find((c) => c.text().includes('电影感'))
+    expect(cinematicCard).toBeTruthy()
+    await cinematicCard!.trigger('click')
+    vi.advanceTimersByTime(300)
+    await flushPromises()
+
+    const lastCall = mockUpdatePostProcessing.mock.calls[mockUpdatePostProcessing.mock.calls.length - 1]
+    expect(lastCall[1]).toHaveProperty('presetStyle', 'cinematic')
+    expect(lastCall[1].vignette).toBeCloseTo(0.5, 2)
+    // cinematic 预设未显式设置 vignetteIntensity，应用默认值 1
+    expect(lastCall[1].vignetteIntensity).toBeCloseTo(1, 2)
+  })
+
+  it('渲染暗角明暗输入框，修改后 payload 携带并同步引擎', async () => {
+    const wrapper = mountPanel()
+    await flushPromises()
+
+    const vignetteInput = wrapper.find('[data-testid="vignetteIntensity-input"]')
+    expect(vignetteInput.exists()).toBe(true)
+    await vignetteInput.setValue('0.7')
+    await vignetteInput.trigger('change')
+
+    const engineCall = mockApplyPostConfig.mock.calls[mockApplyPostConfig.mock.calls.length - 1]
+    expect(engineCall[0]).toHaveProperty('vignetteIntensity', 0.7)
   })
 
   it('选择 LUT 后显示强度输入框并触发保存', async () => {
@@ -399,6 +478,79 @@ describe('PostProcessingPanel — 重构后：预设 + 数值框 + LUT', () => {
     const callArg = mockApplyPostConfig.mock.calls[0][0]
     expect(callArg).toHaveProperty('presetStyle', 'vivid')
     expect(callArg).toHaveProperty('enabled', true)
+  })
+
+  it('保存失败时提示错误且不标记脏状态（防止静默丢失配置）', async () => {
+    mockUpdatePostProcessing.mockRejectedValue(new Error('Unknown column'))
+    const wrapper = mountPanel()
+    await flushPromises()
+
+    const exposureInput = wrapper.find('[data-testid="exposure-input"]')
+    await exposureInput.setValue('1.8')
+    await exposureInput.trigger('change')
+    vi.advanceTimersByTime(300)
+    await flushPromises()
+
+    expect(mockUpdatePostProcessing).toHaveBeenCalled()
+    const { ElMessage } = await import('element-plus')
+    expect(ElMessage.error).toHaveBeenCalled()
+    expect(mockEditorStore.markDirty).not.toHaveBeenCalled()
+  })
+
+  it('防抖窗口内卸载组件时仍提交最后一次修改（切换面板不丢保存）', async () => {
+    const wrapper = mountPanel()
+    await flushPromises()
+
+    const exposureInput = wrapper.find('[data-testid="exposure-input"]')
+    await exposureInput.setValue('1.8')
+    await exposureInput.trigger('change')
+    // 不推进 300ms 防抖，直接卸载（模拟用户切换右侧面板分区）
+    wrapper.unmount()
+    await flushPromises()
+
+    expect(mockUpdatePostProcessing).toHaveBeenCalled()
+    const lastCall = mockUpdatePostProcessing.mock.calls[mockUpdatePostProcessing.mock.calls.length - 1]
+    expect(lastCall[1]).toHaveProperty('exposure', 1.8)
+  })
+
+  it('挂载时 getAllLuts 比 getPostProcessing 慢不应导致 syncToEngine 传 null fileUrl', async () => {
+    // 真实时序：onMounted→fetchLuts(慢) vs watch(immediate)→GET(快)→syncToEngine(lutOptions空!)
+    const config = makeConfig({ lutResourceId: 'lut-1', lutIntensity: 0.6 })
+    mockGetPostProcessing.mockResolvedValue({ data: { data: config } })
+
+    // deferred Promise：手动控制 getAllLuts 的 resolve 时机
+    let resolveLuts: (v: unknown) => void = () => {}
+    mockGetLuts.mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          resolveLuts = resolve
+        }),
+    )
+
+    const wrapper = mountPanel()
+
+    // 第一阶段：只 flush microtasks（GET config resolves，getAllLuts 仍 pending）
+    await flushPromises()
+
+    // form.lutResourceId='lut-1' 已回填；syncToEngine 应等待 lutLoading 而不是下发 null fileUrl
+    for (const call of mockApplyPostConfig.mock.calls) {
+      if (call[0].lutResourceId && call[0].lutFileUrl === null) {
+        throw new Error(
+          `BUG REPRODUCED: syncToEngine sent lutFileUrl=null while lutResourceId=${call[0].lutResourceId}, ` +
+          `causing pp.removeLut() to wipe engine LUT effect`,
+        )
+      }
+    }
+
+    // 第二阶段：getAllLuts resolve → lutOptions 填充 → 补发同步带正确 fileUrl
+    resolveLuts({ data: { data: [{ id: 'lut-1', name: 'test.cube', fileUrl: '/uploads/test.cube' }] } })
+    await flushPromises()
+
+    // 最终状态：引擎收到正确 fileUrl（非 null）
+    const finalCall = mockApplyPostConfig.mock.calls[mockApplyPostConfig.mock.calls.length - 1]
+    expect(finalCall[0].lutResourceId).toBe('lut-1')
+    expect(finalCall[0].lutFileUrl).toBe('/uploads/test.cube')
+    expect(finalCall[0].lutIntensity).toBe(0.6)
   })
 
   it('切换 enabled 开关时同步调用 adapter.applyPostConfig', async () => {
