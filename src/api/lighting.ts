@@ -13,7 +13,7 @@ export function updateLighting(sceneId: string, params: UpdateLightingParams) {
 /** toSunConfig 所需的最小字段集（LightingConfig 的太阳光子集，表单模型同样满足） */
 export type SunFields = Pick<
   LightingConfig,
-  'sunEnabled' | 'sunAzimuth' | 'sunElevation' | 'sunIntensity' | 'sunColor'
+  'sunEnabled' | 'sunAzimuth' | 'sunElevation' | 'sunIntensity' | 'sunColor' | 'sunShadowsEnabled' | 'sunShadowOpacity'
 >
 
 /**
@@ -28,6 +28,8 @@ export function toSunConfig(lighting: SunFields): SunLightConfig {
     elevation: lighting.sunElevation,
     intensity: lighting.sunIntensity,
     color: lighting.sunColor,
+    shadows: lighting.sunShadowsEnabled ?? true,
+    shadowOpacity: lighting.sunShadowOpacity ?? 0.4,
   }
 }
 
@@ -38,6 +40,8 @@ export function toSunFields(sun: {
   elevation: number
   intensity: number
   color: string
+  shadows?: boolean
+  shadowOpacity?: number
 }): SunFields {
   return {
     sunEnabled: sun.enabled,
@@ -45,6 +49,8 @@ export function toSunFields(sun: {
     sunElevation: sun.elevation,
     sunIntensity: sun.intensity,
     sunColor: sun.color,
+    sunShadowsEnabled: sun.shadows ?? true,
+    sunShadowOpacity: sun.shadowOpacity ?? 0.4,
   }
 }
 
@@ -65,6 +71,8 @@ export interface SunConfigLike {
   elevation: number
   intensity: number
   color: string
+  shadows?: boolean
+  shadowOpacity?: number
 }
 
 /**
@@ -90,12 +98,12 @@ export function mergeSunConfig(
  * 太阳光可单独持久化的字段键（开关/方位角/仰角/强度/颜色）。
  * 方位角/仰角只下发被变更的字段，避免表单旧值覆盖画布 gizmo 拖拽后的引擎快照。
  */
-export type SunUpdateKey = 'sunEnabled' | 'sunAzimuth' | 'sunElevation' | 'sunIntensity' | 'sunColor'
+export type SunUpdateKey = 'sunEnabled' | 'sunAzimuth' | 'sunElevation' | 'sunIntensity' | 'sunColor' | 'sunShadowsEnabled' | 'sunShadowOpacity'
 
 /** buildSunUpdate 输入：面板表单（SunFields）或后端配置（LightingConfig）均满足 */
 type SunFormLike = Pick<
   LightingConfig,
-  'sunEnabled' | 'sunAzimuth' | 'sunElevation' | 'sunIntensity' | 'sunColor'
+  'sunEnabled' | 'sunAzimuth' | 'sunElevation' | 'sunIntensity' | 'sunColor' | 'sunShadowsEnabled' | 'sunShadowOpacity'
 >
 
 /**

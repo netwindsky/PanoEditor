@@ -26,7 +26,7 @@ import type { PanoEngineAdapter } from '@/utils/PanoEngineAdapter'
  */
 
 /** 太阳光可变更键（面板/gizmo 触发的部分更新） */
-type SunPatchKey = 'sunEnabled' | 'sunAzimuth' | 'sunElevation' | 'sunIntensity' | 'sunColor'
+type SunPatchKey = 'sunEnabled' | 'sunAzimuth' | 'sunElevation' | 'sunIntensity' | 'sunColor' | 'sunShadowsEnabled' | 'sunShadowOpacity'
 
 export interface LightingViewModelOptions {
   /** 当前场景 id 供给函数（来自 EditorViewModel，运行时可变） */
@@ -43,6 +43,8 @@ const DEFAULT_SUN = {
   elevation: 30,
   intensity: 1,
   color: '#ffffff',
+  shadows: true,
+  shadowOpacity: 0.4,
 }
 
 export class LightingViewModel {
@@ -142,6 +144,8 @@ export class LightingViewModel {
       elevation: data.sunElevation ?? DEFAULT_SUN.elevation,
       intensity: data.sunIntensity ?? DEFAULT_SUN.intensity,
       color: data.sunColor || DEFAULT_SUN.color,
+      shadows: data.sunShadowsEnabled ?? DEFAULT_SUN.shadows,
+      shadowOpacity: data.sunShadowOpacity ?? DEFAULT_SUN.shadowOpacity,
     }
   }
 
@@ -194,6 +198,8 @@ export class LightingViewModel {
       elevation: 'sunElevation',
       intensity: 'sunIntensity',
       color: 'sunColor',
+      shadows: 'sunShadowsEnabled',
+      shadowOpacity: 'sunShadowOpacity',
     }
 
     const current = this.adapter?.getSunLightConfig() ?? null
@@ -313,6 +319,8 @@ export class LightingViewModel {
       sunElevation: this.sunConfig.value.elevation,
       sunIntensity: this.sunConfig.value.intensity,
       sunColor: this.sunConfig.value.color,
+      sunShadowsEnabled: this.sunConfig.value.shadows ?? true,
+      sunShadowOpacity: this.sunConfig.value.shadowOpacity ?? 0.4,
     }
   }
 

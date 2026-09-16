@@ -115,6 +115,30 @@
         />
         <span class="prop-value">{{ Math.round(sun.elevation) }}°</span>
       </div>
+
+      <!-- 投影 -->
+      <div class="prop-row">
+        <label>投影</label>
+        <el-switch
+          :model-value="sun.shadows"
+          data-testid="sun-shadows-switch"
+          size="small"
+          @update:model-value="onSunShadows"
+        />
+      </div>
+
+      <div v-if="sun.shadows" class="slider-row">
+        <label>阴影浓度</label>
+        <el-slider
+          :model-value="sun.shadowOpacity"
+          data-testid="sun-shadow-opacity-slider"
+          :min="0"
+          :max="1"
+          :step="0.05"
+          @update:model-value="onSunShadowOpacity"
+        />
+        <span class="prop-value">{{ (sun.shadowOpacity ?? 0.4).toFixed(2) }}</span>
+      </div>
     </div>
 
     <!-- 底部操作 -->
@@ -184,6 +208,12 @@ function onSunAzimuth(v: number | string) {
 }
 function onSunElevation(v: number | string) {
   lightingVm.setSunFields({ elevation: Number(v) })
+}
+function onSunShadows(v: boolean | string | number) {
+  lightingVm.setSunFields({ shadows: Boolean(v) })
+}
+function onSunShadowOpacity(v: number | string) {
+  lightingVm.setSunFields({ shadowOpacity: Number(v) })
 }
 
 /** el-upload 自定义上传：交给 VM（上传资源 → 状态 → 引擎 → 立即持久化） */
