@@ -80,6 +80,7 @@ function convertHotspot(h: Hotspot, sceneIdToName: Map<string, string>): SceneDa
     height: resolveSize(h.height) ?? (needsFixedSize ? DEFAULT_DOT_SIZE : undefined),
     scale: h.scale !== undefined ? String(h.scale) : undefined,
     rotate: h.rotate !== undefined ? String(h.rotate) : undefined,
+    modelForwardAxis: (h as any).modelForwardAxis,
     type: h.type,
     blendmode: h.blendmode,
     followzoom: h.followZoom !== undefined ? String(h.followZoom) : undefined,

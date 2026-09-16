@@ -200,6 +200,9 @@ export function exportToKrpanoXml(
           hs.tooltip ? `tooltip="${escapeXml(hs.tooltip)}"` : '',
           hs.onclick ? `onclick="${escapeXml(hs.onclick)}"` : '',
           hs.shader ? `shader="${escapeXml(hs.shader)}"` : '',
+          (hs as Hotspot & { modelForwardAxis?: string }).modelForwardAxis
+            ? `modelForwardAxis="${escapeXml((hs as Hotspot & { modelForwardAxis?: string }).modelForwardAxis!)}"`
+            : '',
           (hs as Hotspot & { events?: string }).events
             ? `events="${escapeXml((hs as Hotspot & { events?: string }).events!)}"`
             : '',

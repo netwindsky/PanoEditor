@@ -223,6 +223,8 @@ export interface Hotspot {
   height?: number
   scale?: number
   rotate?: number
+  /** 模型视觉前方轴（'axis:sign'，如 'z:-1'），仅 model 热点使用 */
+  modelForwardAxis?: string
   blendmode?: string
   bgcolor?: string
   tolerance?: number
@@ -253,6 +255,8 @@ export interface CreateHotspotParams {
   height?: number
   scale?: number
   rotate?: number
+  /** 模型视觉前方轴（'axis:sign'，如 'z:-1'），仅 model 热点使用 */
+  modelForwardAxis?: string
   blendmode?: string
   bgcolor?: string
   tolerance?: number
@@ -281,6 +285,8 @@ export interface UpdateHotspotParams {
   height?: number
   scale?: number
   rotate?: number
+  /** 模型视觉前方轴（'axis:sign'，如 'z:-1'），仅 model 热点使用 */
+  modelForwardAxis?: string
   blendmode?: string
   bgcolor?: string
   tolerance?: number
@@ -338,8 +344,10 @@ export interface PostProcessing {
   contrast: number
   saturation: number
   colorTemperature: number
+  vignette: number
   bloomStrength: number
   bloomThreshold: number
+  bloomRadius: number
   enabled: boolean
 }
 
@@ -352,8 +360,11 @@ export interface UpdatePostProcessingParams {
   contrast?: number
   saturation?: number
   colorTemperature?: number
+  vignette?: number
+  vignetteIntensity?: number
   bloomStrength?: number
   bloomThreshold?: number
+  bloomRadius?: number
   enabled?: boolean
 }
 
@@ -366,8 +377,11 @@ export interface PostPreset {
   contrast?: number
   saturation?: number
   colorTemperature?: number
+  vignette?: number
+  vignetteIntensity?: number
   bloomStrength?: number
   bloomThreshold?: number
+  bloomRadius?: number
 }
 
 // ============ 场景光照 ============
@@ -390,6 +404,10 @@ export interface LightingConfig {
   sunIntensity: number
   /** CSS 颜色字符串，如 '#fff2cc' */
   sunColor: string
+  /** 阴影开关 */
+  sunShadowsEnabled: boolean
+  /** 阴影透明度(0-1) */
+  sunShadowOpacity: number
 }
 
 /** 场景光照更新参数（全部字段可选，envMapUrl 可置 null 恢复默认环境） */
@@ -402,6 +420,8 @@ export interface UpdateLightingParams {
   sunElevation?: number
   sunIntensity?: number
   sunColor?: string
+  sunShadowsEnabled?: boolean
+  sunShadowOpacity?: number
 }
 
 /** LUT 资源 */

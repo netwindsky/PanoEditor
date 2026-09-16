@@ -38,6 +38,16 @@ export class PanoEngineAdapter {
     end()
   }
 
+  /** 当前是否处于拖动模式（拖动期间跳过全量重建） */
+  public isDraggingMode(): boolean {
+    return this._isDragging
+  }
+
+  /** 设置拖动模式 flag */
+  public setDraggingMode(value: boolean): void {
+    this._isDragging = value
+  }
+
   /**
    * 从后端 JSON 配置加载全景场景。
    * @param config 后端生成的场景配置（JSON 对象或 SceneData 数组）
@@ -93,6 +103,11 @@ export class PanoEngineAdapter {
     const end = perf.stage('adapter-switch-scene')
     await this.engine.changeScene(sceneId)
     end({ sceneId })
+  }
+
+  /** 引擎当前加载场景 id（对应 sceneList 中 scene.name），供调用方跳过同场景重复切换 */
+  public getCurrentSceneId(): string {
+    return this.engine.getCurrentSceneId()
   }
 
   /**
@@ -196,6 +211,7 @@ export class PanoEngineAdapter {
       height: resolvedHeight,
       scale: hotspot.scale ? String(hotspot.scale) : undefined,
       rotate: hotspot.rotate ? String(hotspot.rotate) : undefined,
+      modelForwardAxis: hotspot.modelForwardAxis || undefined,
       blendmode: hotspot.blendmode || '',
       points: hotspot.points,
       bgcolor: hotspot.bgcolor,
@@ -254,20 +270,46 @@ export class PanoEngineAdapter {
     this.engine.hotspotsManager.updateQuadGeometry(hotspotId, points)
   }
 
-  // ==================== 拖动模式 flag ====================
-  //
-  // 用于 syncHotspotsIfChanged 的同步守卫，绕过 Vue props 响应式时序问题。
-  // 拖动开始时由 EditorCanvas 直接设为 true，结束时设为 false。
-  // 这样 PanoEngineViewer 的 deep watch 触发时，可以同步读取 flag
-  // 避免 pre-flush watcher 在 prop 更新前运行导致误触发 syncHotspots。
-  private _isDragging = false
-
-  setDraggingMode(flag: boolean): void {
-    this._isDragging = flag
+  /**
+   * 增量位置同步：仅更新 ath/atv/points，不触发全量重建。
+   * quad/video → updateQuadGeometry（mesh 几何体顶点更新）
+   * 其余类型 → moveHotspotTo（updateHotspotPosition，不触发 lookAt）
+   */
+  public applyPositionOnly(hotspot: { id: string; type?: string; ath: number; atv: number; points?: string }): void {
+    if (hotspot.type === 'quad' || hotspot.type === 'video') {
+      if (hotspot.points) {
+        this.engine.hotspotsManager.updateQuadGeometry(hotspot.id, hotspot.points)
+      }
+    } else {
+      this.engine.hotspotsManager.updateHotspotPosition(hotspot.id, hotspot.ath, hotspot.atv)
+    }
   }
 
-  isDraggingMode(): boolean {
-    return this._isDragging
+  /**
+   * 运行时设置模型旋转值（度），同步引擎活对象与 config。
+   */
+  public setModelRotation(id: string, x: number, y: number, z: number): void {
+    this.engine.hotspotsManager.setModelRotation(id, [x, y, z])
+  }
+
+  /**
+   * 设置模型视觉前方轴（axis + 正负号），引擎据此计算固有偏移补偿。
+   * 使「面板 0 0 0」对应模型视觉面朝球心，而非仅 container -Z 指向球心。
+   */
+  public setModelForwardAxis(id: string, axis: 'x' | 'y' | 'z', sign: 1 | -1): void {
+    const model = this.engine.hotspotsManager.modelHotspots.get(id)
+    if (model && typeof model.setForwardAxis === 'function') {
+      model.setForwardAxis(axis, sign)
+    }
+  }
+
+  /** 获取模型视觉前方轴配置；热点不存在时返回 null */
+  public getModelForwardAxis(id: string): { axis: 'x' | 'y' | 'z'; sign: 1 | -1 } | null {
+    const model = this.engine.hotspotsManager.modelHotspots.get(id)
+    if (model && typeof model.getForwardAxis === 'function') {
+      return model.getForwardAxis()
+    }
+    return null
   }
 
   /**
@@ -580,7 +622,8 @@ export class PanoEngineAdapter {
    *   contrast      → contrast
    *   saturation    → saturation
    *   colorTemperature [-100,100] → temperature [-1,1]（÷100）
-   * 其余引擎参数（sepia/hueRotate/vignette/grain/noiseAmount）由 preset 决定。
+   *   vignette [0,1] → vignette（暗角，未传时沿用 preset 值）
+   * 其余引擎参数（sepia/hueRotate/grain/noiseAmount）由 preset 决定。
    *
    * @param config 后端持久化的后期配置（与 PostProcessing 形状兼容）
    */
@@ -591,9 +634,14 @@ export class PanoEngineAdapter {
     contrast?: number
     saturation?: number
     colorTemperature?: number
+    vignette?: number
+    vignetteIntensity?: number
     lutResourceId?: string | null
     lutIntensity?: number
     lutFileUrl?: string | null
+    bloomStrength?: number
+    bloomThreshold?: number
+    bloomRadius?: number
   }): void {
     const pp = this.engine.getPostProcessing()
     if (!pp) return
@@ -620,14 +668,18 @@ export class PanoEngineAdapter {
     // 不会把 preset 的风格效果一并抹掉；如果是 custom 或 preset 不存在，则使用默认值。
     const base = isBuiltinPreset ? pp.getEffectParams() : {
       brightness: 0, contrast: 1, saturation: 1, hueRotate: 0, sepia: 0,
-      temperature: 0, vignette: 0, grain: 0, noiseAmount: 0,
+      temperature: 0, vignette: 0, vignetteIntensity: 1, grain: 0, noiseAmount: 0,
     }
+    const vignette = typeof config.vignette === 'number' ? config.vignette : base.vignette
+    const vignetteIntensity = typeof config.vignetteIntensity === 'number' ? config.vignetteIntensity : base.vignetteIntensity
     pp.setEffectParams({
       ...base,
       brightness: exposure - 1,
       contrast,
       saturation,
       temperature: colorTemp / 100,
+      vignette,
+      vignetteIntensity,
     })
 
     // LUT
@@ -637,6 +689,12 @@ export class PanoEngineAdapter {
       pp.removeLut()
     }
     pp.setLutIntensity(typeof config.lutIntensity === 'number' ? config.lutIntensity : 1)
+
+    // Bloom
+    const bloomStrength = typeof config.bloomStrength === 'number' ? config.bloomStrength : 0
+    const bloomThreshold = typeof config.bloomThreshold === 'number' ? config.bloomThreshold : 0.8
+    const bloomRadius = typeof config.bloomRadius === 'number' ? config.bloomRadius : 0.5
+    pp.setBloomParams({ strength: bloomStrength, threshold: bloomThreshold, radius: bloomRadius })
   }
 
   /**

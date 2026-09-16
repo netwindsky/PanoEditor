@@ -149,4 +149,49 @@ describe('PanoEngineAdapter.syncHotspots', () => {
     const panoHotspots = createHotspotsMock.mock.calls[0][0]
     expect(panoHotspots[0].shader).toBeUndefined()
   })
+
+  it('应将 modelForwardAxis 字段传递给引擎（模型前方轴持久化）', () => {
+    const hotspots = [
+      {
+        id: 'model1',
+        sceneId: 's1',
+        name: '模型热点',
+        type: 'model' as const,
+        ath: 45,
+        atv: 10,
+        url: '/uploads/model.glb',
+        modelForwardAxis: 'y:1',
+      },
+    ]
+
+    adapter.syncHotspots(hotspots)
+
+    const createHotspotsMock = vi.mocked(
+      (adapter as any).engine.hotspotsManager.createHotspots,
+    )
+    const panoHotspots = createHotspotsMock.mock.calls[0][0]
+    expect(panoHotspots[0]).toHaveProperty('modelForwardAxis', 'y:1')
+  })
+
+  it('未设置 modelForwardAxis 时不传递该字段（旧数据行为不变）', () => {
+    const hotspots = [
+      {
+        id: 'model2',
+        sceneId: 's1',
+        name: '模型热点',
+        type: 'model' as const,
+        ath: 0,
+        atv: 0,
+        url: '/uploads/model.glb',
+      },
+    ]
+
+    adapter.syncHotspots(hotspots)
+
+    const createHotspotsMock = vi.mocked(
+      (adapter as any).engine.hotspotsManager.createHotspots,
+    )
+    const panoHotspots = createHotspotsMock.mock.calls[0][0]
+    expect(panoHotspots[0].modelForwardAxis).toBeUndefined()
+  })
 })
