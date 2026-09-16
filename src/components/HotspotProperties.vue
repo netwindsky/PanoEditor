@@ -213,9 +213,20 @@
               <el-button size="small" :disabled="!editorStore?.engineAdapter" @click="handleOrientToCenter">面向中心</el-button>
             </div>
           </div>
+          <div class="prop-field">
+            <label>前方轴</label>
+            <el-select v-model="modelForwardAxis" size="small" data-testid="forward-axis-select" @change="handleForwardAxisChange">
+              <el-option label="-Z（Three.js 标准）" value="z:-1" />
+              <el-option label="+X" value="x:1" />
+              <el-option label="-X" value="x:-1" />
+              <el-option label="+Y" value="y:1" />
+              <el-option label="-Y" value="y:-1" />
+              <el-option label="+Z" value="z:1" />
+            </el-select>
+          </div>
           <div class="prop-field hint-text">
             <label>&nbsp;</label>
-            <span class="field-hint">面向中心：把模型姿态重置为朝向全景球心。支持 .glb / .gltf 模型文件，上传后自动填入 URL。</span>
+            <span class="field-hint">面向中心：把模型姿态重置为朝向全景球心。前方轴：选择模型视觉前方对应的局部坐标轴，使旋转 0/0/0 对应"面朝球心"（不同建模工具的前方约定不同）。支持 .glb / .gltf 模型文件。</span>
           </div>
         </template>
         <template v-if="form.type === 'video'">
@@ -461,6 +472,26 @@ function handleOrientToCenter() {
   const adapter = editorStore?.engineAdapter
   if (!hotspot || !adapter) return
   adapter.orientModelToCenter(hotspot.id)
+  form.rotate = '0 0 0' as unknown as number
+}
+
+/**
+ * 「前方轴」：模型视觉前方对应的局部坐标轴（'axis:sign'，默认 -Z）。
+ * 引擎据此计算固有偏移补偿，使 rotate 0/0/0 对应"视觉面朝球心"。
+ */
+const modelForwardAxis = ref('z:-1')
+
+function handleForwardAxisChange(val: string) {
+  const hotspot = selectedHotspot.value
+  const adapter = editorStore?.engineAdapter
+  if (!hotspot || !adapter) return
+  const [axis, signStr] = val.split(':')
+  const axisNorm = (axis === 'x' || axis === 'y' || axis === 'z' ? axis : 'z') as 'x' | 'y' | 'z'
+  const sign = Number(signStr) === 1 ? 1 : -1
+  adapter.setModelForwardAxis(hotspot.id, axisNorm, sign)
+  // 立即按新前方轴重放当前旋转（setRotateValues 内部重新 lookAt + 应用偏移）
+  const rot = parseModelRotate(form.rotate)
+  adapter.setModelRotation?.(hotspot.id, rot.x, rot.y, rot.z)
 }
 
 /** 模型文件扩展名校验（.glb/.gltf） */
@@ -653,6 +684,29 @@ function parseModelRotate(raw: unknown): { x: number; y: number; z: number } {
   return { x: nums[0] ?? 0, y: nums[1] ?? 0, z: nums[2] ?? 0 }
 }
 
+/** 三轴误差阈值（度）：小于该值视为「未变化」，避免浮点/回显四舍五入差异误触发重新定基线 */
+const MODEL_ROTATE_EPS = 0.05
+
+/**
+ * 判断表单 rotate 解析值与引擎当前运行时姿态是否一致（每轴差值 < ε）。
+ * runtime 为空或字段缺失时返回 false，交由调用方走正常应用路径。
+ */
+function isModelRotateUnchanged(
+  rot: { x: number; y: number; z: number },
+  runtime: { rotateX?: number; rotateY?: number; rotateZ?: number } | null,
+): boolean {
+  if (!runtime) return false
+  const rx = Number(runtime.rotateX)
+  const ry = Number(runtime.rotateY)
+  const rz = Number(runtime.rotateZ)
+  if ([rx, ry, rz].some((v) => !Number.isFinite(v))) return false
+  return (
+    Math.abs(rot.x - rx) < MODEL_ROTATE_EPS &&
+    Math.abs(rot.y - ry) < MODEL_ROTATE_EPS &&
+    Math.abs(rot.z - rz) < MODEL_ROTATE_EPS
+  )
+}
+
 const modelRotate = computed({
   get() {
     return parseModelRotate(form.rotate)
@@ -772,6 +826,14 @@ watch(
           form.rotate = `${Number(runtime.rotateX.toFixed(1))} ${Number(runtime.rotateY.toFixed(1))} ${Number(runtime.rotateZ.toFixed(1))}` as unknown as number
         }
       }
+      // 前方轴回填：优先落库值（真源），无落库值时退回引擎运行时配置，最后兜底 -Z
+      const dbForwardAxis = hotspot.modelForwardAxis
+      if (dbForwardAxis) {
+        modelForwardAxis.value = dbForwardAxis
+      } else {
+        const fwd = editorStore.engineAdapter.getModelForwardAxis?.(hotspot.id)
+        modelForwardAxis.value = fwd ? `${fwd.axis}:${fwd.sign}` : 'z:-1'
+      }
     }
 
     if (hotspot.content) {
@@ -848,14 +910,25 @@ function doSave() {
     content: contentJson || undefined,
     points: form.points || undefined,
     shader: form.shader,
+    // 模型视觉前方轴仅 model 热点有意义，其它类型不落库避免脏数据
+    modelForwardAxis: form.type === 'model' ? modelForwardAxis.value : undefined,
   }
 
   // model 热点：面板 scale 为「相对默认尺寸的倍数」（1=默认），直接落库（DB decimal(10,2)）；
   // rotate 为 'x y z' 三轴字符串，原样落库（DB rotate 已改 varchar(32)）。
-  // 同时把相对倍数应用到引擎，画布即时生效。
+  // 同时把相对倍数和旋转角度应用到引擎，画布即时生效。
   if (form.type === 'model' && editorStore?.engineAdapter) {
     if (form.scale != null) {
       editorStore.engineAdapter.setModelRelativeScale?.(selectedHotspot.value.id, form.scale)
+    }
+    const rot = parseModelRotate(form.rotate)
+    // 仅当 rotate 与引擎当前运行时姿态有差异时才重新应用：
+    // setRotateValues 内部会先 lookAt(球心) 重新定基线，拖拽松手触发的自动保存若盲目重放
+    // （此时 ath/atv 已变），模型会被拉回「面向新位置中心」——表现为松手瞬间姿态跳变。
+    // rotate 未变化时跳过调用，保留引擎当前姿态（含用户手动摆放/拖拽后的状态）。
+    const runtime = editorStore.engineAdapter.getModelRuntime?.(selectedHotspot.value.id)
+    if (!runtime || !isModelRotateUnchanged(rot, runtime)) {
+      editorStore.engineAdapter.setModelRotation?.(selectedHotspot.value.id, rot.x, rot.y, rot.z)
     }
   }
 
@@ -909,6 +982,7 @@ watch(
     followZoom: form.followZoom,
     action: form.action,
     points: form.points,
+    modelForwardAxis: modelForwardAxis.value,
   }),
   () => scheduleAutoSave(),
   { deep: true },
