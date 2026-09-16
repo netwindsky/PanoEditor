@@ -95,6 +95,49 @@ function endTransitionOverlay() {
 // ===== 模式判断 =====
 const usePreloadMode = computed(() => !!props.allSceneData && props.allSceneData.length > 0)
 
+/**
+ * 尝试增量位置同步：仅 ath/atv/points 变化时不触发全量重建。
+ * @returns true 表示已增量处理，false 需走全量 syncHotspots
+ */
+function tryApplyPositionOnly(
+  engine: PanoEngineAdapter,
+  oldSnapshot: string,
+  newHotspots: Hotspot[],
+): boolean {
+  let oldHotspots: Hotspot[]
+  try {
+    oldHotspots = JSON.parse(oldSnapshot) as Hotspot[]
+  } catch {
+    return false
+  }
+  if (oldHotspots.length !== newHotspots.length) return false
+
+  const oldMap = new Map(oldHotspots.map((h) => [h.id, h]))
+  for (const h of newHotspots) {
+    const old = oldMap.get(h.id)
+    if (!old) return false
+    // 非位置字段必须一致才走增量同步；只要任一非位置字段变化就需全量重建
+    if (
+      old.type !== h.type
+      || old.url !== h.url
+      || old.scale !== h.scale
+      || old.rotate !== h.rotate
+      || old.style !== h.style
+      || old.tooltip !== h.tooltip
+      || old.content !== h.content
+      || old.shader !== h.shader
+    ) {
+      return false
+    }
+  }
+
+  // 通过校验：逐个应用位置更新
+  for (const h of newHotspots) {
+    engine.applyPositionOnly(h)
+  }
+  return true
+}
+
 function syncHotspotsIfChanged(engine: PanoEngineAdapter, hotspots: Hotspot[]) {
   // 同步检查拖动 flag（绕过 Vue 响应式 prop 时序问题）。
   // 拖动期间跳过全量重建，避免每帧 delete+create 导致闪烁。
@@ -102,6 +145,11 @@ function syncHotspotsIfChanged(engine: PanoEngineAdapter, hotspots: Hotspot[]) {
   if (props.isDragging) return
   const snapshot = JSON.stringify(hotspots)
   if (snapshot === lastHotspotsSnapshot) return
+  // 尝试增量位置同步（仅 ath/atv/points 变化时不重建）
+  if (lastHotspotsSnapshot && tryApplyPositionOnly(engine, lastHotspotsSnapshot, hotspots)) {
+    lastHotspotsSnapshot = snapshot
+    return
+  }
   lastHotspotsSnapshot = snapshot
   perf.mark('viewer-sync-hotspots', { count: hotspots.length })
   engine.syncHotspots(hotspots)
@@ -152,12 +200,18 @@ async function startPreload(): Promise<void> {
 
     // 预加载完成后立即激活当前场景（sceneId watch 不会在初始挂载时触发）
     if (props.sceneId) {
-      await perf.measureAsync('viewer-switch-scene', () => engine.switchScene(props.sceneId!))
-      // 场景切换会触发 changeScene → initScene(manageHotspots:true) 清空热点，
-      // 必须强制重置快照以确保 syncHotspots 不被快照比对跳过
-      lastHotspotsSnapshot = ''
-      syncHotspotsIfChanged(engine, props.hotspots)
-      setTimeout(endTransitionOverlay, TRANSITION_HOLD_MS)
+      const currentSceneId = engine.getCurrentSceneId()
+      // 已加载同场景则跳过 switchScene，避免不必要的过渡动画/清场和 sunLight 竞态
+      if (currentSceneId === props.sceneId) {
+        setTimeout(endTransitionOverlay, TRANSITION_HOLD_MS)
+      } else {
+        await perf.measureAsync('viewer-switch-scene', () => engine.switchScene(props.sceneId!))
+        // 场景切换会触发 changeScene → initScene(manageHotspots:true) 清空热点，
+        // 必须强制重置快照以确保 syncHotspots 不被快照比对跳过
+        lastHotspotsSnapshot = ''
+        syncHotspotsIfChanged(engine, props.hotspots)
+        setTimeout(endTransitionOverlay, TRANSITION_HOLD_MS)
+      }
     }
   } catch (e) {
     console.error('Failed to preload scenes:', e)

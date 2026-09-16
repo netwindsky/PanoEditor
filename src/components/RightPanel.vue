@@ -22,7 +22,7 @@
       <SceneProperties v-if="vm.rightPanelSection.value === 'scene'" :vm="vm" />
       <HotspotProperties v-else-if="vm.rightPanelSection.value === 'hotspot'" />
       <AudioSettings v-else-if="vm.rightPanelSection.value === 'audio'" />
-      <PostProcessingPanel v-else-if="vm.rightPanelSection.value === 'postprocessing'" />
+      <PostProcessingPanel v-else-if="vm.rightPanelSection.value === 'postprocessing'" :vm="vm" />
       <LightingPanel v-else-if="vm.rightPanelSection.value === 'lighting'" :vm="vm" />
     </div>
   </aside>

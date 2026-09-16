@@ -37,3 +37,4 @@ npm-debug.log*
 
 # 构建时生成的版本信息（每次 build 都会重新生成）
 src/generated/
+.dev-servers/

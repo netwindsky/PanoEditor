@@ -45,6 +45,7 @@ import type { HotspotToolType } from '@/types'
 import { buildHotspotParams } from '@/utils/hotspotFactory'
 import { parsePoints, serializePoints, isQuadLike, isMeshQuad, centerOfPoints } from '@/utils/quadPoints'
 import { useEditorStore } from '@/stores/editor'
+import { useScenePostProcessing } from '@/composables/useScenePostProcessing'
 
 const props = defineProps<{
   vm: EditorViewModel
@@ -55,6 +56,13 @@ const panoViewerRef = ref<InstanceType<typeof PanoEngineViewer>>()
 const canvasContainer = ref<HTMLElement>()
 const editorStore = useEditorStore()
 let engine: PanoEngineAdapter | null = null
+
+// 常驻后期加载层：无论右侧「后期」面板是否挂载，场景与引擎就绪后都自动把
+// 持久化的后期配置（暗角/泛光/LUT 等）下发引擎，保证刷新后画面与数值一致。
+useScenePostProcessing(
+  computed(() => vm.sceneViewModel.currentScene.value?.id ?? null),
+  computed(() => editorStore.engineAdapter ?? null),
+)
 
 // ===== 太阳 gizmo（可拖拽太阳方向光）=====
 // 范式与 quad-handle 一致：命令式创建绝对定位 DOM 圆点，挂在 PanoEngineViewer 根节点上，
