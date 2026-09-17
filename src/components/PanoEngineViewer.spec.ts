@@ -20,6 +20,7 @@ vi.mock('@/utils/PanoEngineAdapter', () => {
     setDraggingMode = vi.fn()
     setWebIframesEditable = vi.fn()
     applyPositionOnly = vi.fn()
+    applyModelRuntimeOnly = vi.fn()
     preloadScenes = vi.fn(() => Promise.resolve())
     switchScene = vi.fn(() => Promise.resolve())
     constructor(_container: HTMLElement) {
@@ -344,7 +345,7 @@ describe('PanoEngineViewer 热点同步竞态', () => {
     expect(engine.syncHotspots).toHaveBeenCalledTimes(fullSyncCount + 1)
   })
 
-  it('rotate 变化时走全量 syncHotspots（非纯位置增量）', async () => {
+  it('model 类型 rotate 变化走增量路径，不触发全量 syncHotspots', async () => {
     const wrapper = mount(PanoEngineViewer, {
       props: {
         sceneData: VALID_SCENE,
@@ -360,6 +361,29 @@ describe('PanoEngineViewer 热点同步竞态', () => {
 
     await wrapper.setProps({
       hotspots: [{ ...makeHotspot('r1'), rotate: '45 0 90', type: 'model' }] as Hotspot[],
+    })
+    await flushPromises()
+
+    // model 的 rotate 变化走 applyModelRuntimeOnly 增量路径，不触发全量 syncHotspots
+    expect(engine.syncHotspots).toHaveBeenCalledTimes(fullSyncCount)
+  })
+
+  it('image 类型 rotate 变化仍走全量 syncHotspots', async () => {
+    const wrapper = mount(PanoEngineViewer, {
+      props: {
+        sceneData: VALID_SCENE,
+        tilingStatus: 'READY',
+        tilingProgress: 100,
+        hotspots: [{ ...makeHotspot('r1'), rotate: '10 20 30', type: 'image' }] as Hotspot[],
+      },
+    })
+    await flushPromises()
+
+    const engine = latestEngine()
+    const fullSyncCount = engine.syncHotspots.mock.calls.length
+
+    await wrapper.setProps({
+      hotspots: [{ ...makeHotspot('r1'), rotate: '45 0 90', type: 'image' }] as Hotspot[],
     })
     await flushPromises()
 
@@ -380,5 +404,121 @@ describe('PanoEngineViewer 热点同步竞态', () => {
     const engine = latestEngine()
     expect(engine.syncHotspots).toHaveBeenCalled()
     expect(engine.applyPositionOnly).not.toHaveBeenCalled()
+  })
+
+  it('model rotate 变化走增量路径（applyModelRuntimeOnly），不触发 syncHotspots 全量重建', async () => {
+    const wrapper = mount(PanoEngineViewer, {
+      props: {
+        sceneData: VALID_SCENE,
+        tilingStatus: 'READY',
+        tilingProgress: 100,
+        hotspots: [{ ...makeHotspot('mr1'), rotate: '0 0 0', type: 'model' }] as Hotspot[],
+      },
+    })
+    await flushPromises()
+
+    const engine = latestEngine()
+    const fullSyncCount = engine.syncHotspots.mock.calls.length
+    const runtimeOnlyCount = engine.applyModelRuntimeOnly.mock.calls.length
+
+    await wrapper.setProps({
+      hotspots: [{ ...makeHotspot('mr1'), rotate: '10 20 30', type: 'model' }] as Hotspot[],
+    })
+    await flushPromises()
+
+    expect(engine.applyModelRuntimeOnly).toHaveBeenCalledTimes(runtimeOnlyCount + 1)
+    expect(engine.syncHotspots).toHaveBeenCalledTimes(fullSyncCount)
+  })
+
+  it('model scale 变化走增量路径（applyModelRuntimeOnly），不触发 syncHotspots 全量重建', async () => {
+    const wrapper = mount(PanoEngineViewer, {
+      props: {
+        sceneData: VALID_SCENE,
+        tilingStatus: 'READY',
+        tilingProgress: 100,
+        hotspots: [{ ...makeHotspot('ms1'), scale: '1', type: 'model' }] as Hotspot[],
+      },
+    })
+    await flushPromises()
+
+    const engine = latestEngine()
+    const fullSyncCount = engine.syncHotspots.mock.calls.length
+    const runtimeOnlyCount = engine.applyModelRuntimeOnly.mock.calls.length
+
+    await wrapper.setProps({
+      hotspots: [{ ...makeHotspot('ms1'), scale: '2', type: 'model' }] as Hotspot[],
+    })
+    await flushPromises()
+
+    expect(engine.applyModelRuntimeOnly).toHaveBeenCalledTimes(runtimeOnlyCount + 1)
+    expect(engine.syncHotspots).toHaveBeenCalledTimes(fullSyncCount)
+  })
+
+  it('model url 变化仍走全量 syncHotspots（非增量）', async () => {
+    const wrapper = mount(PanoEngineViewer, {
+      props: {
+        sceneData: VALID_SCENE,
+        tilingStatus: 'READY',
+        tilingProgress: 100,
+        hotspots: [{ ...makeHotspot('mu1'), url: 'a.glb', type: 'model' }] as Hotspot[],
+      },
+    })
+    await flushPromises()
+
+    const engine = latestEngine()
+    const fullSyncCount = engine.syncHotspots.mock.calls.length
+
+    await wrapper.setProps({
+      hotspots: [{ ...makeHotspot('mu1'), url: 'b.glb', type: 'model' }] as Hotspot[],
+    })
+    await flushPromises()
+
+    expect(engine.syncHotspots).toHaveBeenCalledTimes(fullSyncCount + 1)
+  })
+
+  it('非 model 类型 rotate 变化仍走全量 syncHotspots', async () => {
+    const wrapper = mount(PanoEngineViewer, {
+      props: {
+        sceneData: VALID_SCENE,
+        tilingStatus: 'READY',
+        tilingProgress: 100,
+        hotspots: [{ ...makeHotspot('nr1'), rotate: '0 0 0', type: 'info' }] as Hotspot[],
+      },
+    })
+    await flushPromises()
+
+    const engine = latestEngine()
+    const fullSyncCount = engine.syncHotspots.mock.calls.length
+
+    await wrapper.setProps({
+      hotspots: [{ ...makeHotspot('nr1'), rotate: '10 20 30', type: 'info' }] as Hotspot[],
+    })
+    await flushPromises()
+
+    expect(engine.syncHotspots).toHaveBeenCalledTimes(fullSyncCount + 1)
+  })
+
+  it('model rotate+scale 同时变化走增量路径，仅调用一次 applyModelRuntimeOnly', async () => {
+    const wrapper = mount(PanoEngineViewer, {
+      props: {
+        sceneData: VALID_SCENE,
+        tilingStatus: 'READY',
+        tilingProgress: 100,
+        hotspots: [{ ...makeHotspot('mrs1'), rotate: '0 0 0', scale: '1', type: 'model' }] as Hotspot[],
+      },
+    })
+    await flushPromises()
+
+    const engine = latestEngine()
+    const fullSyncCount = engine.syncHotspots.mock.calls.length
+    const runtimeOnlyCount = engine.applyModelRuntimeOnly.mock.calls.length
+
+    await wrapper.setProps({
+      hotspots: [{ ...makeHotspot('mrs1'), rotate: '10 20 30', scale: '2', type: 'model' }] as Hotspot[],
+    })
+    await flushPromises()
+
+    expect(engine.applyModelRuntimeOnly).toHaveBeenCalledTimes(runtimeOnlyCount + 1)
+    expect(engine.syncHotspots).toHaveBeenCalledTimes(fullSyncCount)
   })
 })

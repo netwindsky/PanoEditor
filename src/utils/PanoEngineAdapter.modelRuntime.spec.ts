@@ -21,6 +21,13 @@ function makeAdapterWithModel(baseScale: number, absoluteScale: number, rotateVa
     getObject: () => container,
     getRotateValues: () => rotateValues,
     getBaseScale: () => baseScale,
+    // Design A：getMeasuredRotateValues 始终返回三轴 [x,y,z]；
+    // 单值旧数据映射为 [0, value, 0]（Y 轴），与 ModelHotspot.applyRotateValuesTo 保持一致
+    getMeasuredRotateValues: () => {
+      if (rotateValues.length === 1) return [0, rotateValues[0], 0]
+      if (rotateValues.length >= 3) return [rotateValues[0], rotateValues[1], rotateValues[2]]
+      return [0, 0, 0]
+    },
     setRelativeScale: vi.fn((s: number) => {
       container.scale.setScalar(baseScale * s)
     }),

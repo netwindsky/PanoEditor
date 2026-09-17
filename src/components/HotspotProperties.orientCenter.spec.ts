@@ -52,6 +52,7 @@ function createMockViewModel(type: 'model' | 'image' = 'model') {
       updateHotspot: vi.fn(),
       previewHotspotStyle: vi.fn(),
       isDragging: ref(false),
+      panelRefreshVersion: ref(0),
     },
     sceneViewModel: {
       scenes,
@@ -106,6 +107,7 @@ function mountComponent(vm: ReturnType<typeof createMockViewModel>['vm']) {
 describe('HotspotProperties — 模型「面向中心」按钮', () => {
   beforeEach(() => {
     mockEngineAdapter.value = null
+    mockGetModelRuntime.mockReset()
   })
 
   it('选中 model 热点时应显示「面向中心」按钮', async () => {

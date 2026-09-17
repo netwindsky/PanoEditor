@@ -96,7 +96,7 @@ function endTransitionOverlay() {
 const usePreloadMode = computed(() => !!props.allSceneData && props.allSceneData.length > 0)
 
 /**
- * 尝试增量位置同步：仅 ath/atv/points 变化时不触发全量重建。
+ * 尝试增量同步：位置变化 + model 类型 rotate/scale 变化时不触发全量重建。
  * @returns true 表示已增量处理，false 需走全量 syncHotspots
  */
 function tryApplyPositionOnly(
@@ -116,24 +116,33 @@ function tryApplyPositionOnly(
   for (const h of newHotspots) {
     const old = oldMap.get(h.id)
     if (!old) return false
-    // 非位置字段必须一致才走增量同步；只要任一非位置字段变化就需全量重建
+    // 非位置字段：model 类型的 rotate/scale 可增量，其余字段变化需全量重建
+    const isModel = h.type === 'model' || old.type === 'model'
     if (
       old.type !== h.type
       || old.url !== h.url
-      || old.scale !== h.scale
-      || old.rotate !== h.rotate
       || old.style !== h.style
       || old.tooltip !== h.tooltip
       || old.content !== h.content
       || old.shader !== h.shader
+      || (!isModel && (old.rotate !== h.rotate || old.scale !== h.scale))
     ) {
       return false
     }
   }
 
-  // 通过校验：逐个应用位置更新
+  // 通过校验：逐个应用增量更新
   for (const h of newHotspots) {
     engine.applyPositionOnly(h)
+    // model 类型：rotate/scale 变化走引擎轻量 API，不重建
+    const old = oldMap.get(h.id)
+    if (old && (h.type === 'model' || old.type === 'model')) {
+      const rotateChanged = old.rotate !== h.rotate
+      const scaleChanged = old.scale !== h.scale
+      if (rotateChanged || scaleChanged) {
+        engine.applyModelRuntimeOnly(h)
+      }
+    }
   }
   return true
 }

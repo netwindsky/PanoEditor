@@ -286,6 +286,30 @@ export class PanoEngineAdapter {
   }
 
   /**
+   * 增量更新模型热点运行时状态（rotate / scale），不触发全量重建。
+   * 由 PanoEngineViewer 的增量同步路径调用，替代 syncHotspots 全量重建。
+   */
+  public applyModelRuntimeOnly(hotspot: { id: string; rotate?: string; scale?: string }): void {
+    if (hotspot.rotate != null && hotspot.rotate.trim() !== '') {
+      const parts = hotspot.rotate.trim().split(/\s+/).map(Number)
+      if (parts.length > 0 && parts.every((n) => Number.isFinite(n))) {
+        this.setModelRotation(
+          hotspot.id,
+          parts[0] ?? 0,
+          parts[1] ?? 0,
+          parts[2] ?? 0,
+        )
+      }
+    }
+    if (hotspot.scale != null && hotspot.scale.trim() !== '') {
+      const scale = parseFloat(hotspot.scale)
+      if (Number.isFinite(scale) && scale > 0) {
+        this.setModelRelativeScale(hotspot.id, scale)
+      }
+    }
+  }
+
+  /**
    * 运行时设置模型旋转值（度），同步引擎活对象与 config。
    */
   public setModelRotation(id: string, x: number, y: number, z: number): void {
@@ -525,14 +549,16 @@ export class PanoEngineAdapter {
     const model = this.engine.hotspotsManager.modelHotspots.get(hotspotId)
     const obj = model?.getObject()
     if (!model || !obj) return null
-    const rotateValues = typeof model.getRotateValues === 'function' ? model.getRotateValues() : []
+    // Design A：使用实测偏差（从 quaternion 反算），拖动后随位置变化而变化
+    const measuredValues = typeof model.getMeasuredRotateValues === 'function'
+      ? model.getMeasuredRotateValues()
+      : (typeof model.getRotateValues === 'function' ? model.getRotateValues() : [])
     const base = typeof model.getBaseScale === 'function' ? model.getBaseScale() : 1
     const relative = base > 0 ? obj.scale.x / base : 1
-    // 与引擎 applyRotateValuesTo 的轴向语义对齐：
-    // [v] → 绕 Y 自转；[x,y] → X+Y；[x,y,z] → X+Y+Z
-    const rotateX = rotateValues.length >= 2 ? rotateValues[0] : 0
-    const rotateY = rotateValues.length >= 1 ? (rotateValues.length === 1 ? rotateValues[0] : rotateValues[1]) : 0
-    const rotateZ = rotateValues.length >= 3 ? rotateValues[2] : 0
+    // getMeasuredRotateValues 始终返回 [x, y, z] 三轴度数
+    const rotateX = measuredValues.length >= 3 ? measuredValues[0] : 0
+    const rotateY = measuredValues.length >= 2 ? measuredValues[1] : 0
+    const rotateZ = measuredValues.length >= 3 ? measuredValues[2] : 0
     return {
       relativeScale: relative,
       rotateX,

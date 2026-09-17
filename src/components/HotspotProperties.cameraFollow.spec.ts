@@ -77,6 +77,7 @@ function createMockViewModel() {
       updateHotspot: vi.fn(),
       previewHotspotStyle: vi.fn(),
       isDragging: ref(false),
+      panelRefreshVersion: ref(0),
     },
     sceneViewModel: {
       scenes,

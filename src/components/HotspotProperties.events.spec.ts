@@ -41,6 +41,7 @@ function createMockViewModel(eventsValue?: string) {
       updateHotspot: vi.fn(),
       previewHotspotStyle: vi.fn(),
       isDragging: ref(false),
+      panelRefreshVersion: ref(0),
     },
     sceneViewModel: { scenes, currentScene: ref(scenes.value[0]) },
     assetViewModel: { resources, loadResources: vi.fn(), uploadResource: vi.fn() },

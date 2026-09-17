@@ -821,10 +821,8 @@ watch(
       const runtime = editorStore.engineAdapter.getModelRuntime?.(hotspot.id)
       if (runtime) {
         if (form.scale == null) form.scale = Number(runtime.relativeScale.toFixed(3))
-        if (form.rotate == null) {
-          // 引擎无保存值：用引擎实际姿态回填三轴
-          form.rotate = `${Number(runtime.rotateX.toFixed(1))} ${Number(runtime.rotateY.toFixed(1))} ${Number(runtime.rotateZ.toFixed(1))}` as unknown as number
-        }
+        // Design A：始终用实测偏差回填 rotate（拖动后偏差变化，面板需跟随）
+        form.rotate = `${Number(runtime.rotateX.toFixed(1))} ${Number(runtime.rotateY.toFixed(1))} ${Number(runtime.rotateZ.toFixed(1))}` as unknown as number
       }
       // 前方轴回填：优先落库值（真源），无落库值时退回引擎运行时配置，最后兜底 -Z
       const dbForwardAxis = hotspot.modelForwardAxis
@@ -854,6 +852,18 @@ watch(
     }
   },
   { immediate: true },
+)
+
+// Design A：拖拽结束后重新从引擎拉取实测偏差，面板 XYZ 跟随实际姿态变化
+watch(
+  () => vm.hotspotViewModel.panelRefreshVersion.value,
+  () => {
+    const hotspot = selectedHotspot.value
+    if (!hotspot || hotspot.type !== 'model' || !editorStore?.engineAdapter) return
+    const runtime = editorStore.engineAdapter.getModelRuntime?.(hotspot.id)
+    if (!runtime) return
+    form.rotate = `${Number(runtime.rotateX.toFixed(1))} ${Number(runtime.rotateY.toFixed(1))} ${Number(runtime.rotateZ.toFixed(1))}` as unknown as number
+  },
 )
 
 function handleSelect(hotspotId: string) {

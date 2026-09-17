@@ -39,6 +39,12 @@ export class HotspotViewModel {
   selectedHotspot = ref<Hotspot | null>(null)
   draggingHotspotId = ref<string | null>(null)
 
+  /**
+   * 拖拽结束计数器：每次 endDrag() 递增。
+   * HotspotProperties.vue watch 该值以重新从引擎拉取实测偏差（Design A）。
+   */
+  panelRefreshVersion = ref(0)
+
   isDragging = computed(() => this.draggingHotspotId.value !== null)
 
   /** 相机锁定器，默认空实现，由组件层在引擎就绪后注入 */
@@ -226,6 +232,8 @@ export class HotspotViewModel {
       this.dragOffset = null
       // 拖拽结束，解锁全景旋转
       this.cameraLock.unlock()
+      // 通知面板刷新旋转值（Design A：拖拽后实测偏差变化，面板需重新拉取）
+      this.panelRefreshVersion.value++
     }
   }
 

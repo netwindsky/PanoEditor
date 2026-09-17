@@ -15,6 +15,8 @@ vi.mock('@panoview', () => ({
       clearHotspots: vi.fn(),
       createHotspots: vi.fn(),
       fadeIn: vi.fn(),
+      setModelRotation: vi.fn(),
+      modelHotspots: new Map(),
     },
     dispose: vi.fn(),
   })),
@@ -193,5 +195,95 @@ describe('PanoEngineAdapter.syncHotspots', () => {
     )
     const panoHotspots = createHotspotsMock.mock.calls[0][0]
     expect(panoHotspots[0].modelForwardAxis).toBeUndefined()
+  })
+})
+
+describe('PanoEngineAdapter.applyModelRuntimeOnly', () => {
+  let adapter: PanoEngineAdapter
+
+  beforeEach(() => {
+    adapter = new PanoEngineAdapter(document.createElement('div'))
+  })
+
+  it('rotate 三轴有效值应解析并转发到 setModelRotation', () => {
+    const rotateSpy = vi.spyOn(adapter, 'setModelRotation')
+    adapter.applyModelRuntimeOnly({
+      id: 'm1', type: 'model', rotate: '10 20 30',
+    } as any)
+    expect(rotateSpy).toHaveBeenCalledWith('m1', 10, 20, 30)
+  })
+
+  it('scale 有效值应解析并转发到 setModelRelativeScale', () => {
+    const scaleSpy = vi.spyOn(adapter, 'setModelRelativeScale')
+    adapter.applyModelRuntimeOnly({
+      id: 'm1', type: 'model', scale: '1.5',
+    } as any)
+    expect(scaleSpy).toHaveBeenCalledWith('m1', 1.5)
+  })
+
+  it('rotate 和 scale 同时有效时两者都调用', () => {
+    const rotateSpy = vi.spyOn(adapter, 'setModelRotation')
+    const scaleSpy = vi.spyOn(adapter, 'setModelRelativeScale')
+    adapter.applyModelRuntimeOnly({
+      id: 'm1', type: 'model', rotate: '5 10 15', scale: '2',
+    } as any)
+    expect(rotateSpy).toHaveBeenCalledWith('m1', 5, 10, 15)
+    expect(scaleSpy).toHaveBeenCalledWith('m1', 2)
+  })
+
+  it('rotate 空字符串时不调用 setModelRotation', () => {
+    const rotateSpy = vi.spyOn(adapter, 'setModelRotation')
+    adapter.applyModelRuntimeOnly({
+      id: 'm1', type: 'model', rotate: '',
+    } as any)
+    expect(rotateSpy).not.toHaveBeenCalled()
+  })
+
+  it('scale 空字符串时不调用 setModelRelativeScale', () => {
+    const scaleSpy = vi.spyOn(adapter, 'setModelRelativeScale')
+    adapter.applyModelRuntimeOnly({
+      id: 'm1', type: 'model', scale: '',
+    } as any)
+    expect(scaleSpy).not.toHaveBeenCalled()
+  })
+
+  it('rotate 为 undefined 时不调用 setModelRotation', () => {
+    const rotateSpy = vi.spyOn(adapter, 'setModelRotation')
+    adapter.applyModelRuntimeOnly({
+      id: 'm1', type: 'model',
+    } as any)
+    expect(rotateSpy).not.toHaveBeenCalled()
+  })
+
+  it('rotate 仅 1 个值时其余轴默认 0', () => {
+    const rotateSpy = vi.spyOn(adapter, 'setModelRotation')
+    adapter.applyModelRuntimeOnly({
+      id: 'm1', type: 'model', rotate: '45',
+    } as any)
+    expect(rotateSpy).toHaveBeenCalledWith('m1', 45, 0, 0)
+  })
+
+  it('rotate 2 个值时第三轴默认 0', () => {
+    const rotateSpy = vi.spyOn(adapter, 'setModelRotation')
+    adapter.applyModelRuntimeOnly({
+      id: 'm1', type: 'model', rotate: '10 20',
+    } as any)
+    expect(rotateSpy).toHaveBeenCalledWith('m1', 10, 20, 0)
+  })
+
+  it('rotate 包含非数字时跳过 setModelRotation', () => {
+    const rotateSpy = vi.spyOn(adapter, 'setModelRotation')
+    adapter.applyModelRuntimeOnly({
+      id: 'm1', type: 'model', rotate: 'abc',
+    } as any)
+    expect(rotateSpy).not.toHaveBeenCalled()
+  })
+
+  it('scale 非正数时不调用 setModelRelativeScale', () => {
+    const scaleSpy = vi.spyOn(adapter, 'setModelRelativeScale')
+    adapter.applyModelRuntimeOnly({
+      id: 'm1', type: 'model', scale: '-1',
+    } as any)
+    expect(scaleSpy).not.toHaveBeenCalled()
   })
 })
