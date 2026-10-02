@@ -656,6 +656,7 @@ export class PanoEngineAdapter {
   public applyPostConfig(config: {
     enabled: boolean
     presetStyle?: string
+    toneMapping?: string
     exposure?: number
     contrast?: number
     saturation?: number
@@ -671,6 +672,9 @@ export class PanoEngineAdapter {
   }): void {
     const pp = this.engine.getPostProcessing()
     if (!pp) return
+
+    // 色调映射是 renderer 级别属性，不受后期开关影响
+    pp.setToneMapping(config.toneMapping || 'none')
 
     if (config.enabled) {
       pp.enable()

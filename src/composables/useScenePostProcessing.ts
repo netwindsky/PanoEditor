@@ -12,6 +12,7 @@ const DEFAULT_CONFIG = {
   lutResourceId: null as string | null,
   lutFileUrl: null as string | null,
   lutIntensity: 1,
+  toneMapping: 'none',
   exposure: 1,
   contrast: 1,
   saturation: 1,
@@ -75,6 +76,7 @@ export function useScenePostProcessing(
       adapter.applyPostConfig({
         enabled: d.enabled ?? true,
         presetStyle: d.presetStyle || 'original',
+        toneMapping: d.toneMapping || 'none',
         exposure: d.exposure ?? 1,
         contrast: d.contrast ?? 1,
         saturation: d.saturation ?? 1,
