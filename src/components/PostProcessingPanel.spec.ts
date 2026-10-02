@@ -166,7 +166,7 @@ describe('PostProcessingPanel — 重构后：预设 + 数值框 + LUT', () => {
   })
 
   it('异步 GET 回填表单后把持久化配置同步到引擎（防止输入框有值、画面零效果）', async () => {
-    const config = makeConfig({ vignette: 0.5, vignetteIntensity: 0.4, bloomStrength: 0.3 })
+    const config = makeConfig({ vignette: 0.5, vignetteIntensity: 0.4, bloomStrength: 0.3, toneMapping: 'Reinhard' })
     mockGetPostProcessing.mockResolvedValue({ data: { data: config } })
     const wrapper = mountPanel()
     await flushPromises()
@@ -175,6 +175,7 @@ describe('PostProcessingPanel — 重构后：预设 + 数值框 + LUT', () => {
     expect(engineCall.vignette).toBe(0.5)
     expect(engineCall.vignetteIntensity).toBe(0.4)
     expect(engineCall.bloomStrength).toBe(0.3)
+    expect(engineCall.toneMapping).toBe('Reinhard')
   })
 
   it('修改 exposure 数值框触发 updatePostProcessing', async () => {
@@ -240,6 +241,10 @@ describe('PostProcessingPanel — 重构后：预设 + 数值框 + LUT', () => {
     expect(mockUpdatePostProcessing).toHaveBeenCalled()
     const lastCall = mockUpdatePostProcessing.mock.calls[mockUpdatePostProcessing.mock.calls.length - 1]
     expect(lastCall[1]).toHaveProperty('toneMapping', 'ACES')
+
+    // syncToEngine 不走防抖，实时下发引擎
+    const engineCall = mockApplyPostConfig.mock.calls[mockApplyPostConfig.mock.calls.length - 1][0]
+    expect(engineCall).toHaveProperty('toneMapping', 'ACES')
   })
 
   it('渲染 enabled 开关', async () => {

@@ -327,6 +327,7 @@ async function syncToEngine(): Promise<void> {
     adapter.applyPostConfig({
       enabled: form.enabled,
       presetStyle: form.presetStyle,
+      toneMapping: form.toneMapping,
       exposure: form.exposure,
       contrast: form.contrast,
       saturation: form.saturation,
